@@ -4,7 +4,6 @@ import { setDialogueAdvanceCallback } from './input.js';
 const TYPEWRITER_SPEED = 30; // ms per character
 
 const SPEAKER_COLORS = {
-    COLE: '#fff',
     KIRA: '#4f4',
     JAX: '#48f',
     HQ: '#ff0',

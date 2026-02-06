@@ -5,7 +5,7 @@ export const missions = [
         title: "Routine Patrol",
         briefing: [
             { speaker: "HQ", text: "Cole, patrol sector 7-G. Routine sweep." },
-            { speaker: "COLE", text: "Copy. Moving in." }
+            { speaker: "HQ", text: "Should be quiet out there. Clear the debris and report back." }
         ],
         asteroidCount: 4,
         asteroidSizes: [3],
@@ -18,7 +18,7 @@ export const missions = [
         surviveTime: null,
         completionDialogue: [
             { speaker: "HQ", text: "Sector clear. Clean work, Cole." },
-            { speaker: "COLE", text: "Just another day." }
+            { speaker: "HQ", text: "Head back in. We've got another assignment brewing." }
         ]
     },
     {
@@ -26,8 +26,7 @@ export const missions = [
         title: "The Attack",
         briefing: [
             { speaker: "HQ", text: "Cole, we're picking up unknown contacts in your sector." },
-            { speaker: "COLE", text: "Hostiles? Out here?" },
-            { speaker: "HQ", text: "Confirmed. Syndicate signatures. Engage at will." }
+            { speaker: "HQ", text: "Confirmed Syndicate signatures. This is not a drill. Engage at will." }
         ],
         asteroidCount: 3,
         asteroidSizes: [3, 2],
@@ -39,17 +38,16 @@ export const missions = [
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
-            { speaker: "COLE", text: "Hostiles down. What the hell was the Syndicate doing out here?" },
-            { speaker: "HQ", text: "Unknown. Return to base. We need to talk." }
+            { speaker: "HQ", text: "Hostiles down. Good shooting." },
+            { speaker: "HQ", text: "What the Syndicate was doing out here... we don't know yet. Return to base." }
         ]
     },
     {
         id: 3,
         title: "Rally Point",
         briefing: [
-            { speaker: "HQ", text: "We're pulling in everyone we can trust. There's a mechanic, Kira Vasquez. She's good in a fight." },
-            { speaker: "COLE", text: "A mechanic?" },
-            { speaker: "HQ", text: "She modified her own ship. Trust me. Rendezvous at rally point Theta." },
+            { speaker: "HQ", text: "We're pulling in everyone we can trust. There's a mechanic, Kira Vasquez. Modified her own ship." },
+            { speaker: "HQ", text: "Don't let the title fool you. She's good in a fight. Rendezvous at rally point Theta." },
             { speaker: "KIRA", text: "You must be Cole. Let's see what you've got." }
         ],
         asteroidCount: 5,
@@ -63,7 +61,7 @@ export const missions = [
         surviveTime: null,
         completionDialogue: [
             { speaker: "KIRA", text: "Not bad, flyboy. I'll stick around." },
-            { speaker: "COLE", text: "Glad to have you, Kira." }
+            { speaker: "HQ", text: "Good. We're going to need all hands for what's coming." }
         ]
     },
     {
@@ -71,7 +69,7 @@ export const missions = [
         title: "Supply Run",
         briefing: [
             { speaker: "HQ", text: "Supply convoy needs escort through the belt. Keep them alive for 60 seconds." },
-            { speaker: "COLE", text: "60 seconds in that mess? Easy." },
+            { speaker: "HQ", text: "It's going to be tight in there. Stay sharp." },
             { speaker: "KIRA", text: "Don't jinx it." }
         ],
         asteroidCount: 6,
@@ -94,8 +92,8 @@ export const missions = [
         briefing: [
             { speaker: "HQ", text: "Cole, there's someone who wants to talk to you. Patching through." },
             { speaker: "JAX", text: "Cole. It's been a while." },
-            { speaker: "COLE", text: "Jax? I thought you retired." },
-            { speaker: "JAX", text: "Came out of retirement when I heard who we're fighting. I'm in." }
+            { speaker: "HQ", text: "Jax Morrow. Came out of retirement the moment he heard who we're up against." },
+            { speaker: "JAX", text: "Damn right I did. I'm in." }
         ],
         asteroidCount: 4,
         asteroidSizes: [3, 2],
@@ -108,7 +106,7 @@ export const missions = [
         surviveTime: null,
         completionDialogue: [
             { speaker: "JAX", text: "Still got it. Just like old times." },
-            { speaker: "COLE", text: "Better than old times." }
+            { speaker: "HQ", text: "Glad to have you both out there. Stay on comms." }
         ]
     },
     {
@@ -117,8 +115,7 @@ export const missions = [
         briefing: [
             { speaker: "HQ", text: "Intel shows a Syndicate outpost in the Kepler belt. Heavy presence." },
             { speaker: "JAX", text: "How heavy?" },
-            { speaker: "HQ", text: "Very. But if we take it out, we cripple their supply line." },
-            { speaker: "COLE", text: "Then we take it out." }
+            { speaker: "HQ", text: "Very. But if we take it out, we cripple their supply line. You have the green light." }
         ],
         asteroidCount: 8,
         asteroidSizes: [3, 2, 1],
@@ -139,8 +136,8 @@ export const missions = [
         title: "Corrupt Patrol",
         briefing: [
             { speaker: "HQ", text: "Cole... we have a problem. Sector patrol is moving to intercept you." },
-            { speaker: "COLE", text: "Patrol? They're on our side." },
-            { speaker: "HQ", text: "Not anymore. Syndicate bought them. They're coming for you." },
+            { speaker: "HQ", text: "They were supposed to be on our side. Syndicate bought them out." },
+            { speaker: "HQ", text: "I know this isn't what you signed up for. But they're hostile now. Weapons free." },
             { speaker: "JAX", text: "Dirty cops. Wonderful." }
         ],
         asteroidCount: 3,
@@ -153,9 +150,8 @@ export const missions = [
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
-            { speaker: "COLE", text: "Didn't sign up to fight cops." },
             { speaker: "KIRA", text: "They stopped being cops when they took Syndicate money." },
-            { speaker: "HQ", text: "She's right. Focus on the mission." }
+            { speaker: "HQ", text: "She's right. Nobody wanted this, Cole. But it had to be done." }
         ]
     },
     {
@@ -165,7 +161,7 @@ export const missions = [
             { speaker: "HQ", text: "Final push. The Syndicate is throwing everything they have at us." },
             { speaker: "KIRA", text: "Both of us are with you, Cole." },
             { speaker: "JAX", text: "Whatever's on the other side of this... we face it together." },
-            { speaker: "COLE", text: "Together. Let's end this." }
+            { speaker: "HQ", text: "All of you — this is it. Give them everything. HQ out." }
         ],
         asteroidCount: 8,
         asteroidSizes: [3, 2, 1],
@@ -178,17 +174,17 @@ export const missions = [
         surviveTime: null,
         completionDialogue: [
             { speaker: "JAX", text: "That's the last of them." },
-            { speaker: "HQ", text: "Cole... we've found him. The Syndicate leader. Transmitting coordinates." },
-            { speaker: "COLE", text: "It's time." }
+            { speaker: "HQ", text: "Cole... we've found him. The Syndicate leader. Transmitting coordinates now." },
+            { speaker: "HQ", text: "This is a solo run. No backup in range. It's all on you." }
         ]
     },
     {
         id: 9,
         title: "The Syndicate Boss",
         briefing: [
-            { speaker: "COLE", text: "I see him. One ship. Big one." },
+            { speaker: "HQ", text: "One contact on sensors. Big signature. That's him, Cole." },
             { speaker: "BOSS", text: "Cole. I've been watching you. Impressive." },
-            { speaker: "COLE", text: "Save it." },
+            { speaker: "HQ", text: "Don't listen to him. Stay focused." },
             { speaker: "BOSS", text: "You and I aren't so different. But you'll see that soon enough." }
         ],
         asteroidCount: 2,

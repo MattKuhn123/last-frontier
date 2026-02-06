@@ -329,7 +329,7 @@ function drawEndingScreen() {
         ctx.font = '14px monospace';
         const lines = [
             'Cole holstered his weapon and took the hand offered.',
-            'Kira and Jax never heard from him again.',
+            'His wingmen never heard from him again.',
             'The Syndicate grew stronger.',
             'And the frontier grew darker.'
         ];
@@ -347,7 +347,7 @@ function drawEndingScreen() {
         const lines = [
             'Cole pulled the trigger.',
             'The Syndicate crumbled without its leader.',
-            'Kira went back to fixing ships. Jax retired for real this time.',
+            'The wingmen were reassigned. Just another rotation.',
             'And Cole? He just kept flying.'
         ];
         lines.forEach((line, i) => {

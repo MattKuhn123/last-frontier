@@ -46,9 +46,9 @@ export const missions = [
         id: 3,
         title: "Rally Point",
         briefing: [
-            { speaker: "HQ", text: "We're pulling in everyone we can trust. There's a mechanic, Kira Vasquez. Modified her own ship." },
-            { speaker: "HQ", text: "Don't let the title fool you. She's good in a fight. Rendezvous at rally point Theta." },
-            { speaker: "KIRA", text: "You must be Cole. Let's see what you've got." }
+            { speaker: "HQ", text: "We're assigning you a wingman. Callsign Sierra. Rendezvous at rally point Theta." },
+            { speaker: "HQ", text: "Sierra is combat-rated. Let them do their job." },
+            { speaker: "SIERRA", text: "Sierra on station. Ready." }
         ],
         asteroidCount: 5,
         asteroidSizes: [3, 2],
@@ -56,11 +56,11 @@ export const missions = [
         enemySpawnInterval: 360,
         enemyType: 'normal',
         wingmanAvailable: true,
-        wingmanType: 'kira',
+        wingmanType: 'sierra',
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
-            { speaker: "KIRA", text: "Not bad, flyboy. I'll stick around." },
+            { speaker: "SIERRA", text: "Sector clear. Holding position." },
             { speaker: "HQ", text: "Good. We're going to need all hands for what's coming." }
         ]
     },
@@ -70,7 +70,7 @@ export const missions = [
         briefing: [
             { speaker: "HQ", text: "Supply convoy needs escort through the belt. Keep them alive for 60 seconds." },
             { speaker: "HQ", text: "It's going to be tight in there. Stay sharp." },
-            { speaker: "KIRA", text: "Don't jinx it." }
+            { speaker: "SIERRA", text: "Sierra standing by." }
         ],
         asteroidCount: 6,
         asteroidSizes: [3, 2, 1],
@@ -78,22 +78,21 @@ export const missions = [
         enemySpawnInterval: 240,
         enemyType: 'normal',
         wingmanAvailable: true,
-        wingmanType: 'kira',
+        wingmanType: 'sierra',
         objective: "survive",
         surviveTime: 60,
         completionDialogue: [
             { speaker: "HQ", text: "Convoy is through. Good work." },
-            { speaker: "KIRA", text: "Told you not to jinx it." }
+            { speaker: "SIERRA", text: "Confirmed. All clear." }
         ]
     },
     {
         id: 5,
-        title: "Old Friends",
+        title: "Reinforcements",
         briefing: [
-            { speaker: "HQ", text: "Cole, there's someone who wants to talk to you. Patching through." },
-            { speaker: "JAX", text: "Cole. It's been a while." },
-            { speaker: "HQ", text: "Jax Morrow. Came out of retirement the moment he heard who we're up against." },
-            { speaker: "JAX", text: "Damn right I did. I'm in." }
+            { speaker: "HQ", text: "Cole, we're assigning additional support. Callsign Tango." },
+            { speaker: "HQ", text: "Tango specializes in hostile engagement. They'll prioritize enemy contacts." },
+            { speaker: "TANGO", text: "Tango reporting. On your wing." }
         ],
         asteroidCount: 4,
         asteroidSizes: [3, 2],
@@ -101,12 +100,12 @@ export const missions = [
         enemySpawnInterval: 240,
         enemyType: 'normal',
         wingmanAvailable: true,
-        wingmanType: 'jax',
+        wingmanType: 'tango',
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
-            { speaker: "JAX", text: "Still got it. Just like old times." },
-            { speaker: "HQ", text: "Glad to have you both out there. Stay on comms." }
+            { speaker: "TANGO", text: "Contacts eliminated." },
+            { speaker: "HQ", text: "Solid work out there. Stay on comms." }
         ]
     },
     {
@@ -114,8 +113,8 @@ export const missions = [
         title: "Syndicate Outpost",
         briefing: [
             { speaker: "HQ", text: "Intel shows a Syndicate outpost in the Kepler belt. Heavy presence." },
-            { speaker: "JAX", text: "How heavy?" },
-            { speaker: "HQ", text: "Very. But if we take it out, we cripple their supply line. You have the green light." }
+            { speaker: "HQ", text: "If we take it out, we cripple their supply line. You have the green light." },
+            { speaker: "TANGO", text: "Copy. Weapons hot." }
         ],
         asteroidCount: 8,
         asteroidSizes: [3, 2, 1],
@@ -123,11 +122,11 @@ export const missions = [
         enemySpawnInterval: 200,
         enemyType: 'normal',
         wingmanAvailable: true,
-        wingmanType: 'jax',
+        wingmanType: 'tango',
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
-            { speaker: "KIRA", text: "Outpost neutralized. That'll slow them down." },
+            { speaker: "SIERRA", text: "Outpost neutralized." },
             { speaker: "HQ", text: "Good. But they'll retaliate. Be ready." }
         ]
     },
@@ -137,8 +136,8 @@ export const missions = [
         briefing: [
             { speaker: "HQ", text: "Cole... we have a problem. Sector patrol is moving to intercept you." },
             { speaker: "HQ", text: "They were supposed to be on our side. Syndicate bought them out." },
-            { speaker: "HQ", text: "I know this isn't what you signed up for. But they're hostile now. Weapons free." },
-            { speaker: "JAX", text: "Dirty cops. Wonderful." }
+            { speaker: "HQ", text: "They're hostile now. Weapons free." },
+            { speaker: "SIERRA", text: "Understood." }
         ],
         asteroidCount: 3,
         asteroidSizes: [3, 2],
@@ -146,12 +145,12 @@ export const missions = [
         enemySpawnInterval: 180,
         enemyType: 'corrupt',
         wingmanAvailable: true,
-        wingmanType: 'kira',
+        wingmanType: 'sierra',
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
-            { speaker: "KIRA", text: "They stopped being cops when they took Syndicate money." },
-            { speaker: "HQ", text: "She's right. Nobody wanted this, Cole. But it had to be done." }
+            { speaker: "SIERRA", text: "All hostiles down." },
+            { speaker: "HQ", text: "Nobody wanted this, Cole. But it had to be done." }
         ]
     },
     {
@@ -159,9 +158,9 @@ export const missions = [
         title: "The Gauntlet",
         briefing: [
             { speaker: "HQ", text: "Final push. The Syndicate is throwing everything they have at us." },
-            { speaker: "KIRA", text: "Both of us are with you, Cole." },
-            { speaker: "JAX", text: "Whatever's on the other side of this... we face it together." },
-            { speaker: "HQ", text: "All of you — this is it. Give them everything. HQ out." }
+            { speaker: "SIERRA", text: "Sierra ready." },
+            { speaker: "TANGO", text: "Tango ready." },
+            { speaker: "HQ", text: "All units — this is it. Give them everything. HQ out." }
         ],
         asteroidCount: 8,
         asteroidSizes: [3, 2, 1],
@@ -169,11 +168,11 @@ export const missions = [
         enemySpawnInterval: 150,
         enemyType: 'normal',
         wingmanAvailable: true,
-        wingmanType: 'kira', // both available in sequence
+        wingmanType: 'sierra',
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
-            { speaker: "JAX", text: "That's the last of them." },
+            { speaker: "TANGO", text: "Area secure." },
             { speaker: "HQ", text: "Cole... we've found him. The Syndicate leader. Transmitting coordinates now." },
             { speaker: "HQ", text: "This is a solo run. No backup in range. It's all on you." }
         ]

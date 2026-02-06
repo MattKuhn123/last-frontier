@@ -10,8 +10,8 @@ const PICKUP_PULSE_SPEED = 0.05;
 
 // Wingman definitions
 const WINGMAN_TYPES = {
-    kira: { name: 'KIRA', color: '#4f4', fireRate: 20, targetPriority: 'nearest' },
-    jax:  { name: 'JAX',  color: '#48f', fireRate: 35, targetPriority: 'enemies' }
+    sierra: { name: 'SIERRA', color: '#4f4', fireRate: 20, targetPriority: 'nearest' },
+    tango:  { name: 'TANGO',  color: '#48f', fireRate: 35, targetPriority: 'enemies' }
 };
 
 export let pickup = null;
@@ -32,7 +32,7 @@ export function spawnWingmanPickup(type) {
     pickup = {
         x, y,
         radius: PICKUP_RADIUS,
-        type: type || 'kira',
+        type: type || 'sierra',
         pulse: 0
     };
 }

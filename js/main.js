@@ -17,6 +17,7 @@ import { missions } from './missions.js';
 // --- Game States ---
 const State = {
     TITLE: 'TITLE',
+    CRAWL: 'CRAWL',
     BRIEFING: 'BRIEFING',
     PLAYING: 'PLAYING',
     MISSION_COMPLETE: 'MISSION_COMPLETE',
@@ -36,6 +37,108 @@ let wingmanSpawned = false;
 let paused = false;
 let endingType = null; // 'join' or 'fight'
 
+// --- Opening Crawl ---
+const crawlLines = [
+    "YEAR 2746.",
+    "",
+    "The frontier colonies have known",
+    "a generation of peace.",
+    "",
+    "The Syndicate Corporation managed trade,",
+    "supplied resources, and kept the shipping lanes safe.",
+    "",
+    "Then, without warning, they seized power.",
+    "",
+    "Overnight, trade hubs became military outposts.",
+    "Supply ships became gunships.",
+    "The corporation revealed itself",
+    "as something far worse.",
+    "",
+    "Colonies that resisted were silenced.",
+    "Those that didn't were told to be grateful.",
+    "",
+    "Now a veteran named Cole",
+    "fights his final fight",
+    "",
+    "in...",
+    "",
+    "The Last Frontier"
+];
+
+let crawlLineIndex = 0;
+let crawlFadeTimer = 0;
+let crawlAlpha = 0;
+const CRAWL_FADE_IN = 40;    // frames to fade in
+const CRAWL_HOLD = 80;       // frames to hold at full
+const CRAWL_FADE_OUT = 30;   // frames to fade out
+const CRAWL_GAP = 10;        // frames of black between lines
+
+function startCrawl() {
+    state = State.CRAWL;
+    crawlLineIndex = 0;
+    crawlFadeTimer = 0;
+    crawlAlpha = 0;
+    setTitleStartCallback(() => {
+        if (state === State.CRAWL) {
+            setTitleStartCallback(null);
+            startNewGame();
+        }
+    });
+}
+
+function updateCrawl() {
+    crawlFadeTimer++;
+
+    // Skip blank lines quickly
+    if (crawlLines[crawlLineIndex] === "") {
+        if (crawlFadeTimer >= CRAWL_GAP) {
+            crawlFadeTimer = 0;
+            crawlLineIndex++;
+            if (crawlLineIndex >= crawlLines.length) {
+                setTitleStartCallback(null);
+                startNewGame();
+            }
+        }
+        crawlAlpha = 0;
+        return;
+    }
+
+    if (crawlFadeTimer <= CRAWL_FADE_IN) {
+        crawlAlpha = crawlFadeTimer / CRAWL_FADE_IN;
+    } else if (crawlFadeTimer <= CRAWL_FADE_IN + CRAWL_HOLD) {
+        crawlAlpha = 1;
+    } else if (crawlFadeTimer <= CRAWL_FADE_IN + CRAWL_HOLD + CRAWL_FADE_OUT) {
+        crawlAlpha = 1 - (crawlFadeTimer - CRAWL_FADE_IN - CRAWL_HOLD) / CRAWL_FADE_OUT;
+    } else {
+        // Move to next line
+        crawlFadeTimer = 0;
+        crawlLineIndex++;
+        crawlAlpha = 0;
+        if (crawlLineIndex >= crawlLines.length) {
+            setTitleStartCallback(null);
+            startNewGame();
+        }
+    }
+}
+
+function drawCrawl() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (crawlLineIndex < crawlLines.length && crawlLines[crawlLineIndex] !== "") {
+        ctx.fillStyle = `rgba(170, 170, 170, ${crawlAlpha})`;
+        ctx.font = '16px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(crawlLines[crawlLineIndex], canvas.width / 2, canvas.height / 2);
+    }
+
+    // Skip prompt
+    ctx.fillStyle = '#444';
+    ctx.font = '12px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('[ENTER] Skip', canvas.width / 2, canvas.height - 30);
+}
+
 // --- Title Screen ---
 function showTitle() {
     state = State.TITLE;
@@ -45,7 +148,7 @@ function showTitle() {
     setTitleStartCallback(() => {
         if (state === State.TITLE) {
             setTitleStartCallback(null);
-            startNewGame();
+            startCrawl();
         }
     });
 }
@@ -379,6 +482,11 @@ function gameLoop() {
     switch (state) {
         case State.TITLE:
             drawTitleScreen();
+            break;
+
+        case State.CRAWL:
+            updateCrawl();
+            drawCrawl();
             break;
 
         case State.BRIEFING:

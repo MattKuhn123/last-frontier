@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"C:\\\\Users\\\\Matt K\\\\IdeaProjects\\\\claude-experiment\\\\js\"\" && echo \"---\" && ls -la \"C:UsersMatt KIdeaProjectsclaude-experimentcss\"\")"
+    ]
+  }
+}

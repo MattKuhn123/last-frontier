@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Last Frontier</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game"></canvas>
+
+        <!-- Debug Panel (toggle with ` backtick) -->
+        <div id="debug-panel"></div>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div id="score">000000</div>
+            <div id="lives"></div>
+            <div id="mission-title"></div>
+        </div>
+
+        <!-- Boss Health Bar -->
+        <div id="boss-health-bar" class="hidden">
+            <div id="boss-health-fill"></div>
+        </div>
+
+        <!-- Dialogue Box -->
+        <div id="dialogue-box" class="hidden">
+            <span id="dialogue-speaker"></span>
+            <span id="dialogue-text"></span>
+            <span id="dialogue-prompt">[SPACE]</span>
+        </div>
+
+        <!-- Boss Choice Overlay -->
+        <div id="boss-choice" class="hidden">
+            <p id="boss-speech"></p>
+            <div>
+                <button id="choice-join">Join him</button>
+                <button id="choice-fight">Fight him</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+}
+
+#game-container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+}
+
+canvas {
+    border: 1px solid #333;
+    display: block;
+}
+
+/* --- HUD --- */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#hud.hidden {
+    display: none;
+}
+
+#score {
+    position: absolute;
+    top: 12px;
+    left: 20px;
+    font-size: 20px;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+#lives {
+    position: absolute;
+    top: 40px;
+    left: 20px;
+    display: flex;
+    gap: 5px;
+}
+
+#mission-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+#mission-title.visible {
+    opacity: 1;
+    animation: missionFade 3s ease-in-out forwards;
+}
+
+@keyframes missionFade {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* --- Dialogue Box --- */
+#dialogue-box {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid #444;
+    border-left: 3px solid #888;
+    padding: 14px 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    z-index: 20;
+    min-height: 50px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+#dialogue-box.hidden {
+    display: none;
+}
+
+#dialogue-speaker {
+    font-weight: bold;
+    white-space: nowrap;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+#dialogue-text {
+    color: #ccc;
+    flex: 1;
+    line-height: 1.4;
+}
+
+#dialogue-prompt {
+    font-size: 11px;
+    color: #666;
+    white-space: nowrap;
+    align-self: flex-end;
+}
+
+#dialogue-prompt.hidden {
+    visibility: hidden;
+}
+
+/* --- Boss Choice Overlay --- */
+#boss-choice {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 30;
+    padding: 40px;
+}
+
+#boss-choice.hidden {
+    display: none;
+}
+
+#boss-speech {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #f44;
+    max-width: 500px;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 40px;
+}
+
+#boss-choice button {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    padding: 12px 30px;
+    margin: 8px;
+    cursor: pointer;
+    border: 1px solid;
+    background: transparent;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+}
+
+#choice-join {
+    color: #f44;
+    border-color: #f44;
+}
+
+#choice-join:hover {
+    background: #f44;
+    color: #000;
+}
+
+#choice-fight {
+    color: #4f4;
+    border-color: #4f4;
+}
+
+#choice-fight:hover {
+    background: #4f4;
+    color: #000;
+}
+
+/* --- Boss Health Bar --- */
+#boss-health-bar {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 8px;
+    background: #222;
+    border: 1px solid #555;
+    z-index: 10;
+}
+
+#boss-health-bar.hidden {
+    display: none;
+}
+
+#boss-health-fill {
+    height: 100%;
+    width: 100%;
+    background: #f44;
+    transition: width 0.15s;
+}
+
+/* --- Debug Panel --- */
+#debug-panel {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 240px;
+    background: rgba(0, 0, 0, 0.85);
+    border-left: 1px solid #444;
+    padding: 10px;
+    overflow-y: auto;
+    z-index: 50;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: #ccc;
+}
+
+#debug-panel.visible {
+    display: block;
+}
+
+.debug-group {
+    color: #ff0;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 2px;
+}
+
+.debug-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+    gap: 6px;
+}
+
+.debug-row span {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+.debug-row input[type="number"] {
+    width: 70px;
+    background: #111;
+    border: 1px solid #444;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 2px 4px;
+    text-align: right;
+}
+
+.debug-check {
+    margin-bottom: 6px;
+    color: #4f4;
+}
+
+.debug-check input[type="checkbox"] {
+    margin-right: 6px;
+}

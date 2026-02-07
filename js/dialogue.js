@@ -7,7 +7,9 @@ const SPEAKER_COLORS = {
     SIERRA: '#4f4',
     TANGO: '#48f',
     HQ: '#ff0',
-    BOSS: '#f44'
+    BOSS: '#f44',
+    INTEL: '#f90',
+    DISPATCH: '#aaf'
 };
 
 let dialogueLines = [];

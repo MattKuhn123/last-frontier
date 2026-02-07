@@ -3,7 +3,11 @@ export const missions = [
     {
         id: 1,
         title: "Routine Patrol",
+        music: "combat",
         briefing: [
+            { speaker: "DISPATCH", text: "HQ, dispatch here. We're seeing increased debris density in the outer sectors. Shipping lanes are getting rougher by the day." },
+            { speaker: "HQ", text: "Noted. The Syndicate patrols are supposed to be keeping those lanes clear. That's what we contracted them for." },
+            { speaker: "DISPATCH", text: "Copy. Just flagging it. The haulers are starting to complain." },
             { speaker: "HQ", text: "Cole, patrol sector 7-G. Routine sweep." },
             { speaker: "HQ", text: "Should be quiet out there. Clear the debris and report back." }
         ],
@@ -24,7 +28,12 @@ export const missions = [
     {
         id: 2,
         title: "The Attack",
+        music: "combat",
         briefing: [
+            { speaker: "DISPATCH", text: "HQ, we've lost comms with two colonies in the outer ring. Vega-7 and Kepler Station both went dark in the last hour." },
+            { speaker: "INTEL", text: "I've been analyzing the comm blackout signatures. They match Syndicate military encryption. Not civilian channels — military." },
+            { speaker: "HQ", text: "That's... that can't be right. The Syndicate is a trade organization." },
+            { speaker: "INTEL", text: "Not anymore, sir. The jamming patterns are deliberate. This is coordinated." },
             { speaker: "HQ", text: "Cole, we're picking up unknown contacts in your sector." },
             { speaker: "HQ", text: "Confirmed Syndicate signatures. This is not a drill. Engage at will." }
         ],
@@ -45,8 +54,11 @@ export const missions = [
     {
         id: 3,
         title: "Rally Point",
+        music: "combat",
         briefing: [
-            { speaker: "HQ", text: "We're assigning you a wingman. Callsign Sierra. Rendezvous at rally point Theta." },
+            { speaker: "INTEL", text: "Situation update. The Syndicate has seized three more stations overnight. They're consolidating control across the outer territories." },
+            { speaker: "DISPATCH", text: "We're getting flooded with refugee ships on the inner lanes. Families, merchants — anyone who got out in time." },
+            { speaker: "HQ", text: "We're reassigning every combat-rated pilot we have. Cole, we're giving you a wingman. Callsign Sierra. Rendezvous at rally point Theta." },
             { speaker: "HQ", text: "Sierra is combat-rated. Let them do their job." },
             { speaker: "SIERRA", text: "Sierra on station. Ready." }
         ],
@@ -67,8 +79,11 @@ export const missions = [
     {
         id: 4,
         title: "Supply Run",
+        music: "combat",
         briefing: [
-            { speaker: "HQ", text: "Supply convoy needs escort through the belt. Keep them alive for 60 seconds." },
+            { speaker: "DISPATCH", text: "Colony Vega-3 is down to emergency rations. They've got maybe 48 hours before things get critical." },
+            { speaker: "INTEL", text: "The Syndicate is blockading the main supply routes. It's deliberate — they're starving out anyone who won't submit." },
+            { speaker: "HQ", text: "We've got a convoy ready to run the blockade. Cole, escort them through the belt. Keep them alive for 60 seconds." },
             { speaker: "HQ", text: "It's going to be tight in there. Stay sharp." },
             { speaker: "SIERRA", text: "Sierra standing by." }
         ],
@@ -89,7 +104,10 @@ export const missions = [
     {
         id: 5,
         title: "Reinforcements",
+        music: "combat",
         briefing: [
+            { speaker: "INTEL", text: "We're tracking Syndicate fleet movements near the Markov corridor. They're massing forces — something big is coming." },
+            { speaker: "DISPATCH", text: "HQ, we've lost contact with two more patrol units. That's five this week." },
             { speaker: "HQ", text: "Cole, we're assigning additional support. Callsign Tango." },
             { speaker: "HQ", text: "Tango specializes in hostile engagement. They'll prioritize enemy contacts." },
             { speaker: "TANGO", text: "Tango reporting. On your wing." }
@@ -111,9 +129,11 @@ export const missions = [
     {
         id: 6,
         title: "Syndicate Outpost",
+        music: "combat",
         briefing: [
-            { speaker: "HQ", text: "Intel shows a Syndicate outpost in the Kepler belt. Heavy presence." },
-            { speaker: "HQ", text: "If we take it out, we cripple their supply line. You have the green light." },
+            { speaker: "INTEL", text: "We've decoded Syndicate logistics data. There's an outpost in the Kepler belt — it's their regional supply hub. Everything flows through it." },
+            { speaker: "DISPATCH", text: "Sierra and Tango are both in range. We can hit it now." },
+            { speaker: "HQ", text: "This is our first real shot at pushing back. Cole, take that outpost out and we cripple their supply line. You have the green light." },
             { speaker: "TANGO", text: "Copy. Weapons hot." }
         ],
         asteroidCount: 8,
@@ -133,8 +153,11 @@ export const missions = [
     {
         id: 7,
         title: "Corrupt Patrol",
+        music: "combat",
         briefing: [
-            { speaker: "HQ", text: "Cole... we have a problem. Sector patrol is moving to intercept you." },
+            { speaker: "DISPATCH", text: "HQ, I'm picking up friendly IFF transponders on an intercept course with Cole. It's one of our own patrols." },
+            { speaker: "INTEL", text: "I've been monitoring their comm traffic. It switched to Syndicate encryption about 12 hours ago. They've been turned." },
+            { speaker: "HQ", text: "Cole... we have a problem. That patrol is moving to intercept you." },
             { speaker: "HQ", text: "They were supposed to be on our side. Syndicate bought them out." },
             { speaker: "HQ", text: "They're hostile now. Weapons free." },
             { speaker: "SIERRA", text: "Understood." }
@@ -156,7 +179,10 @@ export const missions = [
     {
         id: 8,
         title: "The Gauntlet",
+        music: "combat",
         briefing: [
+            { speaker: "INTEL", text: "The Syndicate has pulled forces from three sectors. All of them are converging on Cole's position. This is their full commitment." },
+            { speaker: "DISPATCH", text: "Colonies across the frontier are monitoring our comms. Everyone knows what's happening out here. This is the tipping point." },
             { speaker: "HQ", text: "Final push. The Syndicate is throwing everything they have at us." },
             { speaker: "SIERRA", text: "Sierra ready." },
             { speaker: "TANGO", text: "Tango ready." },
@@ -180,7 +206,10 @@ export const missions = [
     {
         id: 9,
         title: "The Syndicate Boss",
+        music: "combat",
         briefing: [
+            { speaker: "INTEL", text: "We've identified the contact. It's him — the Syndicate's founder. The one who orchestrated this entire takeover." },
+            { speaker: "DISPATCH", text: "All comms from the outer colonies have gone silent. Everyone's listening. Everyone's waiting." },
             { speaker: "HQ", text: "One contact on sensors. Big signature. That's him, Cole." },
             { speaker: "BOSS", text: "Cole. I've been watching you. Impressive." },
             { speaker: "HQ", text: "Don't listen to him. Stay focused." },

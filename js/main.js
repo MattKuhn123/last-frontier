@@ -13,6 +13,7 @@ import { checkCollisions } from './collisions.js';
 import { updateScore, updateLives, showMissionTitle, resetHud, showHud, hideHud } from './hud.js';
 import { startDialogue, hideDialogue } from './dialogue.js';
 import { missions } from './missions.js';
+import { playTrack, stopTrack, fadeOut, initAudioContext } from './music.js';
 
 // --- Game States ---
 const State = {
@@ -23,7 +24,19 @@ const State = {
     MISSION_COMPLETE: 'MISSION_COMPLETE',
     BOSS_CHOICE: 'BOSS_CHOICE',
     ENDING: 'ENDING',
-    GAME_OVER: 'GAME_OVER'
+    GAME_OVER: 'GAME_OVER',
+    TRANSITION: 'TRANSITION'
+};
+
+const stateMusic = {
+    [State.TITLE]:            "zen",
+    [State.CRAWL]:            "strategy",
+    [State.BRIEFING]:         "strategy",
+    [State.PLAYING]:          null, // ignored — uses mission.music instead
+    [State.MISSION_COMPLETE]: "easy",
+    [State.BOSS_CHOICE]:      null,
+    [State.ENDING]:           "victory",
+    [State.GAME_OVER]:        "you-lost",
 };
 
 let state = State.TITLE;
@@ -36,6 +49,22 @@ let surviveTimer = 0;
 let wingmanSpawned = false;
 let paused = false;
 let endingType = null; // 'join' or 'fight'
+
+// --- Transition System ---
+const TRANSITION_FADE_FRAMES = 60;  // ~1s music fade
+const TRANSITION_HOLD_FRAMES = 30;  // ~0.5s silence
+const TRANSITION_TOTAL = TRANSITION_FADE_FRAMES + TRANSITION_HOLD_FRAMES;
+let transitionTimer = 0;
+let transitionCallback = null;
+
+function transitionTo(callback) {
+    if (state === State.TRANSITION) return;
+    state = State.TRANSITION;
+    transitionTimer = TRANSITION_TOTAL;
+    transitionCallback = callback;
+    hideDialogue();
+    fadeOut(TRANSITION_FADE_FRAMES / 60);
+}
 
 // --- Opening Crawl ---
 const crawlLines = [
@@ -69,12 +98,13 @@ let crawlLineIndex = 0;
 let crawlFadeTimer = 0;
 let crawlAlpha = 0;
 const CRAWL_FADE_IN = 40;    // frames to fade in
-const CRAWL_HOLD = 80;       // frames to hold at full
+const CRAWL_HOLD = 320;       // frames to hold at full
 const CRAWL_FADE_OUT = 30;   // frames to fade out
 const CRAWL_GAP = 10;        // frames of black between lines
 
 function startCrawl() {
     state = State.CRAWL;
+    playTrack(stateMusic[State.CRAWL]);
     crawlLineIndex = 0;
     crawlFadeTimer = 0;
     crawlAlpha = 0;
@@ -142,13 +172,14 @@ function drawCrawl() {
 // --- Title Screen ---
 function showTitle() {
     state = State.TITLE;
+    playTrack(stateMusic[State.TITLE]);
     hideHud();
     hideDialogue();
     hideBossHealthBar();
     setTitleStartCallback(() => {
         if (state === State.TITLE) {
             setTitleStartCallback(null);
-            startCrawl();
+            transitionTo(startCrawl);
         }
     });
 }
@@ -167,6 +198,7 @@ function startNewGame() {
 // --- Briefing ---
 function startBriefing() {
     state = State.BRIEFING;
+    playTrack(stateMusic[State.BRIEFING]);
     const mission = missions[currentMissionIndex];
 
     // Clear gameplay
@@ -183,7 +215,7 @@ function startBriefing() {
     updateLives(lives);
 
     startDialogue(mission.briefing, () => {
-        startMission();
+        transitionTo(startMission);
     });
 }
 
@@ -191,6 +223,7 @@ function startBriefing() {
 function startMission() {
     state = State.PLAYING;
     const mission = missions[currentMissionIndex];
+    playTrack(mission.music);
 
     createShip();
     setInvincible(config.INVINCIBLE_DURATION);
@@ -227,6 +260,7 @@ function startMission() {
 // --- Mission Complete ---
 function missionComplete() {
     state = State.MISSION_COMPLETE;
+    playTrack(stateMusic[State.MISSION_COMPLETE]);
     const mission = missions[currentMissionIndex];
 
     if (mission.completionDialogue.length > 0) {
@@ -241,15 +275,16 @@ function missionComplete() {
 function advanceToNextMission() {
     currentMissionIndex++;
     if (currentMissionIndex >= missions.length) {
-        showEnding('fight'); // shouldn't happen, boss handles this
+        transitionTo(() => showEnding('fight')); // shouldn't happen, boss handles this
     } else {
-        startBriefing();
+        transitionTo(startBriefing);
     }
 }
 
 // --- Boss Choice ---
 function showBossChoice() {
     state = State.BOSS_CHOICE;
+    playTrack(stateMusic[State.BOSS_CHOICE]);
     const choiceEl = document.getElementById('boss-choice');
     const speechEl = document.getElementById('boss-speech');
     choiceEl.classList.remove('hidden');
@@ -257,17 +292,18 @@ function showBossChoice() {
 
     document.getElementById('choice-join').onclick = () => {
         choiceEl.classList.add('hidden');
-        showEnding('join');
+        transitionTo(() => showEnding('join'));
     };
     document.getElementById('choice-fight').onclick = () => {
         choiceEl.classList.add('hidden');
-        showEnding('fight');
+        transitionTo(() => showEnding('fight'));
     };
 }
 
 // --- Endings ---
 function showEnding(type) {
     state = State.ENDING;
+    playTrack(stateMusic[State.ENDING]);
     endingType = type;
     hideBossHealthBar();
     hideHud();
@@ -279,7 +315,7 @@ function showEnding(type) {
         setTitleStartCallback(() => {
             if (state === State.ENDING) {
                 setTitleStartCallback(null);
-                showTitle();
+                transitionTo(showTitle);
             }
         });
     }, 500);
@@ -288,6 +324,7 @@ function showEnding(type) {
 // --- Game Over ---
 function triggerGameOver() {
     state = State.GAME_OVER;
+    playTrack(stateMusic[State.GAME_OVER]);
     hideDialogue();
     hideBossHealthBar();
     hideHud();
@@ -295,7 +332,7 @@ function triggerGameOver() {
     setTitleStartCallback(() => {
         if (state === State.GAME_OVER) {
             setTitleStartCallback(null);
-            startNewGame();
+            transitionTo(startNewGame);
         }
     });
 }
@@ -309,7 +346,7 @@ function handlePlayerDeath() {
     lives--;
     updateLives(lives);
     if (lives <= 0) {
-        triggerGameOver();
+        transitionTo(triggerGameOver);
     } else {
         resetShip();
     }
@@ -321,12 +358,12 @@ function checkObjectives() {
 
     if (mission.objective === 'clear') {
         if (asteroids.length === 0 && enemies.length === 0 && enemiesSpawned >= mission.enemies) {
-            missionComplete();
+            transitionTo(missionComplete);
         }
     } else if (mission.objective === 'survive') {
         surviveTimer--;
         if (surviveTimer <= 0) {
-            missionComplete();
+            transitionTo(missionComplete);
         }
     }
     // 'boss' objective is handled by boss defeat
@@ -529,7 +566,7 @@ function gameLoop() {
                 if (state !== State.PLAYING) break; // died for good
             }
             if (result.bossDefeated) {
-                showBossChoice();
+                transitionTo(showBossChoice);
                 break;
             }
 
@@ -571,10 +608,30 @@ function gameLoop() {
             updateParticles();
             drawGameOverScreen();
             break;
+
+        case State.TRANSITION:
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            transitionTimer--;
+            if (transitionTimer <= 0) {
+                stopTrack();
+                transitionCallback();
+            }
+            break;
     }
 }
 
 // --- Start ---
 buildDebugPanel();
+
+// Resume AudioContext on first user interaction (browser autoplay policy)
+function onFirstInteraction() {
+    initAudioContext();
+    document.removeEventListener('keydown', onFirstInteraction);
+    document.removeEventListener('click', onFirstInteraction);
+}
+document.addEventListener('keydown', onFirstInteraction);
+document.addEventListener('click', onFirstInteraction);
+
 showTitle();
 gameLoop();

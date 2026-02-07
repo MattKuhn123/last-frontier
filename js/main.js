@@ -629,6 +629,7 @@ function onFirstInteraction() {
     initAudioContext();
     document.removeEventListener('keydown', onFirstInteraction);
     document.removeEventListener('click', onFirstInteraction);
+    playTrack(stateMusic[state]);
 }
 document.addEventListener('keydown', onFirstInteraction);
 document.addEventListener('click', onFirstInteraction);

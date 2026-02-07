@@ -513,8 +513,16 @@ function drawSurviveTimer() {
 }
 
 // --- Main Game Loop ---
-function gameLoop() {
+const TARGET_FPS = 60;
+const FRAME_DURATION = 1000 / TARGET_FPS;
+let lastFrameTime = 0;
+
+function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
+
+    const elapsed = timestamp - lastFrameTime;
+    if (elapsed < FRAME_DURATION) return;
+    lastFrameTime = timestamp - (elapsed % FRAME_DURATION);
 
     switch (state) {
         case State.TITLE:

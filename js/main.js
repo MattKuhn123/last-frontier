@@ -13,7 +13,26 @@ import { checkCollisions } from './collisions.js';
 import { updateScore, updateLives, showMissionTitle, resetHud, showHud, hideHud } from './hud.js';
 import { startDialogue, hideDialogue } from './dialogue.js';
 import { missions } from './missions.js';
-import { playTrack, stopTrack, fadeOut, initAudioContext } from './music.js';
+import { playTrack, stopTrack, fadeOut, initAudioContext, playExplosionSFX } from './music.js';
+
+// --- Screen Shake ---
+const SHAKE_DURATION = 80;
+let shakeTimer = 0;
+let shakeIntensity = 75;
+
+function triggerScreenShake() {
+    shakeTimer = SHAKE_DURATION;
+}
+
+// --- Hit Flash ---
+const hitFlashEl = document.getElementById('hit-flash');
+
+function triggerHitFlash() {
+    hitFlashEl.classList.remove('active');
+    // Force reflow so re-adding the class restarts the animation
+    void hitFlashEl.offsetWidth;
+    hitFlashEl.classList.add('active');
+}
 
 // --- Game States ---
 const State = {
@@ -339,6 +358,9 @@ function triggerGameOver() {
 
 // --- Player Death ---
 function handlePlayerDeath() {
+    triggerScreenShake();
+    playExplosionSFX();
+    triggerHitFlash();
     if (config.infiniteLives) {
         resetShip();
         return;
@@ -586,6 +608,17 @@ function gameLoop(timestamp) {
                 checkObjectives();
             }
 
+            // Apply screen shake
+            ctx.save();
+            if (shakeTimer > 0) {
+                const intensity = shakeIntensity * (shakeTimer / SHAKE_DURATION);
+                ctx.translate(
+                    (Math.random() - 0.5) * intensity,
+                    (Math.random() - 0.5) * intensity
+                );
+                shakeTimer--;
+            }
+
             // Draw
             drawAsteroids();
             drawEnemies();
@@ -595,6 +628,8 @@ function gameLoop(timestamp) {
             drawWingmen();
             drawParticles();
             drawSurviveTimer();
+
+            ctx.restore();
             break;
 
         case State.BOSS_CHOICE:

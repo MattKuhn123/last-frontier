@@ -85,6 +85,27 @@ canvas {
     100% { opacity: 0; }
 }
 
+/* --- Hit Flash --- */
+#hit-flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 15;
+    opacity: 0;
+}
+
+#hit-flash.active {
+    animation: hitFlash 0.4s ease-out forwards;
+}
+
+@keyframes hitFlash {
+    0% { opacity: 1; background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 0, 0, 0.6) 100%); }
+    100% { opacity: 0; background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 0, 0, 0.6) 100%); }
+}
+
 /* --- Dialogue Box --- */
 #dialogue-box {
     position: absolute;

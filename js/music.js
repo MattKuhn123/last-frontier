@@ -119,6 +119,16 @@ export function stopTrack() {
     resetGain();
 }
 
+export async function playExplosionSFX() {
+    if (!audioCtx) return;
+    const buf = await loadBuffer('sfx/explosion.wav');
+    if (!buf) return;
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(audioCtx.destination);
+    src.start();
+}
+
 export function fadeOut(durationSecs) {
     if (!audioCtx || !gainNode) return;
     const now = audioCtx.currentTime;

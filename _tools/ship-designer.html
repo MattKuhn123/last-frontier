@@ -127,6 +127,7 @@
         <button class="btn btn-download" id="download-btn">Download shapes.js</button>
         <button class="btn btn-action" id="copy-btn">Copy JSON</button>
         <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+        <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
     </div>
 
 <script>
@@ -621,6 +622,42 @@ document.getElementById('apply-btn').onclick = () => {
     }
     setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
 };
+
+// --- Save as Default (dev server only) ---
+if (location.hostname === 'localhost' && location.port === '8080') {
+    const defBtn = document.getElementById('default-btn');
+    defBtn.style.display = '';
+    defBtn.onclick = () => {
+        function formatVerts(vertices) {
+            return vertices.map(v => `[${roundDisplay(v[0])}, ${roundDisplay(v[1])}]`).join(', ');
+        }
+        const content = `// --- Ship Shape Definitions ---\n` +
+            `// Each shape is an array of [x, y] vertex pairs normalized to size 1.\n` +
+            `// Nose points "up" at (0, -1). The game rotates to face movement direction.\n\n` +
+            `export const shapes = {\n` +
+            `    player: [\n        ${formatVerts(allShapes.player)}\n    ],\n` +
+            `    enemy: [\n        ${formatVerts(allShapes.enemy)}\n    ],\n` +
+            `    wingman: [\n        ${formatVerts(allShapes.wingman)}\n    ],\n` +
+            `    boss: [\n        ${formatVerts(allShapes.boss)}\n    ]\n};\n\n` +
+            `// Draws a shape polygon. Call within a ctx.save()/restore() block\n` +
+            `// that has already set translate, rotate, strokeStyle, and lineWidth.\n` +
+            `export function strokeShape(ctx, vertices, size) {\n` +
+            `    ctx.beginPath();\n` +
+            `    for (let i = 0; i < vertices.length; i++) {\n` +
+            `        const px = vertices[i][0] * size;\n` +
+            `        const py = vertices[i][1] * size;\n` +
+            `        if (i === 0) ctx.moveTo(px, py);\n` +
+            `        else ctx.lineTo(px, py);\n` +
+            `    }\n` +
+            `    ctx.closePath();\n` +
+            `    ctx.stroke();\n}\n`;
+        fetch('/api/save-shapes', { method: 'POST', body: content })
+            .then(r => r.json())
+            .then(() => { defBtn.textContent = 'Saved!'; })
+            .catch(() => { defBtn.textContent = 'Error'; })
+            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
+    };
+}
 
 // --- Init ---
 renderPresets();

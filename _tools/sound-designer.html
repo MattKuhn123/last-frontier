@@ -123,6 +123,7 @@
 
     <div class="file-row">
         <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+        <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
         <span class="apply-hint" style="color:#555;font-size:11px;">Saves current sound as the in-game explosion</span>
     </div>
 
@@ -447,6 +448,27 @@ document.getElementById('apply-btn').onclick = () => {
     document.getElementById('apply-btn').textContent = 'Applied!';
     setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
 };
+
+// --- Save as Default (dev server only, writes .wav to sfx/) ---
+if (location.hostname === 'localhost' && location.port === '8080') {
+    const defBtn = document.getElementById('default-btn');
+    defBtn.style.display = '';
+    defBtn.onclick = () => {
+        const params = readParams();
+        const samples = synthesize(params);
+        const wav = samplesToWav(samples);
+        const filename = (document.getElementById('filename').value.trim() || 'explosion') + '.wav';
+        fetch('/api/save-sfx/' + encodeURIComponent(filename), {
+            method: 'POST',
+            headers: { 'Content-Type': 'audio/wav' },
+            body: wav
+        })
+            .then(r => r.json())
+            .then(() => { defBtn.textContent = 'Saved!'; })
+            .catch(() => { defBtn.textContent = 'Error'; })
+            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
+    };
+}
 
 // --- Init ---
 renderPresets();

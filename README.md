@@ -18,7 +18,31 @@ python -m http.server
 
 If you're using an IDE like WebStorm or VS Code (with Live Server), opening `index.html` from the IDE works out of the box.
 
+## Mods
+
+Players can customize the game using the built-in tools — links appear at the bottom of the title screen. Each tool has an **Apply to Game** button that saves changes to localStorage. The game loads these overrides at startup.
+
+- **Config** — tweak ship speed, bullet lifetime, boss HP, and all other physics values
+- **Ships** — redesign the player, enemy, wingman, and boss ship shapes
+- **Sounds** — design a custom explosion sound effect with noise + tone synthesis
+
+When mods are active, the title screen shows **MODS ACTIVE** with a **Reset Mods** button to clear everything back to defaults.
+
+The in-game debug panel (toggle with `` ` ``) also has a **Save as Mod** button — tweak values at runtime, save, and they persist across reloads.
+
 ## Dev Tools
+
+### Dev Server (`dev-server.js`)
+
+The tools' **Download** buttons generate correct source files that you can manually drop into the project. If you want one-click convenience, the dev server adds write endpoints so the tools can overwrite source files directly:
+
+```
+node dev-server.js
+```
+
+This serves the game at `http://localhost:8080` just like `http-server`, but also exposes `POST /api/save-config`, `/api/save-shapes`, and `/api/save-sfx/<file>.wav`. When the tools detect they're running on `localhost:8080`, a **Save as Default** button appears that writes directly to `js/config.js`, `js/shapes.js`, or `sfx/*.wav`.
+
+A plain static server (`npx http-server`) can't write files, so the **Save as Default** buttons only appear with the dev server. The **Download** buttons and **Apply to Game** (localStorage mods) work everywhere regardless.
 
 ### Sound Designer (`_tools/sound-designer.html`)
 
@@ -28,6 +52,7 @@ Browser-based tool for creating game sound effects. Open it directly in your bro
 - **Play** to hear the result instantly, or enable **Auto-play** to hear changes as you tweak
 - Built-in presets: Explosion, Laser, Hit, Powerup, Thud
 - **Save Preset** stores custom sounds in localStorage
+- **Apply to Game** saves synth params to localStorage — the game synthesizes the sound at runtime instead of playing the `.wav`
 - **Download** exports a `.wav` file — move it to `sfx/` and reference it in `music.js`
 
 ### Ship Designer (`_tools/ship-designer.html`)
@@ -43,9 +68,8 @@ Browser-based tool for designing ship shapes. Open it directly in your browser.
 - The rotating preview on the right shows the ship at game scale
 - **Save Preset** stores shapes in localStorage for later
 - **Copy JSON** copies the vertex array to clipboard
+- **Apply to Game** saves changed shapes to localStorage as a mod
 - **Download shapes.js** generates the full module with all 4 ship types
-
-To apply your designs: click **Download shapes.js** and replace `js/shapes.js` with the downloaded file.
 
 ### Config Sandbox (`_tools/config-sandbox.html`)
 
@@ -57,6 +81,5 @@ Passive visualization tool for tuning game physics. Open it directly in your bro
 - **Time to kill** — auto-fires at a boss, shows HP draining in real time with elapsed timer, theoretical TTK, and measured TTK; loops automatically
 - All config values have **sliders** on the right with per-value reset buttons
 - **Save Preset** stores config snapshots in localStorage
+- **Apply to Game** saves changed values to localStorage as a mod
 - **Download config.js** exports the full config module for the game
-
-To apply your tuning: click **Download config.js** and replace `js/config.js` with the downloaded file.

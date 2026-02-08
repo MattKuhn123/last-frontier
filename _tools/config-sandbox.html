@@ -61,6 +61,7 @@
             <button class="btn btn-download" id="download-btn">Download config.js</button>
             <button class="btn btn-action" id="reset-all-btn">Reset All</button>
             <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+            <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
         </div>
     </div>
 
@@ -733,6 +734,48 @@ document.getElementById('apply-btn').onclick = () => {
     }
     setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
 };
+
+// --- Save as Default (dev server only) ---
+if (location.hostname === 'localhost' && location.port === '8080') {
+    const defBtn = document.getElementById('default-btn');
+    defBtn.style.display = '';
+    defBtn.onclick = () => {
+        const content = `// --- Game Configuration ---\n\nexport const config = {\n` +
+            `    // Ship\n` +
+            `    SHIP_SIZE: ${config.SHIP_SIZE},\n` +
+            `    TURN_SPEED: ${config.TURN_SPEED},\n` +
+            `    THRUST_POWER: ${config.THRUST_POWER},\n` +
+            `    FRICTION: ${config.FRICTION},\n` +
+            `    INVINCIBLE_DURATION: ${config.INVINCIBLE_DURATION},\n\n` +
+            `    // Bullets\n` +
+            `    BULLET_SPEED: ${config.BULLET_SPEED},\n` +
+            `    BULLET_LIFETIME: ${config.BULLET_LIFETIME},\n` +
+            `    MAX_BULLETS: ${config.MAX_BULLETS},\n\n` +
+            `    // Asteroids\n` +
+            `    ASTEROID_SPEED: ${config.ASTEROID_SPEED},\n` +
+            `    ASTEROID_JAGGEDNESS: ${config.ASTEROID_JAGGEDNESS},\n\n` +
+            `    // Enemies\n` +
+            `    ENEMY_SIZE: ${config.ENEMY_SIZE},\n` +
+            `    ENEMY_SPEED: ${config.ENEMY_SPEED},\n` +
+            `    ENEMY_TURN_SPEED: ${config.ENEMY_TURN_SPEED},\n` +
+            `    ENEMY_FIRE_INTERVAL: ${config.ENEMY_FIRE_INTERVAL},\n` +
+            `    ENEMY_BULLET_SPEED: ${config.ENEMY_BULLET_SPEED},\n\n` +
+            `    // Wingmen\n` +
+            `    WINGMAN_DURATION: ${config.WINGMAN_DURATION},\n` +
+            `    WINGMAN_SPEED: ${config.WINGMAN_SPEED},\n\n` +
+            `    // Boss\n` +
+            `    BOSS_SIZE: ${config.BOSS_SIZE},\n` +
+            `    BOSS_MAX_HP: ${config.BOSS_MAX_HP},\n` +
+            `    BOSS_SPEED: ${config.BOSS_SPEED},\n\n` +
+            `    // Debug\n` +
+            `    infiniteLives: false\n};\n`;
+        fetch('/api/save-config', { method: 'POST', body: content })
+            .then(r => r.json())
+            .then(() => { defBtn.textContent = 'Saved!'; })
+            .catch(() => { defBtn.textContent = 'Error'; })
+            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
+    };
+}
 
 // --- Init ---
 buildSliders();

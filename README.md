@@ -25,6 +25,7 @@ Players can customize the game using the built-in tools — links appear at the 
 - **Config** — tweak ship speed, bullet lifetime, boss HP, and all other physics values
 - **Ships** — redesign the player, enemy, wingman, and boss ship shapes
 - **Sounds** — design a custom explosion sound effect with noise + tone synthesis
+- **Missions** — add, remove, reorder missions and edit all properties including dialogue
 
 When mods are active, the title screen shows **MODS ACTIVE** with a **Reset Mods** button to clear everything back to defaults.
 
@@ -40,7 +41,7 @@ The tools' **Download** buttons generate correct source files that you can manua
 node dev-server.js
 ```
 
-This serves the game at `http://localhost:8080` just like `http-server`, but also exposes `POST /api/save-config`, `/api/save-shapes`, and `/api/save-sfx/<file>.wav`. When the tools detect they're running on `localhost:8080`, a **Save as Default** button appears that writes directly to `js/config.js`, `js/shapes.js`, or `sfx/*.wav`.
+This serves the game at `http://localhost:8080` just like `http-server`, but also exposes `POST /api/save-config`, `/api/save-shapes`, `/api/save-missions`, and `/api/save-sfx/<file>.wav`. When the tools detect they're running on `localhost:8080`, a **Save as Default** button appears that writes directly to `js/config.js`, `js/shapes.js`, or `sfx/*.wav`.
 
 A plain static server (`npx http-server`) can't write files, so the **Save as Default** buttons only appear with the dev server. The **Download** buttons and **Apply to Game** (localStorage mods) work everywhere regardless.
 
@@ -83,3 +84,16 @@ Passive visualization tool for tuning game physics. Open it directly in your bro
 - **Save Preset** stores config snapshots in localStorage
 - **Apply to Game** saves changed values to localStorage as a mod
 - **Download config.js** exports the full config module for the game
+
+### Mission Editor (`_tools/mission-editor.html`)
+
+Browser-based tool for editing the game's mission sequence. Open it directly in your browser.
+
+- **Mission list** on the left shows all missions with objective tags — click to select, drag to reorder
+- **Add/delete** missions with the + button and per-mission x button
+- **Detail editor** on the right edits all mission properties: title, music, objective type, asteroid/enemy counts, spawn intervals, enemy type, wingman settings
+- **Survive time** field appears only for survive-objective missions
+- **Dialogue editors** for briefing and completion — add, remove, reorder lines with speaker and text fields
+- **Save Preset** stores mission sets in localStorage for later
+- **Apply to Game** saves the full mission array to localStorage as a mod — the game replaces its entire mission sequence on next load
+- Unlike config/shapes mods (which are partial patches), mission mods replace the entire array since missions can be added, removed, and reordered

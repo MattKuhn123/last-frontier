@@ -31,6 +31,7 @@ const MIME = {
 const WRITE_TARGETS = {
     '/api/save-config': 'js/config.js',
     '/api/save-shapes': 'js/shapes.js',
+    '/api/save-missions': 'js/missions.js',
 };
 
 function readBody(req) {

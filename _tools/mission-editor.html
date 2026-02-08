@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mission Editor — Last Frontier</title>
+    <link rel="stylesheet" href="tools.css">
+    <style>
+        body { padding: 20px; }
+        h1 { margin-bottom: 16px; }
+        h2 { margin-bottom: 8px; margin-top: 0; }
+        .btn { font-size: 12px; padding: 6px 16px; }
+
+        .toolbar {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 12px;
+        }
+
+        .editor-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        /* --- Mission List Panel --- */
+        .mission-list-panel {
+            width: 240px;
+            flex-shrink: 0;
+        }
+        .mission-list {
+            border: 1px solid #222;
+            background: #0a0a0a;
+            min-height: 100px;
+        }
+        .mission-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #1a1a1a;
+            user-select: none;
+        }
+        .mission-item:hover { background: #1a1a1a; }
+        .mission-item.selected { background: #1a2a1a; border-left: 2px solid #4f4; }
+        .mission-item.drag-over { border-top: 2px solid #4f4; }
+        .mission-item .index {
+            color: #555;
+            font-size: 10px;
+            width: 20px;
+            flex-shrink: 0;
+        }
+        .mission-item .title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 12px;
+        }
+        .mission-item .objective-tag {
+            font-size: 9px;
+            padding: 1px 4px;
+            border: 1px solid #444;
+            color: #888;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .mission-item .objective-tag.boss { border-color: #f44; color: #f44; }
+        .mission-item .objective-tag.survive { border-color: #fa4; color: #fa4; }
+        .mission-item .delete-mission {
+            color: #444;
+            cursor: pointer;
+            font-size: 14px;
+            flex-shrink: 0;
+            padding: 0 2px;
+        }
+        .mission-item .delete-mission:hover { color: #f44; }
+        .mission-item .drag-handle {
+            color: #333;
+            cursor: grab;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .mission-item .drag-handle:hover { color: #888; }
+        .add-mission-btn {
+            width: 100%;
+            padding: 8px;
+            background: transparent;
+            border: 1px dashed #333;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .add-mission-btn:hover { border-color: #4f4; color: #4f4; }
+
+        /* --- Detail Panel --- */
+        .detail-panel {
+            flex: 1;
+            min-width: 0;
+        }
+        .detail-panel .section {
+            border: 1px solid #222;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+        }
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .field-row label {
+            width: 130px;
+            flex-shrink: 0;
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .field-row input[type="text"],
+        .field-row input[type="number"],
+        .field-row select {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 5px 8px;
+            flex: 1;
+            min-width: 0;
+        }
+        .field-row input[type="checkbox"] {
+            accent-color: #4f4;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+        }
+        .checkbox-group label {
+            width: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #ccc;
+            font-size: 12px;
+            text-transform: none;
+        }
+
+        /* --- Dialogue Editor --- */
+        .dialogue-editor {
+            border: 1px solid #222;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        .dialogue-entry {
+            display: flex;
+            gap: 6px;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+        .dialogue-entry input[type="text"] {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 4px 6px;
+        }
+        .dialogue-entry .speaker-input { width: 80px; flex-shrink: 0; }
+        .dialogue-entry .text-input { flex: 1; min-width: 0; }
+        .dialogue-entry .drag-handle {
+            color: #333;
+            cursor: grab;
+            font-size: 11px;
+            padding: 4px 2px;
+        }
+        .dialogue-entry .drag-handle:hover { color: #888; }
+        .dialogue-entry .delete-line {
+            color: #444;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 3px 2px;
+        }
+        .dialogue-entry .delete-line:hover { color: #f44; }
+        .add-line-btn {
+            background: transparent;
+            border: 1px dashed #333;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+        .add-line-btn:hover { border-color: #4f4; color: #4f4; }
+
+        .no-selection {
+            color: #444;
+            font-size: 13px;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .action-row input[type="text"] { width: 120px; font-size: 12px; padding: 5px 8px; }
+    </style>
+</head>
+<body>
+    <h1>Mission Editor</h1>
+
+    <div class="toolbar">
+        <h2>Presets</h2>
+        <div class="preset-row" id="presets"></div>
+        <div class="action-row">
+            <input type="text" id="preset-name" placeholder="my-missions">
+            <button class="btn btn-save" id="save-btn">Save</button>
+            <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+            <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
+        </div>
+    </div>
+
+    <div class="editor-layout">
+        <div class="mission-list-panel">
+            <h2>Missions</h2>
+            <div class="mission-list" id="mission-list"></div>
+            <button class="add-mission-btn" id="add-mission-btn">+ Add Mission</button>
+        </div>
+
+        <div class="detail-panel" id="detail-panel">
+            <div class="no-selection">Select a mission to edit</div>
+        </div>
+    </div>
+
+<script>
+// ============================================================
+// DEFAULTS — mirrors js/missions.js
+// ============================================================
+const DEFAULTS = [
+    {
+        id: 1, title: "Routine Patrol", music: "combat",
+        briefing: [
+            { speaker: "DISPATCH", text: "HQ, dispatch here. We're seeing increased debris density in the outer sectors. Shipping lanes are getting rougher by the day." },
+            { speaker: "HQ", text: "Noted. The Syndicate patrols are supposed to be keeping those lanes clear. That's what we contracted them for." },
+            { speaker: "DISPATCH", text: "Copy. Just flagging it. The haulers are starting to complain." },
+            { speaker: "HQ", text: "Cole, patrol sector 7-G. Routine sweep." },
+            { speaker: "HQ", text: "Should be quiet out there. Clear the debris and report back." }
+        ],
+        asteroidCount: 4, asteroidSizes: [3], enemies: 0, enemySpawnInterval: 0,
+        enemyType: 'normal', wingmanAvailable: false, wingmanType: null,
+        objective: "clear", surviveTime: null,
+        completionDialogue: [
+            { speaker: "HQ", text: "Sector clear. Clean work, Cole." },
+            { speaker: "HQ", text: "Head back in. We've got another assignment brewing." }
+        ]
+    },
+    {
+        id: 2, title: "The Attack", music: "combat",
+        briefing: [
+            { speaker: "DISPATCH", text: "HQ, we've lost comms with two colonies in the outer ring. Vega-7 and Kepler Station both went dark in the last hour." },
+            { speaker: "INTEL", text: "I've been analyzing the comm blackout signatures. They match Syndicate military encryption. Not civilian channels \u2014 military." },
+            { speaker: "HQ", text: "That's... that can't be right. The Syndicate is a trade organization." },
+            { speaker: "INTEL", text: "Not anymore, sir. The jamming patterns are deliberate. This is coordinated." },
+            { speaker: "HQ", text: "Cole, we're picking up unknown contacts in your sector." },
+            { speaker: "HQ", text: "Confirmed Syndicate signatures. This is not a drill. Engage at will." }
+        ],
+        asteroidCount: 3, asteroidSizes: [3, 2], enemies: 3, enemySpawnInterval: 300,
+        enemyType: 'normal', wingmanAvailable: false, wingmanType: null,
+        objective: "clear", surviveTime: null,
+        completionDialogue: [
+            { speaker: "HQ", text: "Hostiles down. Good shooting." },
+            { speaker: "HQ", text: "What the Syndicate was doing out here... we don't know yet. Return to base." }
+        ]
+    },
+    {
+        id: 3, title: "Rally Point", music: "combat",
+        briefing: [
+            { speaker: "INTEL", text: "Situation update. The Syndicate has seized three more stations overnight. They're consolidating control across the outer territories." },
+            { speaker: "DISPATCH", text: "We're getting flooded with refugee ships on the inner lanes. Families, merchants \u2014 anyone who got out in time." },
+            { speaker: "HQ", text: "We're reassigning every combat-rated pilot we have. Cole, we're giving you a wingman. Callsign Sierra. Rendezvous at rally point Theta." },
+            { speaker: "HQ", text: "Sierra is combat-rated. Let them do their job." },
+            { speaker: "SIERRA", text: "Sierra on station. Ready." }
+        ],
+        asteroidCount: 5, asteroidSizes: [3, 2], enemies: 2, enemySpawnInterval: 360,
+        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'sierra',
+        objective: "clear", surviveTime: null,
+        completionDialogue: [
+            { speaker: "SIERRA", text: "Sector clear. Holding position." },
+            { speaker: "HQ", text: "Good. We're going to need all hands for what's coming." }
+        ]
+    },
+    {
+        id: 4, title: "Supply Run", music: "combat",
+        briefing: [
+            { speaker: "DISPATCH", text: "Colony Vega-3 is down to emergency rations. They've got maybe 48 hours before things get critical." },
+            { speaker: "INTEL", text: "The Syndicate is blockading the main supply routes. It's deliberate \u2014 they're starving out anyone who won't submit." },
+            { speaker: "HQ", text: "We've got a convoy ready to run the blockade. Cole, escort them through the belt. Keep them alive for 60 seconds." },
+            { speaker: "HQ", text: "It's going to be tight in there. Stay sharp." },
+            { speaker: "SIERRA", text: "Sierra standing by." }
+        ],
+        asteroidCount: 6, asteroidSizes: [3, 2, 1], enemies: 4, enemySpawnInterval: 240,
+        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'sierra',
+        objective: "survive", surviveTime: 60,
+        completionDialogue: [
+            { speaker: "HQ", text: "Convoy is through. Good work." },
+            { speaker: "SIERRA", text: "Confirmed. All clear." }
+        ]
+    },
+    {
+        id: 5, title: "Reinforcements", music: "combat",
+        briefing: [
+            { speaker: "INTEL", text: "We're tracking Syndicate fleet movements near the Markov corridor. They're massing forces \u2014 something big is coming." },
+            { speaker: "DISPATCH", text: "HQ, we've lost contact with two more patrol units. That's five this week." },
+            { speaker: "HQ", text: "Cole, we're assigning additional support. Callsign Tango." },
+            { speaker: "HQ", text: "Tango specializes in hostile engagement. They'll prioritize enemy contacts." },
+            { speaker: "TANGO", text: "Tango reporting. On your wing." }
+        ],
+        asteroidCount: 4, asteroidSizes: [3, 2], enemies: 5, enemySpawnInterval: 240,
+        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'tango',
+        objective: "clear", surviveTime: null,
+        completionDialogue: [
+            { speaker: "TANGO", text: "Contacts eliminated." },
+            { speaker: "HQ", text: "Solid work out there. Stay on comms." }
+        ]
+    },
+    {
+        id: 6, title: "Syndicate Outpost", music: "combat",
+        briefing: [
+            { speaker: "INTEL", text: "We've decoded Syndicate logistics data. There's an outpost in the Kepler belt \u2014 it's their regional supply hub. Everything flows through it." },
+            { speaker: "DISPATCH", text: "Sierra and Tango are both in range. We can hit it now." },
+            { speaker: "HQ", text: "This is our first real shot at pushing back. Cole, take that outpost out and we cripple their supply line. You have the green light." },
+            { speaker: "TANGO", text: "Copy. Weapons hot." }
+        ],
+        asteroidCount: 8, asteroidSizes: [3, 2, 1], enemies: 6, enemySpawnInterval: 200,
+        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'tango',
+        objective: "clear", surviveTime: null,
+        completionDialogue: [
+            { speaker: "SIERRA", text: "Outpost neutralized." },
+            { speaker: "HQ", text: "Good. But they'll retaliate. Be ready." }
+        ]
+    },
+    {
+        id: 7, title: "Corrupt Patrol", music: "combat",
+        briefing: [
+            { speaker: "DISPATCH", text: "HQ, I'm picking up friendly IFF transponders on an intercept course with Cole. It's one of our own patrols." },
+            { speaker: "INTEL", text: "I've been monitoring their comm traffic. It switched to Syndicate encryption about 12 hours ago. They've been turned." },
+            { speaker: "HQ", text: "Cole... we have a problem. That patrol is moving to intercept you." },
+            { speaker: "HQ", text: "They were supposed to be on our side. Syndicate bought them out." },
+            { speaker: "HQ", text: "They're hostile now. Weapons free." },
+            { speaker: "SIERRA", text: "Understood." }
+        ],
+        asteroidCount: 3, asteroidSizes: [3, 2], enemies: 6, enemySpawnInterval: 180,
+        enemyType: 'corrupt', wingmanAvailable: true, wingmanType: 'sierra',
+        objective: "clear", surviveTime: null,
+        completionDialogue: [
+            { speaker: "SIERRA", text: "All hostiles down." },
+            { speaker: "HQ", text: "Nobody wanted this, Cole. But it had to be done." }
+        ]
+    },
+    {
+        id: 8, title: "The Gauntlet", music: "combat",
+        briefing: [
+            { speaker: "INTEL", text: "The Syndicate has pulled forces from three sectors. All of them are converging on Cole's position. This is their full commitment." },
+            { speaker: "DISPATCH", text: "Colonies across the frontier are monitoring our comms. Everyone knows what's happening out here. This is the tipping point." },
+            { speaker: "HQ", text: "Final push. The Syndicate is throwing everything they have at us." },
+            { speaker: "SIERRA", text: "Sierra ready." },
+            { speaker: "TANGO", text: "Tango ready." },
+            { speaker: "HQ", text: "All units \u2014 this is it. Give them everything. HQ out." }
+        ],
+        asteroidCount: 8, asteroidSizes: [3, 2, 1], enemies: 8, enemySpawnInterval: 150,
+        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'sierra',
+        objective: "clear", surviveTime: null,
+        completionDialogue: [
+            { speaker: "TANGO", text: "Area secure." },
+            { speaker: "HQ", text: "Cole... we've found him. The Syndicate leader. Transmitting coordinates now." },
+            { speaker: "HQ", text: "This is a solo run. No backup in range. It's all on you." }
+        ]
+    },
+    {
+        id: 9, title: "The Syndicate Boss", music: "combat",
+        briefing: [
+            { speaker: "INTEL", text: "We've identified the contact. It's him \u2014 the Syndicate's founder. The one who orchestrated this entire takeover." },
+            { speaker: "DISPATCH", text: "All comms from the outer colonies have gone silent. Everyone's listening. Everyone's waiting." },
+            { speaker: "HQ", text: "One contact on sensors. Big signature. That's him, Cole." },
+            { speaker: "BOSS", text: "Cole. I've been watching you. Impressive." },
+            { speaker: "HQ", text: "Don't listen to him. Stay focused." },
+            { speaker: "BOSS", text: "You and I aren't so different. But you'll see that soon enough." }
+        ],
+        asteroidCount: 2, asteroidSizes: [2, 1], enemies: 0, enemySpawnInterval: 0,
+        enemyType: 'normal', wingmanAvailable: false, wingmanType: null,
+        objective: "boss", surviveTime: null,
+        completionDialogue: []
+    }
+];
+
+const MUSIC_TRACKS = ['combat', 'easy', 'scary', 'strategy', 'victory', 'you-lost', 'zen'];
+const OBJECTIVES = ['clear', 'survive', 'boss'];
+const ENEMY_TYPES = ['normal', 'corrupt'];
+const WINGMAN_TYPES = ['sierra', 'tango'];
+
+// Working copy
+let missions = JSON.parse(JSON.stringify(DEFAULTS));
+let selectedIndex = -1;
+
+// ============================================================
+// MISSION LIST
+// ============================================================
+const listEl = document.getElementById('mission-list');
+const detailEl = document.getElementById('detail-panel');
+
+let dragSrcIndex = null;
+
+function renderList() {
+    listEl.innerHTML = '';
+    missions.forEach((m, i) => {
+        const item = document.createElement('div');
+        item.className = 'mission-item' + (i === selectedIndex ? ' selected' : '');
+        item.draggable = true;
+        item.dataset.index = i;
+
+        const handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.textContent = '\u2261';
+
+        const idx = document.createElement('span');
+        idx.className = 'index';
+        idx.textContent = i + 1;
+
+        const title = document.createElement('span');
+        title.className = 'title';
+        title.textContent = m.title;
+
+        const tag = document.createElement('span');
+        tag.className = 'objective-tag' + (m.objective === 'boss' ? ' boss' : m.objective === 'survive' ? ' survive' : '');
+        tag.textContent = m.objective;
+
+        const del = document.createElement('span');
+        del.className = 'delete-mission';
+        del.textContent = '\u00d7';
+        del.onclick = (e) => {
+            e.stopPropagation();
+            missions.splice(i, 1);
+            if (selectedIndex >= missions.length) selectedIndex = missions.length - 1;
+            if (selectedIndex < 0) selectedIndex = -1;
+            renderList();
+            renderDetail();
+        };
+
+        item.append(handle, idx, title, tag, del);
+
+        item.onclick = () => { selectedIndex = i; renderList(); renderDetail(); };
+
+        // Drag events
+        item.addEventListener('dragstart', (e) => {
+            dragSrcIndex = i;
+            e.dataTransfer.effectAllowed = 'move';
+            item.style.opacity = '0.4';
+        });
+        item.addEventListener('dragend', () => { item.style.opacity = ''; });
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            item.classList.add('drag-over');
+        });
+        item.addEventListener('dragleave', () => { item.classList.remove('drag-over'); });
+        item.addEventListener('drop', (e) => {
+            e.preventDefault();
+            item.classList.remove('drag-over');
+            if (dragSrcIndex === null || dragSrcIndex === i) return;
+            const moved = missions.splice(dragSrcIndex, 1)[0];
+            missions.splice(i, 0, moved);
+            // Track selection
+            if (selectedIndex === dragSrcIndex) selectedIndex = i;
+            else if (dragSrcIndex < selectedIndex && i >= selectedIndex) selectedIndex--;
+            else if (dragSrcIndex > selectedIndex && i <= selectedIndex) selectedIndex++;
+            dragSrcIndex = null;
+            renderList();
+            renderDetail();
+        });
+
+        listEl.appendChild(item);
+    });
+}
+
+// ============================================================
+// DETAIL EDITOR
+// ============================================================
+function renderDetail() {
+    if (selectedIndex < 0 || selectedIndex >= missions.length) {
+        detailEl.innerHTML = '<div class="no-selection">Select a mission to edit</div>';
+        return;
+    }
+
+    const m = missions[selectedIndex];
+    detailEl.innerHTML = '';
+
+    // --- Core Properties ---
+    const coreSection = makeSection('Properties');
+
+    coreSection.appendChild(fieldRow('Title', textInput(m.title, v => { m.title = v; renderList(); })));
+    coreSection.appendChild(fieldRow('Music', selectInput(m.music, MUSIC_TRACKS, v => { m.music = v; })));
+    coreSection.appendChild(fieldRow('Objective', selectInput(m.objective, OBJECTIVES, v => {
+        m.objective = v;
+        renderList();
+        renderDetail(); // re-render to show/hide surviveTime
+    })));
+
+    if (m.objective === 'survive') {
+        coreSection.appendChild(fieldRow('Survive Time', numberInput(m.surviveTime || 60, 1, 600, v => { m.surviveTime = v; })));
+    }
+
+    detailEl.appendChild(coreSection);
+
+    // --- Enemies & Asteroids ---
+    const combatSection = makeSection('Combat');
+
+    combatSection.appendChild(fieldRow('Asteroids', numberInput(m.asteroidCount, 0, 50, v => { m.asteroidCount = v; })));
+    combatSection.appendChild(fieldRow('Asteroid Sizes', asteroidSizesCheckboxes(m)));
+    combatSection.appendChild(fieldRow('Enemies', numberInput(m.enemies, 0, 50, v => { m.enemies = v; })));
+    combatSection.appendChild(fieldRow('Spawn Interval', numberInput(m.enemySpawnInterval, 0, 1000, v => { m.enemySpawnInterval = v; })));
+    combatSection.appendChild(fieldRow('Enemy Type', selectInput(m.enemyType, ENEMY_TYPES, v => { m.enemyType = v; })));
+
+    detailEl.appendChild(combatSection);
+
+    // --- Wingman ---
+    const wingmanSection = makeSection('Wingman');
+
+    const wingmanCheckRow = fieldRow('Available', null);
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = m.wingmanAvailable;
+    cb.style.accentColor = '#4f4';
+    cb.onchange = () => { m.wingmanAvailable = cb.checked; renderDetail(); };
+    wingmanCheckRow.appendChild(cb);
+    wingmanSection.appendChild(wingmanCheckRow);
+
+    if (m.wingmanAvailable) {
+        wingmanSection.appendChild(fieldRow('Type', selectInput(m.wingmanType || 'sierra', WINGMAN_TYPES, v => { m.wingmanType = v; })));
+    }
+
+    detailEl.appendChild(wingmanSection);
+
+    // --- Briefing Dialogue ---
+    const briefingSection = makeSection('Briefing Dialogue');
+    briefingSection.appendChild(buildDialogueEditor(m.briefing, (updated) => { m.briefing = updated; }));
+    detailEl.appendChild(briefingSection);
+
+    // --- Completion Dialogue ---
+    const completionSection = makeSection('Completion Dialogue');
+    completionSection.appendChild(buildDialogueEditor(m.completionDialogue, (updated) => { m.completionDialogue = updated; }));
+    detailEl.appendChild(completionSection);
+}
+
+// ============================================================
+// FORM HELPERS
+// ============================================================
+function makeSection(title) {
+    const div = document.createElement('div');
+    div.className = 'section';
+    const h = document.createElement('h2');
+    h.textContent = title;
+    div.appendChild(h);
+    return div;
+}
+
+function fieldRow(labelText, inputEl) {
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    const lbl = document.createElement('label');
+    lbl.textContent = labelText;
+    row.appendChild(lbl);
+    if (inputEl) row.appendChild(inputEl);
+    return row;
+}
+
+function textInput(value, onChange) {
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = value;
+    inp.oninput = () => onChange(inp.value);
+    return inp;
+}
+
+function numberInput(value, min, max, onChange) {
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.value = value;
+    inp.min = min;
+    inp.max = max;
+    inp.oninput = () => onChange(parseInt(inp.value) || 0);
+    return inp;
+}
+
+function selectInput(value, options, onChange) {
+    const sel = document.createElement('select');
+    for (const opt of options) {
+        const o = document.createElement('option');
+        o.value = opt;
+        o.textContent = opt;
+        if (opt === value) o.selected = true;
+        sel.appendChild(o);
+    }
+    sel.onchange = () => onChange(sel.value);
+    return sel;
+}
+
+function asteroidSizesCheckboxes(mission) {
+    const group = document.createElement('div');
+    group.className = 'checkbox-group';
+    const sizes = [
+        { val: 3, label: 'Large' },
+        { val: 2, label: 'Medium' },
+        { val: 1, label: 'Small' }
+    ];
+    for (const s of sizes) {
+        const lbl = document.createElement('label');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = mission.asteroidSizes.includes(s.val);
+        cb.onchange = () => {
+            if (cb.checked) {
+                if (!mission.asteroidSizes.includes(s.val)) {
+                    mission.asteroidSizes.push(s.val);
+                    mission.asteroidSizes.sort((a, b) => b - a);
+                }
+            } else {
+                mission.asteroidSizes = mission.asteroidSizes.filter(v => v !== s.val);
+            }
+        };
+        lbl.append(cb, ' ' + s.label);
+        group.appendChild(lbl);
+    }
+    return group;
+}
+
+// ============================================================
+// DIALOGUE EDITOR
+// ============================================================
+function buildDialogueEditor(lines, onUpdate) {
+    const container = document.createElement('div');
+    container.className = 'dialogue-editor';
+
+    let dragLineSrc = null;
+
+    function rebuild() {
+        container.innerHTML = '';
+        lines.forEach((line, i) => {
+            const entry = document.createElement('div');
+            entry.className = 'dialogue-entry';
+            entry.draggable = true;
+            entry.dataset.lineIndex = i;
+
+            const handle = document.createElement('span');
+            handle.className = 'drag-handle';
+            handle.textContent = '\u2261';
+
+            const speaker = document.createElement('input');
+            speaker.type = 'text';
+            speaker.className = 'speaker-input';
+            speaker.value = line.speaker;
+            speaker.placeholder = 'SPEAKER';
+            speaker.oninput = () => { line.speaker = speaker.value; onUpdate(lines); };
+
+            const text = document.createElement('input');
+            text.type = 'text';
+            text.className = 'text-input';
+            text.value = line.text;
+            text.placeholder = 'Dialogue text...';
+            text.oninput = () => { line.text = text.value; onUpdate(lines); };
+
+            const del = document.createElement('span');
+            del.className = 'delete-line';
+            del.textContent = '\u00d7';
+            del.onclick = () => {
+                lines.splice(i, 1);
+                onUpdate(lines);
+                rebuild();
+            };
+
+            entry.append(handle, speaker, text, del);
+
+            // Drag reorder
+            entry.addEventListener('dragstart', (e) => {
+                dragLineSrc = i;
+                e.dataTransfer.effectAllowed = 'move';
+                entry.style.opacity = '0.4';
+            });
+            entry.addEventListener('dragend', () => { entry.style.opacity = ''; });
+            entry.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                entry.style.borderTop = '2px solid #4f4';
+            });
+            entry.addEventListener('dragleave', () => { entry.style.borderTop = ''; });
+            entry.addEventListener('drop', (e) => {
+                e.preventDefault();
+                entry.style.borderTop = '';
+                if (dragLineSrc === null || dragLineSrc === i) return;
+                const moved = lines.splice(dragLineSrc, 1)[0];
+                lines.splice(i, 0, moved);
+                onUpdate(lines);
+                dragLineSrc = null;
+                rebuild();
+            });
+
+            container.appendChild(entry);
+        });
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-line-btn';
+        addBtn.textContent = '+ Add Line';
+        addBtn.onclick = () => {
+            lines.push({ speaker: 'HQ', text: '' });
+            onUpdate(lines);
+            rebuild();
+            // Focus the new text input
+            const entries = container.querySelectorAll('.dialogue-entry');
+            const last = entries[entries.length - 1];
+            if (last) last.querySelector('.text-input').focus();
+        };
+        container.appendChild(addBtn);
+    }
+
+    rebuild();
+    return container;
+}
+
+// ============================================================
+// ADD MISSION
+// ============================================================
+document.getElementById('add-mission-btn').onclick = () => {
+    const newMission = {
+        id: missions.length + 1,
+        title: 'New Mission',
+        music: 'combat',
+        briefing: [{ speaker: 'HQ', text: '' }],
+        asteroidCount: 4,
+        asteroidSizes: [3],
+        enemies: 0,
+        enemySpawnInterval: 0,
+        enemyType: 'normal',
+        wingmanAvailable: false,
+        wingmanType: null,
+        objective: 'clear',
+        surviveTime: null,
+        completionDialogue: [{ speaker: 'HQ', text: '' }]
+    };
+    missions.push(newMission);
+    selectedIndex = missions.length - 1;
+    renderList();
+    renderDetail();
+};
+
+// ============================================================
+// PRESETS
+// ============================================================
+function loadPresets() {
+    try { return JSON.parse(localStorage.getItem('mission-presets') || '{}'); } catch { return {}; }
+}
+function savePresets(p) { localStorage.setItem('mission-presets', JSON.stringify(p)); }
+
+function renderPresets() {
+    const row = document.getElementById('presets');
+    row.innerHTML = '';
+    const presets = loadPresets();
+    for (const name of Object.keys(presets)) {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.innerHTML = `${name} <span class="delete">\u00d7</span>`;
+        btn.querySelector('.delete').onclick = (e) => {
+            e.stopPropagation();
+            const p = loadPresets(); delete p[name]; savePresets(p); renderPresets();
+        };
+        btn.onclick = () => {
+            missions = JSON.parse(JSON.stringify(presets[name]));
+            selectedIndex = missions.length > 0 ? 0 : -1;
+            renderList();
+            renderDetail();
+        };
+        row.appendChild(btn);
+    }
+}
+
+document.getElementById('save-btn').onclick = () => {
+    const name = document.getElementById('preset-name').value.trim();
+    if (!name) return;
+    const presets = loadPresets();
+    presets[name] = JSON.parse(JSON.stringify(missions));
+    savePresets(presets);
+    document.getElementById('preset-name').value = '';
+    renderPresets();
+};
+
+document.getElementById('reset-all-btn').onclick = () => {
+    missions = JSON.parse(JSON.stringify(DEFAULTS));
+    selectedIndex = missions.length > 0 ? 0 : -1;
+    renderList();
+    renderDetail();
+};
+
+// ============================================================
+// APPLY TO GAME
+// ============================================================
+document.getElementById('apply-btn').onclick = () => {
+    // Reassign IDs based on position
+    const output = missions.map((m, i) => ({ ...m, id: i + 1 }));
+    localStorage.setItem('lf-mod-missions', JSON.stringify(output));
+    const btn = document.getElementById('apply-btn');
+    btn.textContent = 'Applied!';
+    setTimeout(() => { btn.textContent = 'Apply to Game'; }, 1500);
+};
+
+// ============================================================
+// SAVE AS DEFAULT (dev server only)
+// ============================================================
+if (location.hostname === 'localhost' && location.port === '8080') {
+    const defBtn = document.getElementById('default-btn');
+    defBtn.style.display = '';
+    defBtn.onclick = () => {
+        const output = missions.map((m, i) => ({ ...m, id: i + 1 }));
+        const content = generateMissionsJS(output);
+        fetch('/api/save-missions', { method: 'POST', body: content })
+            .then(r => r.json())
+            .then(() => { defBtn.textContent = 'Saved!'; })
+            .catch(() => { defBtn.textContent = 'Error'; })
+            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
+    };
+}
+
+function generateMissionsJS(missionArray) {
+    const indent = '    ';
+    const lines = ['// --- Mission Definitions ---', 'export const missions = ['];
+
+    missionArray.forEach((m, mi) => {
+        lines.push(indent + '{');
+        lines.push(indent + `    id: ${m.id},`);
+        lines.push(indent + `    title: ${JSON.stringify(m.title)},`);
+        lines.push(indent + `    music: ${JSON.stringify(m.music)},`);
+
+        // Briefing
+        lines.push(indent + '    briefing: [');
+        m.briefing.forEach(d => {
+            lines.push(indent + `        { speaker: ${JSON.stringify(d.speaker)}, text: ${JSON.stringify(d.text)} },`);
+        });
+        lines.push(indent + '    ],');
+
+        lines.push(indent + `    asteroidCount: ${m.asteroidCount},`);
+        lines.push(indent + `    asteroidSizes: [${m.asteroidSizes.join(', ')}],`);
+        lines.push(indent + `    enemies: ${m.enemies},`);
+        lines.push(indent + `    enemySpawnInterval: ${m.enemySpawnInterval},`);
+        lines.push(indent + `    enemyType: ${JSON.stringify(m.enemyType)},`);
+        lines.push(indent + `    wingmanAvailable: ${m.wingmanAvailable},`);
+        lines.push(indent + `    wingmanType: ${m.wingmanType === null ? 'null' : JSON.stringify(m.wingmanType)},`);
+        lines.push(indent + `    objective: ${JSON.stringify(m.objective)},`);
+        lines.push(indent + `    surviveTime: ${m.surviveTime === null ? 'null' : m.surviveTime},`);
+
+        // Completion dialogue
+        if (m.completionDialogue.length === 0) {
+            lines.push(indent + '    completionDialogue: []' + (m.objective === 'boss' ? ' // handled by boss choice' : ''));
+        } else {
+            lines.push(indent + '    completionDialogue: [');
+            m.completionDialogue.forEach(d => {
+                lines.push(indent + `        { speaker: ${JSON.stringify(d.speaker)}, text: ${JSON.stringify(d.text)} },`);
+            });
+            lines.push(indent + '    ]');
+        }
+
+        lines.push(indent + '}' + (mi < missionArray.length - 1 ? ',' : ''));
+    });
+
+    lines.push('];');
+    lines.push('');
+    return lines.join('\n');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// Load any existing mod as starting state
+try {
+    const existing = JSON.parse(localStorage.getItem('lf-mod-missions'));
+    if (Array.isArray(existing) && existing.length > 0) {
+        missions = existing;
+    }
+} catch {}
+
+selectedIndex = missions.length > 0 ? 0 : -1;
+renderList();
+renderDetail();
+renderPresets();
+</script>
+</body>
+</html>

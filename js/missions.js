@@ -9,20 +9,20 @@ export const missions = [
             { speaker: "HQ", text: "Noted. The Syndicate patrols are supposed to be keeping those lanes clear. That's what we contracted them for." },
             { speaker: "DISPATCH", text: "Copy. Just flagging it. The haulers are starting to complain." },
             { speaker: "HQ", text: "Cole, patrol sector 7-G. Routine sweep." },
-            { speaker: "HQ", text: "Should be quiet out there. Clear the debris and report back." }
+            { speaker: "HQ", text: "Should be quiet out there. Clear the debris and report back." },
         ],
         asteroidCount: 4,
         asteroidSizes: [3],
         enemies: 0,
         enemySpawnInterval: 0,
-        enemyType: 'normal',
+        enemyType: "normal",
         wingmanAvailable: false,
         wingmanType: null,
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
             { speaker: "HQ", text: "Sector clear. Clean work, Cole." },
-            { speaker: "HQ", text: "Head back in. We've got another assignment brewing." }
+            { speaker: "HQ", text: "Head back in. We've got another assignment brewing." },
         ]
     },
     {
@@ -35,20 +35,20 @@ export const missions = [
             { speaker: "HQ", text: "That's... that can't be right. The Syndicate is a trade organization." },
             { speaker: "INTEL", text: "Not anymore, sir. The jamming patterns are deliberate. This is coordinated." },
             { speaker: "HQ", text: "Cole, we're picking up unknown contacts in your sector." },
-            { speaker: "HQ", text: "Confirmed Syndicate signatures. This is not a drill. Engage at will." }
+            { speaker: "HQ", text: "Confirmed Syndicate signatures. This is not a drill. Engage at will." },
         ],
         asteroidCount: 3,
         asteroidSizes: [3, 2],
         enemies: 3,
         enemySpawnInterval: 300,
-        enemyType: 'normal',
+        enemyType: "normal",
         wingmanAvailable: false,
         wingmanType: null,
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
             { speaker: "HQ", text: "Hostiles down. Good shooting." },
-            { speaker: "HQ", text: "What the Syndicate was doing out here... we don't know yet. Return to base." }
+            { speaker: "HQ", text: "What the Syndicate was doing out here... we don't know yet. Return to base." },
         ]
     },
     {
@@ -60,20 +60,20 @@ export const missions = [
             { speaker: "DISPATCH", text: "We're getting flooded with refugee ships on the inner lanes. Families, merchants — anyone who got out in time." },
             { speaker: "HQ", text: "We're reassigning every combat-rated pilot we have. Cole, we're giving you a wingman. Callsign Sierra. Rendezvous at rally point Theta." },
             { speaker: "HQ", text: "Sierra is combat-rated. Let them do their job." },
-            { speaker: "SIERRA", text: "Sierra on station. Ready." }
+            { speaker: "SIERRA", text: "Sierra on station. Ready." },
         ],
         asteroidCount: 5,
         asteroidSizes: [3, 2],
         enemies: 2,
         enemySpawnInterval: 360,
-        enemyType: 'normal',
+        enemyType: "normal",
         wingmanAvailable: true,
-        wingmanType: 'sierra',
+        wingmanType: "sierra",
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
             { speaker: "SIERRA", text: "Sector clear. Holding position." },
-            { speaker: "HQ", text: "Good. We're going to need all hands for what's coming." }
+            { speaker: "HQ", text: "Good. We're going to need all hands for what's coming." },
         ]
     },
     {
@@ -85,20 +85,20 @@ export const missions = [
             { speaker: "INTEL", text: "The Syndicate is blockading the main supply routes. It's deliberate — they're starving out anyone who won't submit." },
             { speaker: "HQ", text: "We've got a convoy ready to run the blockade. Cole, escort them through the belt. Keep them alive for 60 seconds." },
             { speaker: "HQ", text: "It's going to be tight in there. Stay sharp." },
-            { speaker: "SIERRA", text: "Sierra standing by." }
+            { speaker: "SIERRA", text: "Sierra standing by." },
         ],
         asteroidCount: 6,
         asteroidSizes: [3, 2, 1],
         enemies: 4,
         enemySpawnInterval: 240,
-        enemyType: 'normal',
+        enemyType: "normal",
         wingmanAvailable: true,
-        wingmanType: 'sierra',
+        wingmanType: "sierra",
         objective: "survive",
         surviveTime: 60,
         completionDialogue: [
             { speaker: "HQ", text: "Convoy is through. Good work." },
-            { speaker: "SIERRA", text: "Confirmed. All clear." }
+            { speaker: "SIERRA", text: "Confirmed. All clear." },
         ]
     },
     {
@@ -110,20 +110,20 @@ export const missions = [
             { speaker: "DISPATCH", text: "HQ, we've lost contact with two more patrol units. That's five this week." },
             { speaker: "HQ", text: "Cole, we're assigning additional support. Callsign Tango." },
             { speaker: "HQ", text: "Tango specializes in hostile engagement. They'll prioritize enemy contacts." },
-            { speaker: "TANGO", text: "Tango reporting. On your wing." }
+            { speaker: "TANGO", text: "Tango reporting. On your wing." },
         ],
         asteroidCount: 4,
         asteroidSizes: [3, 2],
         enemies: 5,
         enemySpawnInterval: 240,
-        enemyType: 'normal',
+        enemyType: "normal",
         wingmanAvailable: true,
-        wingmanType: 'tango',
+        wingmanType: "tango",
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
             { speaker: "TANGO", text: "Contacts eliminated." },
-            { speaker: "HQ", text: "Solid work out there. Stay on comms." }
+            { speaker: "HQ", text: "Solid work out there. Stay on comms." },
         ]
     },
     {
@@ -134,20 +134,20 @@ export const missions = [
             { speaker: "INTEL", text: "We've decoded Syndicate logistics data. There's an outpost in the Kepler belt — it's their regional supply hub. Everything flows through it." },
             { speaker: "DISPATCH", text: "Sierra and Tango are both in range. We can hit it now." },
             { speaker: "HQ", text: "This is our first real shot at pushing back. Cole, take that outpost out and we cripple their supply line. You have the green light." },
-            { speaker: "TANGO", text: "Copy. Weapons hot." }
+            { speaker: "TANGO", text: "Copy. Weapons hot." },
         ],
         asteroidCount: 8,
         asteroidSizes: [3, 2, 1],
         enemies: 6,
         enemySpawnInterval: 200,
-        enemyType: 'normal',
+        enemyType: "normal",
         wingmanAvailable: true,
-        wingmanType: 'tango',
+        wingmanType: "tango",
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
             { speaker: "SIERRA", text: "Outpost neutralized." },
-            { speaker: "HQ", text: "Good. But they'll retaliate. Be ready." }
+            { speaker: "HQ", text: "Good. But they'll retaliate. Be ready." },
         ]
     },
     {
@@ -160,20 +160,20 @@ export const missions = [
             { speaker: "HQ", text: "Cole... we have a problem. That patrol is moving to intercept you." },
             { speaker: "HQ", text: "They were supposed to be on our side. Syndicate bought them out." },
             { speaker: "HQ", text: "They're hostile now. Weapons free." },
-            { speaker: "SIERRA", text: "Understood." }
+            { speaker: "SIERRA", text: "Understood." },
         ],
         asteroidCount: 3,
         asteroidSizes: [3, 2],
         enemies: 6,
         enemySpawnInterval: 180,
-        enemyType: 'corrupt',
+        enemyType: "corrupt",
         wingmanAvailable: true,
-        wingmanType: 'sierra',
+        wingmanType: "sierra",
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
             { speaker: "SIERRA", text: "All hostiles down." },
-            { speaker: "HQ", text: "Nobody wanted this, Cole. But it had to be done." }
+            { speaker: "HQ", text: "Nobody wanted this, Cole. But it had to be done." },
         ]
     },
     {
@@ -186,21 +186,21 @@ export const missions = [
             { speaker: "HQ", text: "Final push. The Syndicate is throwing everything they have at us." },
             { speaker: "SIERRA", text: "Sierra ready." },
             { speaker: "TANGO", text: "Tango ready." },
-            { speaker: "HQ", text: "All units — this is it. Give them everything. HQ out." }
+            { speaker: "HQ", text: "All units — this is it. Give them everything. HQ out." },
         ],
         asteroidCount: 8,
         asteroidSizes: [3, 2, 1],
         enemies: 8,
         enemySpawnInterval: 150,
-        enemyType: 'normal',
+        enemyType: "normal",
         wingmanAvailable: true,
-        wingmanType: 'sierra',
+        wingmanType: "sierra",
         objective: "clear",
         surviveTime: null,
         completionDialogue: [
             { speaker: "TANGO", text: "Area secure." },
             { speaker: "HQ", text: "Cole... we've found him. The Syndicate leader. Transmitting coordinates now." },
-            { speaker: "HQ", text: "This is a solo run. No backup in range. It's all on you." }
+            { speaker: "HQ", text: "This is a solo run. No backup in range. It's all on you." },
         ]
     },
     {
@@ -213,13 +213,13 @@ export const missions = [
             { speaker: "HQ", text: "One contact on sensors. Big signature. That's him, Cole." },
             { speaker: "BOSS", text: "Cole. I've been watching you. Impressive." },
             { speaker: "HQ", text: "Don't listen to him. Stay focused." },
-            { speaker: "BOSS", text: "You and I aren't so different. But you'll see that soon enough." }
+            { speaker: "BOSS", text: "You and I aren't so different. But you'll see that soon enough." },
         ],
         asteroidCount: 2,
         asteroidSizes: [2, 1],
         enemies: 0,
         enemySpawnInterval: 0,
-        enemyType: 'normal',
+        enemyType: "normal",
         wingmanAvailable: false,
         wingmanType: null,
         objective: "boss",

@@ -4,11 +4,13 @@
 
 import { config } from './config.js';
 import { shapes } from './shapes.js';
+import { missions } from './missions.js';
 
 const MOD_KEYS = {
-    config: 'lf-mod-config',
-    shapes: 'lf-mod-shapes',
-    sfx:    'lf-mod-sfx'
+    config:   'lf-mod-config',
+    shapes:   'lf-mod-shapes',
+    sfx:      'lf-mod-sfx',
+    missions: 'lf-mod-missions'
 };
 
 // Store original defaults for reset (exported for diff computation)
@@ -19,6 +21,9 @@ for (const key of Object.keys(shapes)) {
         shapesDefaults[key] = shapes[key].map(v => [...v]);
     }
 }
+
+// Deep-copy the original missions array for reset
+const missionsDefaults = JSON.parse(JSON.stringify(missions));
 
 function loadJSON(key) {
     try {
@@ -47,9 +52,17 @@ function applyShapesMod() {
     }
 }
 
+function applyMissionsMod() {
+    const mod = loadJSON(MOD_KEYS.missions);
+    if (!mod || !Array.isArray(mod)) return;
+    // Replace array contents in-place to preserve the live binding reference
+    missions.splice(0, missions.length, ...mod);
+}
+
 // Apply mods at import time
 applyConfigMod();
 applyShapesMod();
+applyMissionsMod();
 
 // --- Public API for future UI use ---
 
@@ -67,9 +80,15 @@ export function resetShapesToDefaults() {
     localStorage.removeItem(MOD_KEYS.shapes);
 }
 
+export function resetMissionsToDefaults() {
+    missions.splice(0, missions.length, ...JSON.parse(JSON.stringify(missionsDefaults)));
+    localStorage.removeItem(MOD_KEYS.missions);
+}
+
 export function resetAllMods() {
     resetConfigToDefaults();
     resetShapesToDefaults();
+    resetMissionsToDefaults();
     localStorage.removeItem(MOD_KEYS.sfx);
 }
 
@@ -84,5 +103,6 @@ export function saveShapesMod(partial) {
 export function hasActiveMods() {
     return !!(localStorage.getItem(MOD_KEYS.config) ||
               localStorage.getItem(MOD_KEYS.shapes) ||
-              localStorage.getItem(MOD_KEYS.sfx));
+              localStorage.getItem(MOD_KEYS.sfx) ||
+              localStorage.getItem(MOD_KEYS.missions));
 }

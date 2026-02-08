@@ -409,10 +409,14 @@ if (location.hostname === 'localhost' && location.port === '8080') {
     defBtn.onclick = () => {
         const params = readParams();
         const name = document.getElementById('filename').value.trim() || 'explosion';
-        fetch('/api/save-sound/' + encodeURIComponent(name), {
+        // Build the full sounds.json object (same pattern as other tools)
+        const snapshot = {};
+        for (const key of Object.keys(BUILT_IN)) snapshot[key] = BUILT_IN[key];
+        snapshot[name] = params;
+        fetch('/api/save-sounds', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(params)
+            body: JSON.stringify(snapshot, null, 4) + '\n'
         })
             .then(r => r.json())
             .then(() => { defBtn.textContent = 'Saved!'; })

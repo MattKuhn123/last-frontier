@@ -4,10 +4,54 @@
         "noiseDecay": 3,
         "noiseFilter": 600,
         "noiseVolume": 0.6,
-        "toneType": "sine",
         "toneStart": 80,
         "toneEnd": 30,
         "toneDecay": 2,
-        "toneVolume": 0.5
+        "toneVolume": 0.5,
+        "toneType": "sine"
+    },
+    "laser": {
+        "duration": 0.15,
+        "noiseDecay": 5,
+        "noiseFilter": 3000,
+        "noiseVolume": 0.2,
+        "toneType": "square",
+        "toneStart": 1200,
+        "toneEnd": 200,
+        "toneDecay": 1.5,
+        "toneVolume": 0.6
+    },
+    "hit": {
+        "duration": 0.2,
+        "noiseDecay": 4,
+        "noiseFilter": 800,
+        "noiseVolume": 0.7,
+        "toneType": "sine",
+        "toneStart": 200,
+        "toneEnd": 60,
+        "toneDecay": 3,
+        "toneVolume": 0.4
+    },
+    "powerup": {
+        "duration": 0.5,
+        "noiseDecay": 2,
+        "noiseFilter": 4000,
+        "noiseVolume": 0.15,
+        "toneType": "sine",
+        "toneStart": 400,
+        "toneEnd": 1200,
+        "toneDecay": 0.8,
+        "toneVolume": 0.6
+    },
+    "thud": {
+        "duration": 0.25,
+        "noiseDecay": 5,
+        "noiseFilter": 300,
+        "noiseVolume": 0.5,
+        "toneType": "sine",
+        "toneStart": 60,
+        "toneEnd": 25,
+        "toneDecay": 2.5,
+        "toneVolume": 0.7
     }
 }

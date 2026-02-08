@@ -3,88 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>SFX Designer — Last Frontier</title>
+    <link rel="stylesheet" href="tools.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #111;
-            color: #ccc;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            padding: 30px;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #fff;
-            font-size: 18px;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            margin-bottom: 24px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #888;
-            font-size: 11px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-
-        /* --- Presets --- */
-        .preset-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-        .preset-btn {
-            background: transparent;
-            border: 1px solid #444;
-            color: #ccc;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            padding: 5px 12px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .preset-btn:hover { border-color: #888; color: #fff; }
+        body { max-width: 700px; margin: 0 auto; }
         .preset-btn.active { border-color: #4f4; color: #4f4; }
-        .preset-btn .delete {
-            color: #666;
-            margin-left: 6px;
-            cursor: pointer;
-        }
-        .preset-btn .delete:hover { color: #f44; }
+        .file-row input[type="text"] { width: 180px; }
 
-        /* --- Controls --- */
-        .section {
-            border: 1px solid #222;
-            padding: 14px 16px;
-            margin-bottom: 12px;
-        }
-        .control-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            gap: 10px;
-        }
-        .control-row label {
-            width: 90px;
-            flex-shrink: 0;
-            color: #888;
-            font-size: 11px;
-            text-transform: uppercase;
-        }
-        .control-row input[type="range"] {
-            flex: 1;
-            accent-color: #4f4;
-            height: 4px;
-        }
-        .control-row .value {
-            width: 70px;
-            text-align: right;
-            color: #fff;
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-
-        /* --- Waveform selectors --- */
+        /* Waveform selectors */
         .wave-btns { display: flex; gap: 4px; flex: 1; }
         .wave-btn {
             background: transparent;
@@ -98,7 +23,7 @@
         .wave-btn:hover { border-color: #666; }
         .wave-btn.active { border-color: #4f4; color: #4f4; }
 
-        /* --- Waveform display --- */
+        /* Waveform display */
         #waveform {
             width: 100%;
             height: 80px;
@@ -106,60 +31,6 @@
             margin-bottom: 16px;
             display: block;
         }
-
-        /* --- Actions --- */
-        .actions {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .btn {
-            background: transparent;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            padding: 8px 20px;
-            cursor: pointer;
-            border: 1px solid;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.15s;
-        }
-        .btn-play { color: #4f4; border-color: #4f4; }
-        .btn-play:hover { background: #4f4; color: #000; }
-        .btn-download { color: #4af; border-color: #4af; }
-        .btn-download:hover { background: #4af; color: #000; }
-        .btn-save { color: #fa4; border-color: #fa4; }
-        .btn-save:hover { background: #fa4; color: #000; }
-
-        .actions label {
-            color: #888;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-        .actions input[type="checkbox"] { accent-color: #4f4; }
-
-        .file-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .file-row span { color: #888; font-size: 11px; text-transform: uppercase; }
-        .file-row input[type="text"] {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            padding: 6px 10px;
-            width: 180px;
-        }
-        .file-row .ext { color: #666; }
     </style>
 </head>
 <body>

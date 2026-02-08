@@ -60,6 +60,7 @@
             <button class="btn btn-save" id="save-btn">Save</button>
             <button class="btn btn-download" id="download-btn">Download config.js</button>
             <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
         </div>
     </div>
 
@@ -716,6 +717,22 @@ function loop(timestamp) {
     drawBulletViz();
     drawTTKViz();
 }
+
+// --- Apply to Game (writes diff to localStorage) ---
+document.getElementById('apply-btn').onclick = () => {
+    const diff = {};
+    for (const key of Object.keys(DEFAULTS)) {
+        if (config[key] !== DEFAULTS[key]) diff[key] = config[key];
+    }
+    if (Object.keys(diff).length === 0) {
+        localStorage.removeItem('lf-mod-config');
+        document.getElementById('apply-btn').textContent = 'Cleared!';
+    } else {
+        localStorage.setItem('lf-mod-config', JSON.stringify(diff));
+        document.getElementById('apply-btn').textContent = 'Applied!';
+    }
+    setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
+};
 
 // --- Init ---
 buildSliders();

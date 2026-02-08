@@ -1,5 +1,6 @@
 // --- Debug Panel ---
 import { config } from './config.js';
+import { saveConfigMod, configDefaults } from './mods.js';
 
 // Metadata for building the panel: group label, key, step value
 const fields = [
@@ -71,6 +72,32 @@ export function buildDebugPanel() {
 
         panel.appendChild(row);
     }
+
+    // Save as Mod button
+    const saveRow = document.createElement('div');
+    saveRow.className = 'debug-group';
+    saveRow.textContent = 'Mods';
+    panel.appendChild(saveRow);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save as Mod';
+    saveBtn.style.cssText = 'background:transparent;border:1px solid #fa4;color:#fa4;' +
+        'font-family:Courier New,monospace;font-size:11px;padding:4px 12px;cursor:pointer;' +
+        'width:100%;margin-top:4px;';
+    saveBtn.addEventListener('click', () => {
+        const diff = {};
+        for (const key of Object.keys(configDefaults)) {
+            if (config[key] !== configDefaults[key]) diff[key] = config[key];
+        }
+        if (Object.keys(diff).length === 0) {
+            saveBtn.textContent = 'No changes';
+        } else {
+            saveConfigMod(diff);
+            saveBtn.textContent = 'Saved!';
+        }
+        setTimeout(() => { saveBtn.textContent = 'Save as Mod'; }, 1500);
+    });
+    panel.appendChild(saveBtn);
 
     // Toggle on backtick
     document.addEventListener('keydown', e => {

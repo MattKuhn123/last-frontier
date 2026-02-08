@@ -121,6 +121,11 @@
         <button class="btn btn-save" id="save-btn">Save Preset</button>
     </div>
 
+    <div class="file-row">
+        <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+        <span class="apply-hint" style="color:#555;font-size:11px;">Saves current sound as the in-game explosion</span>
+    </div>
+
 <script>
 // --- Built-in presets ---
 const BUILT_IN = {
@@ -429,6 +434,19 @@ document.querySelectorAll('.wave-btn').forEach(btn => {
         if (document.getElementById('auto-play').checked) play();
     };
 });
+
+// --- Apply to Game (writes to lf-mod-sfx) ---
+document.getElementById('apply-btn').onclick = () => {
+    const params = readParams();
+    const soundName = document.getElementById('filename').value.trim() || 'explosion';
+    // Read existing mods, merge in this sound
+    let mods = {};
+    try { mods = JSON.parse(localStorage.getItem('lf-mod-sfx') || '{}'); } catch {}
+    mods[soundName] = params;
+    localStorage.setItem('lf-mod-sfx', JSON.stringify(mods));
+    document.getElementById('apply-btn').textContent = 'Applied!';
+    setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
+};
 
 // --- Init ---
 renderPresets();

@@ -15,6 +15,7 @@ import { updateScore, updateLives, showMissionTitle, resetHud, showHud, hideHud 
 import { startDialogue, hideDialogue } from './dialogue.js';
 import { missions } from './missions.js';
 import { playTrack, stopTrack, fadeOut, initAudioContext, playExplosionSFX } from './music.js';
+import { hasActiveMods, resetAllMods } from './mods.js';
 
 // --- Screen Shake ---
 const SHAKE_DURATION = 80;
@@ -189,6 +190,28 @@ function drawCrawl() {
     ctx.fillText('[ENTER] Skip', canvas.width / 2, canvas.height - 30);
 }
 
+// --- Title Toolbar (tool links + mod indicator) ---
+const titleToolbar = document.getElementById('title-toolbar');
+const modIndicator = document.getElementById('mod-indicator');
+
+function showTitleToolbar() {
+    titleToolbar.classList.remove('hidden');
+    if (hasActiveMods()) {
+        modIndicator.classList.remove('hidden');
+    } else {
+        modIndicator.classList.add('hidden');
+    }
+}
+
+function hideTitleToolbar() {
+    titleToolbar.classList.add('hidden');
+}
+
+document.getElementById('reset-mods-btn').addEventListener('click', () => {
+    resetAllMods();
+    modIndicator.classList.add('hidden');
+});
+
 // --- Title Screen ---
 function showTitle() {
     state = State.TITLE;
@@ -196,9 +219,11 @@ function showTitle() {
     hideHud();
     hideDialogue();
     hideBossHealthBar();
+    showTitleToolbar();
     setTitleStartCallback(() => {
         if (state === State.TITLE) {
             setTitleStartCallback(null);
+            hideTitleToolbar();
             transitionTo(startCrawl);
         }
     });

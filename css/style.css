@@ -240,6 +240,77 @@ canvas {
     transition: width 0.15s;
 }
 
+/* --- Title Toolbar (tools + mod indicator) --- */
+#title-toolbar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+    font-family: 'Courier New', monospace;
+}
+
+#title-toolbar.hidden {
+    display: none;
+}
+
+#tool-links {
+    display: flex;
+    gap: 16px;
+}
+
+#tool-links a {
+    color: #555;
+    font-size: 11px;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.15s;
+}
+
+#tool-links a:hover {
+    color: #4f4;
+}
+
+#mod-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#mod-indicator.hidden {
+    display: none;
+}
+
+#mod-indicator span {
+    color: #fa4;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+#reset-mods-btn {
+    background: transparent;
+    border: 1px solid #666;
+    color: #888;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+}
+
+#reset-mods-btn:hover {
+    border-color: #f44;
+    color: #f44;
+}
+
 /* --- Debug Panel --- */
 #debug-panel {
     display: none;

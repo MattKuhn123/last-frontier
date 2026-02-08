@@ -126,6 +126,7 @@
     <div class="file-row">
         <button class="btn btn-download" id="download-btn">Download shapes.js</button>
         <button class="btn btn-action" id="copy-btn">Copy JSON</button>
+        <button class="btn btn-play" id="apply-btn">Apply to Game</button>
     </div>
 
 <script>
@@ -597,6 +598,28 @@ export function strokeShape(ctx, vertices, size) {
     a.download = 'shapes.js';
     a.click();
     URL.revokeObjectURL(url);
+};
+
+// --- Apply to Game (writes diff to localStorage) ---
+document.getElementById('apply-btn').onclick = () => {
+    const diff = {};
+    for (const type of Object.keys(DEFAULTS)) {
+        const current = allShapes[type];
+        const def = DEFAULTS[type];
+        // Check if shape differs from default
+        if (current.length !== def.length ||
+            current.some((v, i) => v[0] !== def[i][0] || v[1] !== def[i][1])) {
+            diff[type] = current.map(v => [roundDisplay(v[0]), roundDisplay(v[1])]);
+        }
+    }
+    if (Object.keys(diff).length === 0) {
+        localStorage.removeItem('lf-mod-shapes');
+        document.getElementById('apply-btn').textContent = 'Cleared!';
+    } else {
+        localStorage.setItem('lf-mod-shapes', JSON.stringify(diff));
+        document.getElementById('apply-btn').textContent = 'Applied!';
+    }
+    setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
 };
 
 // --- Init ---

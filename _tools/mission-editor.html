@@ -234,172 +234,17 @@
 
 <script>
 // ============================================================
-// DEFAULTS — mirrors js/missions.js
+// DATA — loaded from data/missions.json (single source of truth)
 // ============================================================
-const DEFAULTS = [
-    {
-        id: 1, title: "Routine Patrol", music: "combat",
-        briefing: [
-            { speaker: "DISPATCH", text: "HQ, dispatch here. We're seeing increased debris density in the outer sectors. Shipping lanes are getting rougher by the day." },
-            { speaker: "HQ", text: "Noted. The Syndicate patrols are supposed to be keeping those lanes clear. That's what we contracted them for." },
-            { speaker: "DISPATCH", text: "Copy. Just flagging it. The haulers are starting to complain." },
-            { speaker: "HQ", text: "Cole, patrol sector 7-G. Routine sweep." },
-            { speaker: "HQ", text: "Should be quiet out there. Clear the debris and report back." }
-        ],
-        asteroidCount: 4, asteroidSizes: [3], enemies: 0, enemySpawnInterval: 0,
-        enemyType: 'normal', wingmanAvailable: false, wingmanType: null,
-        objective: "clear", surviveTime: null,
-        completionDialogue: [
-            { speaker: "HQ", text: "Sector clear. Clean work, Cole." },
-            { speaker: "HQ", text: "Head back in. We've got another assignment brewing." }
-        ]
-    },
-    {
-        id: 2, title: "The Attack", music: "combat",
-        briefing: [
-            { speaker: "DISPATCH", text: "HQ, we've lost comms with two colonies in the outer ring. Vega-7 and Kepler Station both went dark in the last hour." },
-            { speaker: "INTEL", text: "I've been analyzing the comm blackout signatures. They match Syndicate military encryption. Not civilian channels \u2014 military." },
-            { speaker: "HQ", text: "That's... that can't be right. The Syndicate is a trade organization." },
-            { speaker: "INTEL", text: "Not anymore, sir. The jamming patterns are deliberate. This is coordinated." },
-            { speaker: "HQ", text: "Cole, we're picking up unknown contacts in your sector." },
-            { speaker: "HQ", text: "Confirmed Syndicate signatures. This is not a drill. Engage at will." }
-        ],
-        asteroidCount: 3, asteroidSizes: [3, 2], enemies: 3, enemySpawnInterval: 300,
-        enemyType: 'normal', wingmanAvailable: false, wingmanType: null,
-        objective: "clear", surviveTime: null,
-        completionDialogue: [
-            { speaker: "HQ", text: "Hostiles down. Good shooting." },
-            { speaker: "HQ", text: "What the Syndicate was doing out here... we don't know yet. Return to base." }
-        ]
-    },
-    {
-        id: 3, title: "Rally Point", music: "combat",
-        briefing: [
-            { speaker: "INTEL", text: "Situation update. The Syndicate has seized three more stations overnight. They're consolidating control across the outer territories." },
-            { speaker: "DISPATCH", text: "We're getting flooded with refugee ships on the inner lanes. Families, merchants \u2014 anyone who got out in time." },
-            { speaker: "HQ", text: "We're reassigning every combat-rated pilot we have. Cole, we're giving you a wingman. Callsign Sierra. Rendezvous at rally point Theta." },
-            { speaker: "HQ", text: "Sierra is combat-rated. Let them do their job." },
-            { speaker: "SIERRA", text: "Sierra on station. Ready." }
-        ],
-        asteroidCount: 5, asteroidSizes: [3, 2], enemies: 2, enemySpawnInterval: 360,
-        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'sierra',
-        objective: "clear", surviveTime: null,
-        completionDialogue: [
-            { speaker: "SIERRA", text: "Sector clear. Holding position." },
-            { speaker: "HQ", text: "Good. We're going to need all hands for what's coming." }
-        ]
-    },
-    {
-        id: 4, title: "Supply Run", music: "combat",
-        briefing: [
-            { speaker: "DISPATCH", text: "Colony Vega-3 is down to emergency rations. They've got maybe 48 hours before things get critical." },
-            { speaker: "INTEL", text: "The Syndicate is blockading the main supply routes. It's deliberate \u2014 they're starving out anyone who won't submit." },
-            { speaker: "HQ", text: "We've got a convoy ready to run the blockade. Cole, escort them through the belt. Keep them alive for 60 seconds." },
-            { speaker: "HQ", text: "It's going to be tight in there. Stay sharp." },
-            { speaker: "SIERRA", text: "Sierra standing by." }
-        ],
-        asteroidCount: 6, asteroidSizes: [3, 2, 1], enemies: 4, enemySpawnInterval: 240,
-        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'sierra',
-        objective: "survive", surviveTime: 60,
-        completionDialogue: [
-            { speaker: "HQ", text: "Convoy is through. Good work." },
-            { speaker: "SIERRA", text: "Confirmed. All clear." }
-        ]
-    },
-    {
-        id: 5, title: "Reinforcements", music: "combat",
-        briefing: [
-            { speaker: "INTEL", text: "We're tracking Syndicate fleet movements near the Markov corridor. They're massing forces \u2014 something big is coming." },
-            { speaker: "DISPATCH", text: "HQ, we've lost contact with two more patrol units. That's five this week." },
-            { speaker: "HQ", text: "Cole, we're assigning additional support. Callsign Tango." },
-            { speaker: "HQ", text: "Tango specializes in hostile engagement. They'll prioritize enemy contacts." },
-            { speaker: "TANGO", text: "Tango reporting. On your wing." }
-        ],
-        asteroidCount: 4, asteroidSizes: [3, 2], enemies: 5, enemySpawnInterval: 240,
-        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'tango',
-        objective: "clear", surviveTime: null,
-        completionDialogue: [
-            { speaker: "TANGO", text: "Contacts eliminated." },
-            { speaker: "HQ", text: "Solid work out there. Stay on comms." }
-        ]
-    },
-    {
-        id: 6, title: "Syndicate Outpost", music: "combat",
-        briefing: [
-            { speaker: "INTEL", text: "We've decoded Syndicate logistics data. There's an outpost in the Kepler belt \u2014 it's their regional supply hub. Everything flows through it." },
-            { speaker: "DISPATCH", text: "Sierra and Tango are both in range. We can hit it now." },
-            { speaker: "HQ", text: "This is our first real shot at pushing back. Cole, take that outpost out and we cripple their supply line. You have the green light." },
-            { speaker: "TANGO", text: "Copy. Weapons hot." }
-        ],
-        asteroidCount: 8, asteroidSizes: [3, 2, 1], enemies: 6, enemySpawnInterval: 200,
-        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'tango',
-        objective: "clear", surviveTime: null,
-        completionDialogue: [
-            { speaker: "SIERRA", text: "Outpost neutralized." },
-            { speaker: "HQ", text: "Good. But they'll retaliate. Be ready." }
-        ]
-    },
-    {
-        id: 7, title: "Corrupt Patrol", music: "combat",
-        briefing: [
-            { speaker: "DISPATCH", text: "HQ, I'm picking up friendly IFF transponders on an intercept course with Cole. It's one of our own patrols." },
-            { speaker: "INTEL", text: "I've been monitoring their comm traffic. It switched to Syndicate encryption about 12 hours ago. They've been turned." },
-            { speaker: "HQ", text: "Cole... we have a problem. That patrol is moving to intercept you." },
-            { speaker: "HQ", text: "They were supposed to be on our side. Syndicate bought them out." },
-            { speaker: "HQ", text: "They're hostile now. Weapons free." },
-            { speaker: "SIERRA", text: "Understood." }
-        ],
-        asteroidCount: 3, asteroidSizes: [3, 2], enemies: 6, enemySpawnInterval: 180,
-        enemyType: 'corrupt', wingmanAvailable: true, wingmanType: 'sierra',
-        objective: "clear", surviveTime: null,
-        completionDialogue: [
-            { speaker: "SIERRA", text: "All hostiles down." },
-            { speaker: "HQ", text: "Nobody wanted this, Cole. But it had to be done." }
-        ]
-    },
-    {
-        id: 8, title: "The Gauntlet", music: "combat",
-        briefing: [
-            { speaker: "INTEL", text: "The Syndicate has pulled forces from three sectors. All of them are converging on Cole's position. This is their full commitment." },
-            { speaker: "DISPATCH", text: "Colonies across the frontier are monitoring our comms. Everyone knows what's happening out here. This is the tipping point." },
-            { speaker: "HQ", text: "Final push. The Syndicate is throwing everything they have at us." },
-            { speaker: "SIERRA", text: "Sierra ready." },
-            { speaker: "TANGO", text: "Tango ready." },
-            { speaker: "HQ", text: "All units \u2014 this is it. Give them everything. HQ out." }
-        ],
-        asteroidCount: 8, asteroidSizes: [3, 2, 1], enemies: 8, enemySpawnInterval: 150,
-        enemyType: 'normal', wingmanAvailable: true, wingmanType: 'sierra',
-        objective: "clear", surviveTime: null,
-        completionDialogue: [
-            { speaker: "TANGO", text: "Area secure." },
-            { speaker: "HQ", text: "Cole... we've found him. The Syndicate leader. Transmitting coordinates now." },
-            { speaker: "HQ", text: "This is a solo run. No backup in range. It's all on you." }
-        ]
-    },
-    {
-        id: 9, title: "The Syndicate Boss", music: "combat",
-        briefing: [
-            { speaker: "INTEL", text: "We've identified the contact. It's him \u2014 the Syndicate's founder. The one who orchestrated this entire takeover." },
-            { speaker: "DISPATCH", text: "All comms from the outer colonies have gone silent. Everyone's listening. Everyone's waiting." },
-            { speaker: "HQ", text: "One contact on sensors. Big signature. That's him, Cole." },
-            { speaker: "BOSS", text: "Cole. I've been watching you. Impressive." },
-            { speaker: "HQ", text: "Don't listen to him. Stay focused." },
-            { speaker: "BOSS", text: "You and I aren't so different. But you'll see that soon enough." }
-        ],
-        asteroidCount: 2, asteroidSizes: [2, 1], enemies: 0, enemySpawnInterval: 0,
-        enemyType: 'normal', wingmanAvailable: false, wingmanType: null,
-        objective: "boss", surviveTime: null,
-        completionDialogue: []
-    }
-];
+const DATA_URL = '../data/missions.json';
 
 const MUSIC_TRACKS = ['combat', 'easy', 'scary', 'strategy', 'victory', 'you-lost', 'zen'];
 const OBJECTIVES = ['clear', 'survive', 'boss'];
 const ENEMY_TYPES = ['normal', 'corrupt'];
 const WINGMAN_TYPES = ['sierra', 'tango'];
 
-// Working copy
-let missions = JSON.parse(JSON.stringify(DEFAULTS));
+let DEFAULTS = [];   // filled by fetchDefaults()
+let missions = [];
 let selectedIndex = -1;
 
 // ============================================================
@@ -811,15 +656,18 @@ document.getElementById('apply-btn').onclick = () => {
 };
 
 // ============================================================
-// SAVE AS DEFAULT (dev server only)
+// SAVE AS DEFAULT (dev server only — writes JSON to data/missions.json)
 // ============================================================
 if (location.hostname === 'localhost' && location.port === '8080') {
     const defBtn = document.getElementById('default-btn');
     defBtn.style.display = '';
     defBtn.onclick = () => {
         const output = missions.map((m, i) => ({ ...m, id: i + 1 }));
-        const content = generateMissionsJS(output);
-        fetch('/api/save-missions', { method: 'POST', body: content })
+        fetch('/api/save-missions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(output, null, 4)
+        })
             .then(r => r.json())
             .then(() => { defBtn.textContent = 'Saved!'; })
             .catch(() => { defBtn.textContent = 'Error'; })
@@ -827,67 +675,34 @@ if (location.hostname === 'localhost' && location.port === '8080') {
     };
 }
 
-function generateMissionsJS(missionArray) {
-    const indent = '    ';
-    const lines = ['// --- Mission Definitions ---', 'export const missions = ['];
+// ============================================================
+// INIT — fetch defaults from data/missions.json, then render
+// ============================================================
+async function init() {
+    try {
+        const res = await fetch(DATA_URL);
+        DEFAULTS = await res.json();
+    } catch (e) {
+        console.error('Failed to load missions data:', e);
+        DEFAULTS = [];
+    }
 
-    missionArray.forEach((m, mi) => {
-        lines.push(indent + '{');
-        lines.push(indent + `    id: ${m.id},`);
-        lines.push(indent + `    title: ${JSON.stringify(m.title)},`);
-        lines.push(indent + `    music: ${JSON.stringify(m.music)},`);
-
-        // Briefing
-        lines.push(indent + '    briefing: [');
-        m.briefing.forEach(d => {
-            lines.push(indent + `        { speaker: ${JSON.stringify(d.speaker)}, text: ${JSON.stringify(d.text)} },`);
-        });
-        lines.push(indent + '    ],');
-
-        lines.push(indent + `    asteroidCount: ${m.asteroidCount},`);
-        lines.push(indent + `    asteroidSizes: [${m.asteroidSizes.join(', ')}],`);
-        lines.push(indent + `    enemies: ${m.enemies},`);
-        lines.push(indent + `    enemySpawnInterval: ${m.enemySpawnInterval},`);
-        lines.push(indent + `    enemyType: ${JSON.stringify(m.enemyType)},`);
-        lines.push(indent + `    wingmanAvailable: ${m.wingmanAvailable},`);
-        lines.push(indent + `    wingmanType: ${m.wingmanType === null ? 'null' : JSON.stringify(m.wingmanType)},`);
-        lines.push(indent + `    objective: ${JSON.stringify(m.objective)},`);
-        lines.push(indent + `    surviveTime: ${m.surviveTime === null ? 'null' : m.surviveTime},`);
-
-        // Completion dialogue
-        if (m.completionDialogue.length === 0) {
-            lines.push(indent + '    completionDialogue: []' + (m.objective === 'boss' ? ' // handled by boss choice' : ''));
-        } else {
-            lines.push(indent + '    completionDialogue: [');
-            m.completionDialogue.forEach(d => {
-                lines.push(indent + `        { speaker: ${JSON.stringify(d.speaker)}, text: ${JSON.stringify(d.text)} },`);
-            });
-            lines.push(indent + '    ]');
+    // Start from defaults, then override with any existing mod
+    missions = JSON.parse(JSON.stringify(DEFAULTS));
+    try {
+        const existing = JSON.parse(localStorage.getItem('lf-mod-missions'));
+        if (Array.isArray(existing) && existing.length > 0) {
+            missions = existing;
         }
+    } catch {}
 
-        lines.push(indent + '}' + (mi < missionArray.length - 1 ? ',' : ''));
-    });
-
-    lines.push('];');
-    lines.push('');
-    return lines.join('\n');
+    selectedIndex = missions.length > 0 ? 0 : -1;
+    renderList();
+    renderDetail();
+    renderPresets();
 }
 
-// ============================================================
-// INIT
-// ============================================================
-// Load any existing mod as starting state
-try {
-    const existing = JSON.parse(localStorage.getItem('lf-mod-missions'));
-    if (Array.isArray(existing) && existing.length > 0) {
-        missions = existing;
-    }
-} catch {}
-
-selectedIndex = missions.length > 0 ? 0 : -1;
-renderList();
-renderDetail();
-renderPresets();
+init();
 </script>
 </body>
 </html>

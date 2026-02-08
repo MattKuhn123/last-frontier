@@ -1,21 +1,12 @@
 // --- Ship Shape Definitions ---
-// Each shape is an array of [x, y] vertex pairs normalized to size 1.
-// Nose points "up" at (0, -1). The game rotates to face movement direction.
+// Vertex data lives in data/shapes.json; this module fetches it at import time.
+// The shapes object is created first, then populated, so all modules
+// share the same mutable reference.
 
-export const shapes = {
-    player: [
-        [0, -1], [-0.7, 0.7], [0, 0.4], [0.7, 0.7]
-    ],
-    enemy: [
-        [0, -1], [-0.8, 0.3], [-0.4, 0.7], [0, 0.4], [0.4, 0.7], [0.8, 0.3]
-    ],
-    wingman: [
-        [0, -1], [-0.67, 0.67], [0, 0.33], [0.67, 0.67]
-    ],
-    boss: [
-        [0, -1], [-0.6, -0.3], [-1, 0.4], [-0.5, 0.8], [0, 0.5], [0.5, 0.8], [1, 0.4], [0.6, -0.3]
-    ]
-};
+export const shapes = {};
+
+const res = await fetch('data/shapes.json');
+Object.assign(shapes, await res.json());
 
 // Draws a shape polygon. Call within a ctx.save()/restore() block
 // that has already set translate, rotate, strokeStyle, and lineWidth.

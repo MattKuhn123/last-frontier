@@ -1,7 +1,7 @@
 // --- Dev Server ---
 // Zero-dependency Node.js server for local development.
 // Serves static files and exposes write endpoints so the tools
-// can overwrite js/config.js, js/shapes.js, and sfx/*.wav.
+// can overwrite data/*.json and sfx/*.wav.
 //
 // Usage:  node dev-server.js
 // Then:   http://localhost:8080
@@ -29,9 +29,9 @@ const MIME = {
 
 // Allowed write targets (path relative to ROOT => actual file)
 const WRITE_TARGETS = {
-    '/api/save-config': 'js/config.js',
-    '/api/save-shapes': 'js/shapes.js',
-    '/api/save-missions': 'js/missions.js',
+    '/api/save-config':   'data/config.json',
+    '/api/save-shapes':   'data/shapes.json',
+    '/api/save-missions': 'data/missions.json',
 };
 
 function readBody(req) {

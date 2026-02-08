@@ -1,6 +1,6 @@
 // --- Mod Loader ---
-// Reads lf-mod-config and lf-mod-shapes from localStorage and patches
-// the live exported objects. Runs at import time (synchronous).
+// Reads mod overrides from localStorage and patches the live exported
+// objects. Runs at import time (after data modules finish loading).
 
 import { config } from './config.js';
 import { shapes } from './shapes.js';

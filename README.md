@@ -35,13 +35,13 @@ The in-game debug panel (toggle with `` ` ``) also has a **Save as Mod** button 
 
 ### Dev Server (`dev-server.js`)
 
-The tools' **Download** buttons generate correct source files that you can manually drop into the project. If you want one-click convenience, the dev server adds write endpoints so the tools can overwrite source files directly:
+The tools' **Download** buttons export JSON data files that you can manually drop into the `data/` directory. If you want one-click convenience, the dev server adds write endpoints so the tools can overwrite data files directly:
 
 ```
 node dev-server.js
 ```
 
-This serves the game at `http://localhost:8080` just like `http-server`, but also exposes `POST /api/save-config`, `/api/save-shapes`, `/api/save-missions`, and `/api/save-sfx/<file>.wav`. When the tools detect they're running on `localhost:8080`, a **Save as Default** button appears that writes directly to `js/config.js`, `js/shapes.js`, or `sfx/*.wav`.
+This serves the game at `http://localhost:8080` just like `http-server`, but also exposes `POST /api/save-config`, `/api/save-shapes`, `/api/save-missions`, and `/api/save-sfx/<file>.wav`. When the tools detect they're running on `localhost:8080`, a **Save as Default** button appears that writes directly to `data/config.json`, `data/shapes.json`, `data/missions.json`, or `sfx/*.wav`.
 
 A plain static server (`npx http-server`) can't write files, so the **Save as Default** buttons only appear with the dev server. The **Download** buttons and **Apply to Game** (localStorage mods) work everywhere regardless.
 
@@ -70,7 +70,7 @@ Browser-based tool for designing ship shapes. Open it directly in your browser.
 - **Save Preset** stores shapes in localStorage for later
 - **Copy JSON** copies the vertex array to clipboard
 - **Apply to Game** saves changed shapes to localStorage as a mod
-- **Download shapes.js** generates the full module with all 4 ship types
+- **Download shapes.json** exports the vertex data for all 4 ship types
 
 ### Config Sandbox (`_tools/config-sandbox.html`)
 
@@ -83,7 +83,7 @@ Passive visualization tool for tuning game physics. Open it directly in your bro
 - All config values have **sliders** on the right with per-value reset buttons
 - **Save Preset** stores config snapshots in localStorage
 - **Apply to Game** saves changed values to localStorage as a mod
-- **Download config.js** exports the full config module for the game
+- **Download config.json** exports all config values as JSON
 
 ### Mission Editor (`_tools/mission-editor.html`)
 

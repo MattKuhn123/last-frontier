@@ -58,7 +58,7 @@
         <div class="action-row">
             <input type="text" id="preset-name" placeholder="my-config">
             <button class="btn btn-save" id="save-btn">Save</button>
-            <button class="btn btn-download" id="download-btn">Download config.js</button>
+            <button class="btn btn-download" id="download-btn">Download config.json</button>
             <button class="btn btn-action" id="reset-all-btn">Reset All</button>
             <button class="btn btn-play" id="apply-btn">Apply to Game</button>
             <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
@@ -95,18 +95,10 @@
     </div>
 
 <script>
-// --- Defaults (mirrors js/config.js) ---
-const DEFAULTS = {
-    SHIP_SIZE: 15, TURN_SPEED: 0.04, THRUST_POWER: 0.05, FRICTION: 0.99,
-    INVINCIBLE_DURATION: 180,
-    BULLET_SPEED: 6, BULLET_LIFETIME: 60, MAX_BULLETS: 8, SHOOT_COOLDOWN: 8,
-    ASTEROID_SPEED: 0.5, ASTEROID_JAGGEDNESS: 0.4,
-    ENEMY_SIZE: 12, ENEMY_SPEED: 1.0, ENEMY_TURN_SPEED: 0.04,
-    ENEMY_FIRE_INTERVAL: 90, ENEMY_BULLET_SPEED: 4,
-    WINGMAN_DURATION: 600, WINGMAN_SPEED: 2.0,
-    BOSS_SIZE: 30, BOSS_MAX_HP: 30, BOSS_SPEED: 0.7
-};
-const config = { ...DEFAULTS };
+// --- Defaults (loaded from data/config.json) ---
+const DATA_URL = '../data/config.json';
+let DEFAULTS = {};
+const config = {};
 
 // Sliders grouped by visualization section
 // [containerId, label, configKey, min, max, step]
@@ -654,49 +646,13 @@ document.getElementById('reset-all-btn').onclick = () => {
 };
 
 document.getElementById('download-btn').onclick = () => {
-    const content = `// --- Game Configuration ---
-
-export const config = {
-    // Ship
-    SHIP_SIZE: ${config.SHIP_SIZE},
-    TURN_SPEED: ${config.TURN_SPEED},
-    THRUST_POWER: ${config.THRUST_POWER},
-    FRICTION: ${config.FRICTION},
-    INVINCIBLE_DURATION: ${config.INVINCIBLE_DURATION},
-
-    // Bullets
-    BULLET_SPEED: ${config.BULLET_SPEED},
-    BULLET_LIFETIME: ${config.BULLET_LIFETIME},
-    MAX_BULLETS: ${config.MAX_BULLETS},
-
-    // Asteroids
-    ASTEROID_SPEED: ${config.ASTEROID_SPEED},
-    ASTEROID_JAGGEDNESS: ${config.ASTEROID_JAGGEDNESS},
-
-    // Enemies
-    ENEMY_SIZE: ${config.ENEMY_SIZE},
-    ENEMY_SPEED: ${config.ENEMY_SPEED},
-    ENEMY_TURN_SPEED: ${config.ENEMY_TURN_SPEED},
-    ENEMY_FIRE_INTERVAL: ${config.ENEMY_FIRE_INTERVAL},
-    ENEMY_BULLET_SPEED: ${config.ENEMY_BULLET_SPEED},
-
-    // Wingmen
-    WINGMAN_DURATION: ${config.WINGMAN_DURATION},
-    WINGMAN_SPEED: ${config.WINGMAN_SPEED},
-
-    // Boss
-    BOSS_SIZE: ${config.BOSS_SIZE},
-    BOSS_MAX_HP: ${config.BOSS_MAX_HP},
-    BOSS_SPEED: ${config.BOSS_SPEED},
-
-    // Debug
-    infiniteLives: false
-};
-`;
-    const blob = new Blob([content], { type: 'text/javascript' });
+    const snapshot = {};
+    for (const key of Object.keys(DEFAULTS)) snapshot[key] = config[key];
+    const content = JSON.stringify(snapshot, null, 4);
+    const blob = new Blob([content + '\n'], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'config.js'; a.click();
+    a.href = url; a.download = 'config.json'; a.click();
     URL.revokeObjectURL(url);
 };
 
@@ -735,41 +691,18 @@ document.getElementById('apply-btn').onclick = () => {
     setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
 };
 
-// --- Save as Default (dev server only) ---
+// --- Save as Default (dev server only — writes JSON to data/config.json) ---
 if (location.hostname === 'localhost' && location.port === '8080') {
     const defBtn = document.getElementById('default-btn');
     defBtn.style.display = '';
     defBtn.onclick = () => {
-        const content = `// --- Game Configuration ---\n\nexport const config = {\n` +
-            `    // Ship\n` +
-            `    SHIP_SIZE: ${config.SHIP_SIZE},\n` +
-            `    TURN_SPEED: ${config.TURN_SPEED},\n` +
-            `    THRUST_POWER: ${config.THRUST_POWER},\n` +
-            `    FRICTION: ${config.FRICTION},\n` +
-            `    INVINCIBLE_DURATION: ${config.INVINCIBLE_DURATION},\n\n` +
-            `    // Bullets\n` +
-            `    BULLET_SPEED: ${config.BULLET_SPEED},\n` +
-            `    BULLET_LIFETIME: ${config.BULLET_LIFETIME},\n` +
-            `    MAX_BULLETS: ${config.MAX_BULLETS},\n\n` +
-            `    // Asteroids\n` +
-            `    ASTEROID_SPEED: ${config.ASTEROID_SPEED},\n` +
-            `    ASTEROID_JAGGEDNESS: ${config.ASTEROID_JAGGEDNESS},\n\n` +
-            `    // Enemies\n` +
-            `    ENEMY_SIZE: ${config.ENEMY_SIZE},\n` +
-            `    ENEMY_SPEED: ${config.ENEMY_SPEED},\n` +
-            `    ENEMY_TURN_SPEED: ${config.ENEMY_TURN_SPEED},\n` +
-            `    ENEMY_FIRE_INTERVAL: ${config.ENEMY_FIRE_INTERVAL},\n` +
-            `    ENEMY_BULLET_SPEED: ${config.ENEMY_BULLET_SPEED},\n\n` +
-            `    // Wingmen\n` +
-            `    WINGMAN_DURATION: ${config.WINGMAN_DURATION},\n` +
-            `    WINGMAN_SPEED: ${config.WINGMAN_SPEED},\n\n` +
-            `    // Boss\n` +
-            `    BOSS_SIZE: ${config.BOSS_SIZE},\n` +
-            `    BOSS_MAX_HP: ${config.BOSS_MAX_HP},\n` +
-            `    BOSS_SPEED: ${config.BOSS_SPEED},\n\n` +
-            `    // Debug\n` +
-            `    infiniteLives: false\n};\n`;
-        fetch('/api/save-config', { method: 'POST', body: content })
+        const snapshot = {};
+        for (const key of Object.keys(DEFAULTS)) snapshot[key] = config[key];
+        fetch('/api/save-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(snapshot, null, 4) + '\n'
+        })
             .then(r => r.json())
             .then(() => { defBtn.textContent = 'Saved!'; })
             .catch(() => { defBtn.textContent = 'Error'; })
@@ -777,11 +710,23 @@ if (location.hostname === 'localhost' && location.port === '8080') {
     };
 }
 
-// --- Init ---
-buildSliders();
-renderPresets();
-resetTTK();
-requestAnimationFrame(loop);
+// --- Init — fetch defaults from data/config.json, then boot ---
+async function init() {
+    try {
+        const res = await fetch(DATA_URL);
+        DEFAULTS = await res.json();
+    } catch (e) {
+        console.error('Failed to load config data:', e);
+    }
+    Object.assign(config, DEFAULTS);
+
+    buildSliders();
+    renderPresets();
+    resetTTK();
+    requestAnimationFrame(loop);
+}
+
+init();
 </script>
 </body>
 </html>

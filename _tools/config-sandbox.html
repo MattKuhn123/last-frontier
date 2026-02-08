@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Config Sandbox — Last Frontier</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #111;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 20px;
+        }
+        h1 {
+            color: #fff;
+            font-size: 18px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #888;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            margin-top: 0;
+        }
+
+        /* --- Toolbar --- */
+        .toolbar {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 12px;
+        }
+
+        /* --- Canvases --- */
+        .viz-section { margin-bottom: 28px; }
+        .viz-section canvas {
+            border: 1px solid #222;
+            display: block;
+            width: 100%;
+        }
+
+        /* --- Slider groups below each viz --- */
+        .slider-group {
+            padding: 8px 0;
+        }
+
+        /* --- Config sliders --- */
+        .config-group {
+            border: 1px solid #1a1a1a;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+        }
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 5px;
+        }
+        .config-row label {
+            width: 85px;
+            color: #888;
+            font-size: 10px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .config-row input[type="range"] {
+            flex: 1;
+            accent-color: #4f4;
+            height: 4px;
+        }
+        .config-row .val {
+            width: 50px;
+            text-align: right;
+            color: #fff;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+        .config-row .rst {
+            color: #444;
+            cursor: pointer;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+        .config-row .rst:hover { color: #f44; }
+
+        /* --- Buttons --- */
+        .btn {
+            background: transparent;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 6px 16px;
+            cursor: pointer;
+            border: 1px solid;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+        }
+        .btn-save { color: #fa4; border-color: #fa4; }
+        .btn-save:hover { background: #fa4; color: #000; }
+        .btn-download { color: #4af; border-color: #4af; }
+        .btn-download:hover { background: #4af; color: #000; }
+        .btn-action { color: #4f4; border-color: #4f4; }
+        .btn-action:hover { background: #4f4; color: #000; }
+
+        .preset-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .preset-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #999;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 3px 10px;
+            cursor: pointer;
+        }
+        .preset-btn:hover { border-color: #666; color: #fff; }
+        .preset-btn .delete { color: #666; margin-left: 6px; }
+        .preset-btn .delete:hover { color: #f44; }
+
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .action-row input[type="text"] {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 5px 8px;
+            width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Config Sandbox</h1>
+
+    <div class="toolbar">
+        <h2>Presets</h2>
+        <div class="preset-row" id="presets"></div>
+        <div class="action-row">
+            <input type="text" id="preset-name" placeholder="my-config">
+            <button class="btn btn-save" id="save-btn">Save</button>
+            <button class="btn btn-download" id="download-btn">Download config.js</button>
+            <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+        </div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Speed</h2>
+        <canvas id="speed-canvas" height="210"></canvas>
+        <div class="slider-group" id="sliders-speed"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Turn Speed</h2>
+        <canvas id="turn-canvas" height="100"></canvas>
+        <div class="slider-group" id="sliders-turn"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Bullet Range &amp; Lifetime</h2>
+        <canvas id="bullet-canvas" height="100"></canvas>
+        <div class="slider-group" id="sliders-bullets"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Time to Kill</h2>
+        <canvas id="ttk-canvas" height="120"></canvas>
+        <div class="slider-group" id="sliders-ttk"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Other</h2>
+        <div class="slider-group" id="sliders-other"></div>
+    </div>
+
+<script>
+// --- Defaults (mirrors js/config.js) ---
+const DEFAULTS = {
+    SHIP_SIZE: 15, TURN_SPEED: 0.04, THRUST_POWER: 0.05, FRICTION: 0.99,
+    INVINCIBLE_DURATION: 180,
+    BULLET_SPEED: 6, BULLET_LIFETIME: 60, MAX_BULLETS: 8, SHOOT_COOLDOWN: 8,
+    ASTEROID_SPEED: 0.5, ASTEROID_JAGGEDNESS: 0.4,
+    ENEMY_SIZE: 12, ENEMY_SPEED: 1.0, ENEMY_TURN_SPEED: 0.04,
+    ENEMY_FIRE_INTERVAL: 90, ENEMY_BULLET_SPEED: 4,
+    WINGMAN_DURATION: 600, WINGMAN_SPEED: 2.0,
+    BOSS_SIZE: 30, BOSS_MAX_HP: 30, BOSS_SPEED: 0.7
+};
+const config = { ...DEFAULTS };
+
+// Sliders grouped by visualization section
+// [containerId, label, configKey, min, max, step]
+const SLIDER_DEFS = [
+    // Speed lanes
+    ['sliders-speed', 'Thrust',       'THRUST_POWER',      0.01, 0.2, 0.005],
+    ['sliders-speed', 'Friction',     'FRICTION',          0.9,  1,   0.005],
+    ['sliders-speed', 'Enemy spd',    'ENEMY_SPEED',       0.1,  10,  0.1],
+    ['sliders-speed', 'Wingman spd',  'WINGMAN_SPEED',     0.1,  10,  0.1],
+    ['sliders-speed', 'Boss spd',     'BOSS_SPEED',        0.1,  10,  0.1],
+    ['sliders-speed', 'Asteroid spd', 'ASTEROID_SPEED',    0.1,  10,  0.1],
+    ['sliders-speed', 'Bullet spd',   'BULLET_SPEED',      0.1,  10,  0.1],
+    ['sliders-speed', 'Emy blt spd',  'ENEMY_BULLET_SPEED',0.1,  10,  0.1],
+
+    // Turn speed
+    ['sliders-turn', 'Player turn',   'TURN_SPEED',        0.01, 0.15, 0.005],
+    ['sliders-turn', 'Enemy turn',    'ENEMY_TURN_SPEED',  0.01, 0.15, 0.005],
+
+    // Bullets
+    ['sliders-bullets', 'Lifetime',     'BULLET_LIFETIME',    10,  180, 5],
+    ['sliders-bullets', 'Max bullets',  'MAX_BULLETS',        1,   20,  1],
+    ['sliders-bullets', 'Shoot cool.',  'SHOOT_COOLDOWN',     1,   30,  1],
+    ['sliders-bullets', 'Enemy fire',   'ENEMY_FIRE_INTERVAL',15,  300, 5],
+
+    // TTK
+    ['sliders-ttk', 'Boss HP',     'BOSS_MAX_HP', 5,  100, 1],
+    ['sliders-ttk', 'Boss size',   'BOSS_SIZE',   15, 60,  1],
+
+    // Other
+    ['sliders-other', 'Ship size',    'SHIP_SIZE',           5,  40,  1],
+    ['sliders-other', 'Enemy size',   'ENEMY_SIZE',          5,  30,  1],
+    ['sliders-other', 'Invincible',   'INVINCIBLE_DURATION', 30, 600, 10],
+    ['sliders-other', 'Jaggedness',   'ASTEROID_JAGGEDNESS', 0,  1,   0.05],
+    ['sliders-other', 'Wingman dur.', 'WINGMAN_DURATION',    60, 1200,30],
+];
+
+// --- Shapes ---
+const shapes = {
+    player: [[0,-1],[-0.7,0.7],[0,0.4],[0.7,0.7]],
+    enemy: [[0,-1],[-0.8,0.3],[-0.4,0.7],[0,0.4],[0.4,0.7],[0.8,0.3]],
+    boss: [[0,-1],[-0.6,-0.3],[-1,0.4],[-0.5,0.8],[0,0.5],[0.5,0.8],[1,0.4],[0.6,-0.3]]
+};
+
+function strokeShape(c, verts, size) {
+    c.beginPath();
+    for (let i = 0; i < verts.length; i++) {
+        if (i === 0) c.moveTo(verts[i][0]*size, verts[i][1]*size);
+        else c.lineTo(verts[i][0]*size, verts[i][1]*size);
+    }
+    c.closePath(); c.stroke();
+}
+
+// --- Canvas helpers ---
+function initCanvas(id) {
+    const el = document.getElementById(id);
+    const dpr = window.devicePixelRatio || 1;
+    const rect = el.getBoundingClientRect();
+    el.width = rect.width * dpr;
+    el.height = el.height * dpr;
+    const c = el.getContext('2d');
+    c.scale(dpr, dpr);
+    return { el, ctx: c, w: rect.width, h: el.height / dpr };
+}
+
+// ============================================================
+// SPEED VISUALIZATION
+// Objects race across horizontal lanes, looping when they hit the edge.
+// ============================================================
+const speedCvs = initCanvas('speed-canvas');
+const LANE_H = 30;
+const LANE_PAD = 6;
+const LABEL_W = 110;
+
+const lanes = [
+    { key: 'player',      label: 'Player',       color: '#fff', shape: shapes.player },
+    { key: 'enemy',        label: 'Enemy',        color: '#f44', shape: shapes.enemy },
+    { key: 'wingman',      label: 'Wingman',      color: '#4f4', shape: shapes.player },
+    { key: 'boss',         label: 'Boss',         color: '#f44', shape: shapes.boss },
+    { key: 'asteroid',     label: 'Asteroid',     color: '#888', shape: null },
+    { key: 'playerBullet', label: 'Player bullet', color: '#fff', shape: null },
+    { key: 'enemyBullet',  label: 'Enemy bullet', color: '#f66', shape: null },
+];
+
+const laneX = {};
+for (const l of lanes) laneX[l.key] = LABEL_W;
+
+function laneSpeed(key) {
+    switch (key) {
+        case 'player': return config.THRUST_POWER / Math.max(0.001, 1 - config.FRICTION);
+        case 'enemy': return config.ENEMY_SPEED;
+        case 'wingman': return config.WINGMAN_SPEED;
+        case 'boss': return config.BOSS_SPEED;
+        case 'asteroid': return config.ASTEROID_SPEED;
+        case 'playerBullet': return config.BULLET_SPEED;
+        case 'enemyBullet': return config.ENEMY_BULLET_SPEED;
+    }
+}
+
+function drawSpeedViz() {
+    const { ctx: c, w, h } = speedCvs;
+    c.fillStyle = '#0a0a0a'; c.fillRect(0, 0, w, h);
+
+    const trackW = w - LABEL_W - 10;
+
+    for (let i = 0; i < lanes.length; i++) {
+        const lane = lanes[i];
+        const y = i * LANE_H + LANE_PAD + LANE_H / 2;
+        const speed = laneSpeed(lane.key);
+
+        // Move
+        laneX[lane.key] += speed * 0.8;
+        if (laneX[lane.key] > LABEL_W + trackW) laneX[lane.key] = LABEL_W;
+        const x = laneX[lane.key];
+
+        // Lane line
+        c.strokeStyle = '#1a1a1a';
+        c.lineWidth = 1;
+        c.beginPath();
+        c.moveTo(LABEL_W, y); c.lineTo(w - 10, y);
+        c.stroke();
+
+        // Label
+        c.fillStyle = '#555';
+        c.font = '10px Courier New';
+        c.textAlign = 'left';
+        c.textBaseline = 'middle';
+        c.fillText(lane.label, 4, y);
+
+        // Speed value
+        c.fillStyle = lane.color;
+        c.textAlign = 'right';
+        c.fillText(speed.toFixed(1), LABEL_W - 6, y);
+
+        // Object
+        if (lane.shape) {
+            const size = lane.key === 'boss' ? config.BOSS_SIZE * 0.5 :
+                         lane.key === 'enemy' ? config.ENEMY_SIZE : config.SHIP_SIZE;
+            c.save();
+            c.translate(x, y);
+            c.rotate(-Math.PI / 2 + Math.PI / 2); // pointing right
+            c.strokeStyle = lane.color;
+            c.lineWidth = 1.5;
+            strokeShape(c, lane.shape, Math.min(size, 12));
+            c.restore();
+        } else if (lane.key === 'asteroid') {
+            c.fillStyle = lane.color;
+            c.beginPath();
+            c.arc(x, y, 5, 0, Math.PI * 2);
+            c.fill();
+        } else {
+            // bullet dot
+            c.fillStyle = lane.color;
+            c.beginPath();
+            c.arc(x, y, 2.5, 0, Math.PI * 2);
+            c.fill();
+        }
+    }
+}
+
+// ============================================================
+// TURN SPEED VISUALIZATION
+// Ships rotate in place side by side.
+// ============================================================
+const turnCvs = initCanvas('turn-canvas');
+let turnAnglePlayer = 0, turnAngleEnemy = 0;
+
+function drawTurnViz() {
+    const { ctx: c, w, h } = turnCvs;
+    c.fillStyle = '#0a0a0a'; c.fillRect(0, 0, w, h);
+
+    turnAnglePlayer += config.TURN_SPEED;
+    turnAngleEnemy += config.ENEMY_TURN_SPEED;
+
+    const entries = [
+        { label: 'Player', angle: turnAnglePlayer, speed: config.TURN_SPEED,
+          shape: shapes.player, size: config.SHIP_SIZE, color: '#fff' },
+        { label: 'Enemy', angle: turnAngleEnemy, speed: config.ENEMY_TURN_SPEED,
+          shape: shapes.enemy, size: config.ENEMY_SIZE, color: '#f44' },
+    ];
+
+    const spacing = w / (entries.length + 1);
+
+    for (let i = 0; i < entries.length; i++) {
+        const e = entries[i];
+        const cx = spacing * (i + 1);
+        const cy = h / 2 - 4;
+
+        c.save();
+        c.translate(cx, cy);
+        c.rotate(e.angle);
+        c.strokeStyle = e.color;
+        c.lineWidth = 1.5;
+        strokeShape(c, e.shape, Math.min(e.size, 18));
+        c.restore();
+
+        // Label
+        c.fillStyle = '#555';
+        c.font = '10px Courier New';
+        c.textAlign = 'center';
+        const rps = (e.speed * 60 / (2 * Math.PI)).toFixed(2);
+        c.fillText(e.label + '  ' + e.speed + ' rad/f', cx, h - 16);
+        c.fillStyle = e.color;
+        c.fillText(rps + ' rev/s', cx, h - 4);
+    }
+}
+
+// ============================================================
+// BULLET RANGE VISUALIZATION
+// Bullets auto-fire from the left and fade out when lifetime expires.
+// Shows effective range.
+// ============================================================
+const bulletCvs = initCanvas('bullet-canvas');
+let playerBullets = [];
+let enemyBullets = [];
+let bulletFireTimer = 0;
+
+function drawBulletViz() {
+    const { ctx: c, w, h } = bulletCvs;
+    c.fillStyle = '#0a0a0a'; c.fillRect(0, 0, w, h);
+
+    const y1 = h * 0.33;
+    const y2 = h * 0.72;
+    const startX = 60;
+
+    // Auto-fire
+    bulletFireTimer++;
+    if (bulletFireTimer >= 30) {
+        bulletFireTimer = 0;
+        playerBullets.push({ x: startX, life: config.BULLET_LIFETIME, maxLife: config.BULLET_LIFETIME });
+        enemyBullets.push({ x: startX, life: config.BULLET_LIFETIME, maxLife: config.BULLET_LIFETIME });
+    }
+
+    // Update & draw player bullets
+    for (let i = playerBullets.length - 1; i >= 0; i--) {
+        const b = playerBullets[i];
+        b.x += config.BULLET_SPEED;
+        b.life--;
+        const alpha = Math.max(0.15, b.life / b.maxLife);
+        c.fillStyle = `rgba(255,255,255,${alpha})`;
+        c.beginPath(); c.arc(b.x, y1, 2.5, 0, Math.PI * 2); c.fill();
+        if (b.life <= 0 || b.x > w) playerBullets.splice(i, 1);
+    }
+
+    // Update & draw enemy bullets
+    for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        const b = enemyBullets[i];
+        b.x += config.ENEMY_BULLET_SPEED;
+        b.life--;
+        const alpha = Math.max(0.15, b.life / b.maxLife);
+        c.fillStyle = `rgba(255,100,100,${alpha})`;
+        c.beginPath(); c.arc(b.x, y2, 2.5, 0, Math.PI * 2); c.fill();
+        if (b.life <= 0 || b.x > w) enemyBullets.splice(i, 1);
+    }
+
+    // Range markers
+    const playerRange = config.BULLET_SPEED * config.BULLET_LIFETIME;
+    const enemyRange = config.ENEMY_BULLET_SPEED * config.BULLET_LIFETIME;
+
+    // Player range line
+    const prX = Math.min(startX + playerRange, w - 5);
+    c.strokeStyle = '#333';
+    c.setLineDash([3, 3]);
+    c.beginPath(); c.moveTo(prX, y1 - 10); c.lineTo(prX, y1 + 10); c.stroke();
+    c.setLineDash([]);
+
+    // Enemy range line
+    const erX = Math.min(startX + enemyRange, w - 5);
+    c.strokeStyle = '#333';
+    c.setLineDash([3, 3]);
+    c.beginPath(); c.moveTo(erX, y2 - 10); c.lineTo(erX, y2 + 10); c.stroke();
+    c.setLineDash([]);
+
+    // Labels
+    c.font = '10px Courier New';
+    c.textAlign = 'left';
+    c.fillStyle = '#fff';
+    c.fillText('Player  spd:' + config.BULLET_SPEED + '  range:' + playerRange + 'px', 4, y1 - 12);
+    c.fillStyle = '#f66';
+    c.fillText('Enemy   spd:' + config.ENEMY_BULLET_SPEED + '  range:' + enemyRange + 'px', 4, y2 - 12);
+}
+
+// ============================================================
+// TTK VISUALIZATION
+// Auto-fires at a boss. Shows HP draining and time elapsed.
+// Loops automatically.
+// ============================================================
+const ttkCvs = initCanvas('ttk-canvas');
+
+let ttkState = {
+    bossHp: 0,
+    bossMaxHp: 0,
+    timer: 0,
+    cooldown: 0,
+    bullets: [],
+    lastTTK: null,
+    pauseTimer: 0  // pause between kills to show result
+};
+
+function resetTTK() {
+    ttkState.bossHp = config.BOSS_MAX_HP;
+    ttkState.bossMaxHp = config.BOSS_MAX_HP;
+    ttkState.timer = 0;
+    ttkState.cooldown = 0;
+    ttkState.bullets = [];
+    ttkState.pauseTimer = 0;
+}
+resetTTK();
+
+function drawTTKViz() {
+    const { ctx: c, w, h } = ttkCvs;
+    c.fillStyle = '#0a0a0a'; c.fillRect(0, 0, w, h);
+
+    const bossX = w * 0.65;
+    const bossY = h / 2;
+    const gunX = 50;
+    const gunY = h / 2;
+
+    // Pause between rounds
+    if (ttkState.pauseTimer > 0) {
+        ttkState.pauseTimer--;
+        if (ttkState.pauseTimer <= 0) resetTTK();
+    }
+
+    if (ttkState.pauseTimer <= 0 && ttkState.bossHp > 0) {
+        ttkState.timer++;
+
+        // Auto-fire
+        ttkState.cooldown--;
+        if (ttkState.cooldown <= 0) {
+            ttkState.bullets.push({ x: gunX + 10, y: gunY });
+            ttkState.cooldown = config.SHOOT_COOLDOWN;
+        }
+
+        // Update bullets
+        for (let i = ttkState.bullets.length - 1; i >= 0; i--) {
+            ttkState.bullets[i].x += config.BULLET_SPEED;
+            // Hit boss
+            if (Math.abs(ttkState.bullets[i].x - bossX) < config.BOSS_SIZE &&
+                Math.abs(ttkState.bullets[i].y - bossY) < config.BOSS_SIZE) {
+                ttkState.bullets.splice(i, 1);
+                ttkState.bossHp--;
+                if (ttkState.bossHp <= 0) {
+                    ttkState.lastTTK = ttkState.timer / 60;
+                    ttkState.pauseTimer = 120; // 2 second pause
+                }
+                continue;
+            }
+            if (ttkState.bullets[i].x > w) ttkState.bullets.splice(i, 1);
+        }
+    }
+
+    // Draw gun (player ship pointing right)
+    c.save();
+    c.translate(gunX, gunY);
+    c.strokeStyle = '#fff';
+    c.lineWidth = 1.5;
+    strokeShape(c, shapes.player, config.SHIP_SIZE);
+    c.restore();
+
+    // Draw bullets
+    for (const b of ttkState.bullets) {
+        c.fillStyle = '#fff';
+        c.beginPath(); c.arc(b.x, b.y, 2, 0, Math.PI * 2); c.fill();
+    }
+
+    // Draw boss (if alive)
+    if (ttkState.bossHp > 0) {
+        c.save();
+        c.translate(bossX, bossY);
+        c.rotate(Math.PI); // facing left
+        c.strokeStyle = '#f44';
+        c.lineWidth = 2;
+        strokeShape(c, shapes.boss, config.BOSS_SIZE * 0.7);
+        c.restore();
+
+        // HP bar
+        const barW = 100, barH = 6;
+        c.fillStyle = '#222';
+        c.fillRect(bossX - barW/2, bossY - config.BOSS_SIZE * 0.7 - 16, barW, barH);
+        c.fillStyle = '#f44';
+        c.fillRect(bossX - barW/2, bossY - config.BOSS_SIZE * 0.7 - 16,
+                   barW * (ttkState.bossHp / ttkState.bossMaxHp), barH);
+
+        // HP text
+        c.fillStyle = '#888';
+        c.font = '10px Courier New';
+        c.textAlign = 'center';
+        c.fillText(ttkState.bossHp + '/' + ttkState.bossMaxHp + ' HP', bossX, bossY - config.BOSS_SIZE * 0.7 - 20);
+    }
+
+    // Timer
+    c.fillStyle = '#fa4';
+    c.font = '12px Courier New';
+    c.textAlign = 'left';
+    const elapsed = (ttkState.timer / 60).toFixed(1);
+    c.fillText('Elapsed: ' + elapsed + 's', gunX + 40, h - 10);
+
+    // Theoretical TTK
+    const fireRate = 60 / config.SHOOT_COOLDOWN;
+    const theoretical = (config.BOSS_MAX_HP / fireRate).toFixed(1);
+    c.fillStyle = '#888';
+    c.fillText('Theoretical: ' + theoretical + 's', gunX + 40, h - 24);
+
+    // Last measured
+    if (ttkState.lastTTK !== null) {
+        c.fillStyle = '#4f4';
+        c.textAlign = 'right';
+        c.fillText('Last TTK: ' + ttkState.lastTTK.toFixed(2) + 's', w - 10, h - 10);
+    }
+
+    // "DESTROYED" flash
+    if (ttkState.pauseTimer > 0) {
+        c.fillStyle = '#4f4';
+        c.font = '14px Courier New';
+        c.textAlign = 'center';
+        c.fillText('DESTROYED', bossX, bossY + 4);
+    }
+}
+
+// ============================================================
+// CONFIG SLIDERS
+// ============================================================
+function buildSliders() {
+    // Clear all slider containers
+    for (const id of ['sliders-speed','sliders-turn','sliders-bullets','sliders-ttk','sliders-other']) {
+        document.getElementById(id).innerHTML = '';
+    }
+
+    for (const [containerId, labelText, key, min, max, step] of SLIDER_DEFS) {
+        const container = document.getElementById(containerId);
+
+        const row = document.createElement('div');
+        row.className = 'config-row';
+
+        const label = document.createElement('label');
+        label.textContent = labelText;
+
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = min; slider.max = max; slider.step = step;
+        slider.value = config[key];
+        slider.id = 'slider-' + key;
+
+        const val = document.createElement('span');
+        val.className = 'val';
+        val.textContent = formatVal(config[key], step);
+        val.id = 'val-' + key;
+
+        const rst = document.createElement('span');
+        rst.className = 'rst';
+        rst.textContent = '\u21ba';
+        rst.title = 'Reset to ' + DEFAULTS[key];
+        rst.onclick = () => {
+            config[key] = DEFAULTS[key];
+            slider.value = DEFAULTS[key];
+            val.textContent = formatVal(DEFAULTS[key], step);
+            onConfigChange();
+        };
+
+        slider.addEventListener('input', () => {
+            config[key] = parseFloat(slider.value);
+            val.textContent = formatVal(config[key], step);
+            onConfigChange();
+        });
+
+        row.append(label, slider, val, rst);
+        container.appendChild(row);
+    }
+}
+
+function formatVal(v, step) {
+    if (step >= 1) return v.toString();
+    return v.toFixed(Math.max(0, -Math.floor(Math.log10(step))));
+}
+
+function syncSliders() {
+    for (const [,,key,,,step] of SLIDER_DEFS) {
+        const s = document.getElementById('slider-' + key);
+        const v = document.getElementById('val-' + key);
+        if (s) { s.value = config[key]; v.textContent = formatVal(config[key], step); }
+    }
+}
+
+function resetAllViz() {
+    // Speed lanes — all back to start
+    for (const l of lanes) laneX[l.key] = LABEL_W;
+    // Turn speed — angles back to zero
+    turnAnglePlayer = 0;
+    turnAngleEnemy = 0;
+    // Bullets — clear all in-flight
+    playerBullets = [];
+    enemyBullets = [];
+    bulletFireTimer = 0;
+    // TTK
+    resetTTK();
+}
+
+function onConfigChange() {
+    resetAllViz();
+}
+
+// ============================================================
+// PRESETS
+// ============================================================
+function loadPresets() {
+    try { return JSON.parse(localStorage.getItem('config-presets') || '{}'); } catch { return {}; }
+}
+function savePresets(p) { localStorage.setItem('config-presets', JSON.stringify(p)); }
+
+function renderPresets() {
+    const row = document.getElementById('presets');
+    row.innerHTML = '';
+    const presets = loadPresets();
+    for (const name of Object.keys(presets)) {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.innerHTML = `${name} <span class="delete">\u00d7</span>`;
+        btn.querySelector('.delete').onclick = (e) => {
+            e.stopPropagation();
+            const p = loadPresets(); delete p[name]; savePresets(p); renderPresets();
+        };
+        btn.onclick = () => {
+            Object.assign(config, DEFAULTS, presets[name]);
+            syncSliders(); onConfigChange();
+        };
+        row.appendChild(btn);
+    }
+}
+
+document.getElementById('save-btn').onclick = () => {
+    const name = document.getElementById('preset-name').value.trim();
+    if (!name) return;
+    const presets = loadPresets();
+    const snapshot = {};
+    for (const key of Object.keys(DEFAULTS)) snapshot[key] = config[key];
+    presets[name] = snapshot;
+    savePresets(presets);
+    document.getElementById('preset-name').value = '';
+    renderPresets();
+};
+
+document.getElementById('reset-all-btn').onclick = () => {
+    Object.assign(config, DEFAULTS);
+    syncSliders(); onConfigChange();
+};
+
+document.getElementById('download-btn').onclick = () => {
+    const content = `// --- Game Configuration ---
+
+export const config = {
+    // Ship
+    SHIP_SIZE: ${config.SHIP_SIZE},
+    TURN_SPEED: ${config.TURN_SPEED},
+    THRUST_POWER: ${config.THRUST_POWER},
+    FRICTION: ${config.FRICTION},
+    INVINCIBLE_DURATION: ${config.INVINCIBLE_DURATION},
+
+    // Bullets
+    BULLET_SPEED: ${config.BULLET_SPEED},
+    BULLET_LIFETIME: ${config.BULLET_LIFETIME},
+    MAX_BULLETS: ${config.MAX_BULLETS},
+
+    // Asteroids
+    ASTEROID_SPEED: ${config.ASTEROID_SPEED},
+    ASTEROID_JAGGEDNESS: ${config.ASTEROID_JAGGEDNESS},
+
+    // Enemies
+    ENEMY_SIZE: ${config.ENEMY_SIZE},
+    ENEMY_SPEED: ${config.ENEMY_SPEED},
+    ENEMY_TURN_SPEED: ${config.ENEMY_TURN_SPEED},
+    ENEMY_FIRE_INTERVAL: ${config.ENEMY_FIRE_INTERVAL},
+    ENEMY_BULLET_SPEED: ${config.ENEMY_BULLET_SPEED},
+
+    // Wingmen
+    WINGMAN_DURATION: ${config.WINGMAN_DURATION},
+    WINGMAN_SPEED: ${config.WINGMAN_SPEED},
+
+    // Boss
+    BOSS_SIZE: ${config.BOSS_SIZE},
+    BOSS_MAX_HP: ${config.BOSS_MAX_HP},
+    BOSS_SPEED: ${config.BOSS_SPEED},
+
+    // Debug
+    infiniteLives: false
+};
+`;
+    const blob = new Blob([content], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'config.js'; a.click();
+    URL.revokeObjectURL(url);
+};
+
+// ============================================================
+// MAIN LOOP
+// ============================================================
+const TARGET_FPS = 60;
+const FRAME_DURATION = 1000 / TARGET_FPS;
+let lastFrameTime = 0;
+
+function loop(timestamp) {
+    requestAnimationFrame(loop);
+    const elapsed = timestamp - lastFrameTime;
+    if (elapsed < FRAME_DURATION) return;
+    lastFrameTime = timestamp - (elapsed % FRAME_DURATION);
+
+    drawSpeedViz();
+    drawTurnViz();
+    drawBulletViz();
+    drawTTKViz();
+}
+
+// --- Init ---
+buildSliders();
+renderPresets();
+resetTTK();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

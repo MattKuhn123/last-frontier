@@ -20,7 +20,7 @@ If you're using an IDE like WebStorm or VS Code (with Live Server), opening `ind
 
 ## Dev Tools
 
-### Sound Designer (`sound-designer.html`)
+### Sound Designer (`_tools/sound-designer.html`)
 
 Browser-based tool for creating game sound effects. Open it directly in your browser.
 
@@ -30,7 +30,7 @@ Browser-based tool for creating game sound effects. Open it directly in your bro
 - **Save Preset** stores custom sounds in localStorage
 - **Download** exports a `.wav` file — move it to `sfx/` and reference it in `music.js`
 
-### Ship Designer (`ship-designer.html`)
+### Ship Designer (`_tools/ship-designer.html`)
 
 Browser-based tool for designing ship shapes. Open it directly in your browser.
 
@@ -46,3 +46,17 @@ Browser-based tool for designing ship shapes. Open it directly in your browser.
 - **Download shapes.js** generates the full module with all 4 ship types
 
 To apply your designs: click **Download shapes.js** and replace `js/shapes.js` with the downloaded file.
+
+### Config Sandbox (`_tools/config-sandbox.html`)
+
+Passive visualization tool for tuning game physics. Open it directly in your browser — no input required, everything animates automatically.
+
+- **Speed lanes** — player, enemy, boss, asteroid, and both bullet types race across the screen at their configured speeds for instant comparison
+- **Turn speed** — player and enemy ships rotate side by side showing relative turn rates and revolutions per second
+- **Bullet range** — player and enemy bullets auto-fire, fade as lifetime expires, with dashed range markers
+- **Time to kill** — auto-fires at a boss, shows HP draining in real time with elapsed timer, theoretical TTK, and measured TTK; loops automatically
+- All config values have **sliders** on the right with per-value reset buttons
+- **Save Preset** stores config snapshots in localStorage
+- **Download config.js** exports the full config module for the game
+
+To apply your tuning: click **Download config.js** and replace `js/config.js` with the downloaded file.

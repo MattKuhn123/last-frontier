@@ -2,7 +2,7 @@
 import { canvas, ctx, rand, wrap, dist } from './utils.js';
 import { ship } from './ship.js';
 import { spawnParticles } from './particles.js';
-import { config } from './debug.js';
+import { config } from './config.js';
 
 const ASTEROID_VERTICES = 10;
 

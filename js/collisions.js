@@ -1,7 +1,7 @@
 // --- Collision Detection ---
 import { dist } from './utils.js';
 import { ship, invincibleTimer, resetShip, setInvincible } from './ship.js';
-import { config } from './debug.js';
+import { config } from './config.js';
 import { bullets } from './bullets.js';
 import { asteroids, splitAsteroid } from './asteroids.js';
 import { enemies, destroyEnemy } from './enemies.js';

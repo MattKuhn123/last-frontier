@@ -2,7 +2,8 @@
 import { canvas, ctx } from './utils.js';
 import { keys, setTitleStartCallback } from './input.js';
 import { ship, createShip, resetShip, updateShip, drawShip, setInvincible } from './ship.js';
-import { config, buildDebugPanel } from './debug.js';
+import { config } from './config.js';
+import { buildDebugPanel } from './debug.js';
 import { bullets, resetBullets, updateBullets, drawBullets } from './bullets.js';
 import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from './asteroids.js';
 import { particles, resetParticles, spawnParticles, updateParticles, drawParticles } from './particles.js';

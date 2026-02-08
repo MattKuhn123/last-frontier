@@ -4,7 +4,7 @@ import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnEnemy } from './enemies.js';
 import { spawnParticles } from './particles.js';
-import { config } from './debug.js';
+import { config } from './config.js';
 import { shapes, strokeShape } from './shapes.js';
 
 export let boss = null;

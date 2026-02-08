@@ -1,7 +1,7 @@
 // --- Player Ship ---
 import { canvas, ctx, wrap } from './utils.js';
 import { keys } from './input.js';
-import { config } from './debug.js';
+import { config } from './config.js';
 import { shapes, strokeShape } from './shapes.js';
 
 export let ship = null;

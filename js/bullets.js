@@ -2,7 +2,7 @@
 import { ctx, wrap } from './utils.js';
 import { keys } from './input.js';
 import { ship } from './ship.js';
-import { config } from './debug.js';
+import { config } from './config.js';
 
 export let bullets = [];
 let shootCooldown = 0;

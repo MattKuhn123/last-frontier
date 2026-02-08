@@ -5,7 +5,7 @@ import { ship, createShip, resetShip, updateShip, drawShip, setInvincible } from
 import { config, buildDebugPanel } from './debug.js';
 import { bullets, resetBullets, updateBullets, drawBullets } from './bullets.js';
 import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from './asteroids.js';
-import { particles, resetParticles, updateParticles, drawParticles } from './particles.js';
+import { particles, resetParticles, spawnParticles, updateParticles, drawParticles } from './particles.js';
 import { enemies, resetEnemies, spawnEnemy, spawnCorruptEnemy, updateEnemies, drawEnemies } from './enemies.js';
 import { resetWingmen, spawnWingmanPickup, updateWingmen, drawWingmen, activeWingman } from './wingmen.js';
 import { boss, resetBoss, spawnBoss, updateBoss, drawBoss, hideBossHealthBar } from './boss.js';
@@ -358,6 +358,7 @@ function triggerGameOver() {
 
 // --- Player Death ---
 function handlePlayerDeath() {
+    spawnParticles(ship.x, ship.y, 15);
     triggerScreenShake();
     playExplosionSFX();
     triggerHitFlash();

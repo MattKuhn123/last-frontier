@@ -7,7 +7,7 @@ import { asteroids, splitAsteroid } from './asteroids.js';
 import { enemies, destroyEnemy } from './enemies.js';
 import { boss, damageBoss } from './boss.js';
 import { pickup, collectPickup } from './wingmen.js';
-import { spawnParticles } from './particles.js';
+
 
 export function checkCollisions(gameState) {
     let scoreGained = 0;
@@ -54,7 +54,6 @@ export function checkCollisions(gameState) {
     if (ship && invincibleTimer <= 0) {
         for (let i = asteroids.length - 1; i >= 0; i--) {
             if (dist(asteroids[i], ship) < asteroids[i].radius + ship.radius * 0.6) {
-                spawnParticles(ship.x, ship.y, 15);
                 playerDied = true;
                 break;
             }
@@ -66,7 +65,6 @@ export function checkCollisions(gameState) {
         for (let j = bullets.length - 1; j >= 0; j--) {
             if (!bullets[j].friendly && dist(ship, bullets[j]) < ship.radius * 0.6) {
                 bullets.splice(j, 1);
-                spawnParticles(ship.x, ship.y, 15);
                 playerDied = true;
                 break;
             }
@@ -77,7 +75,6 @@ export function checkCollisions(gameState) {
     if (ship && invincibleTimer <= 0 && !playerDied) {
         for (let i = enemies.length - 1; i >= 0; i--) {
             if (dist(enemies[i], ship) < enemies[i].radius + ship.radius * 0.6) {
-                spawnParticles(ship.x, ship.y, 15);
                 destroyEnemy(i);
                 playerDied = true;
                 break;
@@ -88,7 +85,6 @@ export function checkCollisions(gameState) {
     // Ship vs boss (collision)
     if (ship && boss && boss.phase === 'fight' && invincibleTimer <= 0 && !playerDied) {
         if (dist(boss, ship) < boss.radius + ship.radius * 0.6) {
-            spawnParticles(ship.x, ship.y, 15);
             playerDied = true;
         }
     }

@@ -1,6 +1,7 @@
 // --- Music System (Web Audio API) ---
 
 import { synthesize, SAMPLE_RATE } from './synth.js';
+import { sounds } from './sounds.js';
 
 let audioCtx = null;
 let gainNode = null;
@@ -121,17 +122,8 @@ export function stopTrack() {
     resetGain();
 }
 
-// Cached synth buffers keyed by sound name
+// Cached synth buffers keyed by param snapshot
 const synthBufferCache = new Map();
-
-function getSfxMod(name) {
-    try {
-        const raw = localStorage.getItem('lf-mod-sfx');
-        if (!raw) return null;
-        const mods = JSON.parse(raw);
-        return mods[name] || null;
-    } catch { return null; }
-}
 
 function synthToBuffer(params) {
     const samples = synthesize(params);
@@ -140,28 +132,16 @@ function synthToBuffer(params) {
     return buf;
 }
 
-export async function playExplosionSFX() {
+export function playExplosionSFX() {
     if (!audioCtx) return;
 
-    const mod = getSfxMod('explosion');
-    if (mod) {
-        // Use cached synth buffer or create one
-        const cacheKey = JSON.stringify(mod);
-        let buf = synthBufferCache.get(cacheKey);
-        if (!buf) {
-            buf = synthToBuffer(mod);
-            synthBufferCache.set(cacheKey, buf);
-        }
-        const src = audioCtx.createBufferSource();
-        src.buffer = buf;
-        src.connect(audioCtx.destination);
-        src.start();
-        return;
+    const params = sounds.explosion;
+    const cacheKey = JSON.stringify(params);
+    let buf = synthBufferCache.get(cacheKey);
+    if (!buf) {
+        buf = synthToBuffer(params);
+        synthBufferCache.set(cacheKey, buf);
     }
-
-    // Default: play from file
-    const buf = await loadBuffer('sfx/explosion.wav');
-    if (!buf) return;
     const src = audioCtx.createBufferSource();
     src.buffer = buf;
     src.connect(audioCtx.destination);

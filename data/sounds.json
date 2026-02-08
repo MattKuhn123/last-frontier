@@ -1,0 +1,13 @@
+{
+    "explosion": {
+        "duration": 0.4,
+        "noiseDecay": 3,
+        "noiseFilter": 600,
+        "noiseVolume": 0.6,
+        "toneType": "sine",
+        "toneStart": 80,
+        "toneEnd": 30,
+        "toneDecay": 2,
+        "toneVolume": 0.5
+    }
+}

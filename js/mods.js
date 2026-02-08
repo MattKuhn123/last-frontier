@@ -5,6 +5,7 @@
 import { config } from './config.js';
 import { shapes } from './shapes.js';
 import { missions } from './missions.js';
+import { sounds } from './sounds.js';
 
 const MOD_KEYS = {
     config:   'lf-mod-config',
@@ -24,6 +25,9 @@ for (const key of Object.keys(shapes)) {
 
 // Deep-copy the original missions array for reset
 const missionsDefaults = JSON.parse(JSON.stringify(missions));
+
+// Deep-copy the original sounds for reset
+const soundsDefaults = JSON.parse(JSON.stringify(sounds));
 
 function loadJSON(key) {
     try {
@@ -59,10 +63,19 @@ function applyMissionsMod() {
     missions.splice(0, missions.length, ...mod);
 }
 
+function applySfxMod() {
+    const mod = loadJSON(MOD_KEYS.sfx);
+    if (!mod) return;
+    for (const key of Object.keys(mod)) {
+        sounds[key] = mod[key];
+    }
+}
+
 // Apply mods at import time
 applyConfigMod();
 applyShapesMod();
 applyMissionsMod();
+applySfxMod();
 
 // --- Public API for future UI use ---
 
@@ -85,11 +98,18 @@ export function resetMissionsToDefaults() {
     localStorage.removeItem(MOD_KEYS.missions);
 }
 
+export function resetSfxToDefaults() {
+    for (const key of Object.keys(soundsDefaults)) {
+        sounds[key] = JSON.parse(JSON.stringify(soundsDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.sfx);
+}
+
 export function resetAllMods() {
     resetConfigToDefaults();
     resetShapesToDefaults();
     resetMissionsToDefaults();
-    localStorage.removeItem(MOD_KEYS.sfx);
+    resetSfxToDefaults();
 }
 
 export function saveConfigMod(partial) {

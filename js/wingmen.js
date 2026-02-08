@@ -5,6 +5,7 @@ import { enemies } from './enemies.js';
 import { asteroids } from './asteroids.js';
 import { addBullet } from './bullets.js';
 import { config } from './debug.js';
+import { shapes, strokeShape } from './shapes.js';
 const PICKUP_RADIUS = 15;
 const PICKUP_PULSE_SPEED = 0.05;
 
@@ -177,13 +178,7 @@ export function drawWingmen() {
         ctx.globalAlpha = 0.8 + glow * 0.2;
         ctx.strokeStyle = def.color;
         ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(0, -8);
-        ctx.lineTo(-6, 6);
-        ctx.lineTo(0, 3);
-        ctx.lineTo(6, 6);
-        ctx.closePath();
-        ctx.stroke();
+        strokeShape(ctx, shapes.wingman, 8);
 
         ctx.restore();
     }
@@ -198,13 +193,7 @@ export function drawWingmen() {
         // Ship shape
         ctx.strokeStyle = w.color;
         ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(0, -12);
-        ctx.lineTo(-8, 8);
-        ctx.lineTo(0, 4);
-        ctx.lineTo(8, 8);
-        ctx.closePath();
-        ctx.stroke();
+        strokeShape(ctx, shapes.wingman, 12);
 
         // Timer indicator (fading glow)
         if (w.timer < 180) {

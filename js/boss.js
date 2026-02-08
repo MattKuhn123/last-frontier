@@ -5,6 +5,7 @@ import { addBullet } from './bullets.js';
 import { spawnEnemy } from './enemies.js';
 import { spawnParticles } from './particles.js';
 import { config } from './debug.js';
+import { shapes, strokeShape } from './shapes.js';
 
 export let boss = null;
 
@@ -146,17 +147,7 @@ export function drawBoss() {
     ctx.lineWidth = 2;
 
     // Large menacing ship shape
-    ctx.beginPath();
-    ctx.moveTo(0, -config.BOSS_SIZE);
-    ctx.lineTo(-config.BOSS_SIZE * 0.6, -config.BOSS_SIZE * 0.3);
-    ctx.lineTo(-config.BOSS_SIZE, config.BOSS_SIZE * 0.4);
-    ctx.lineTo(-config.BOSS_SIZE * 0.5, config.BOSS_SIZE * 0.8);
-    ctx.lineTo(0, config.BOSS_SIZE * 0.5);
-    ctx.lineTo(config.BOSS_SIZE * 0.5, config.BOSS_SIZE * 0.8);
-    ctx.lineTo(config.BOSS_SIZE, config.BOSS_SIZE * 0.4);
-    ctx.lineTo(config.BOSS_SIZE * 0.6, -config.BOSS_SIZE * 0.3);
-    ctx.closePath();
-    ctx.stroke();
+    strokeShape(ctx, shapes.boss, config.BOSS_SIZE);
 
     // Center detail
     ctx.strokeStyle = boss.flashTimer > 0 ? '#faa' : '#a22';

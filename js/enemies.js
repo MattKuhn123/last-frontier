@@ -4,6 +4,7 @@ import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnParticles } from './particles.js';
 import { config } from './debug.js';
+import { shapes, strokeShape } from './shapes.js';
 
 export let enemies = [];
 
@@ -102,16 +103,7 @@ export function drawEnemies() {
 
         ctx.strokeStyle = e.color;
         ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        // Diamond-ish fighter shape
-        ctx.moveTo(0, -config.ENEMY_SIZE);
-        ctx.lineTo(-config.ENEMY_SIZE * 0.8, config.ENEMY_SIZE * 0.3);
-        ctx.lineTo(-config.ENEMY_SIZE * 0.4, config.ENEMY_SIZE * 0.7);
-        ctx.lineTo(0, config.ENEMY_SIZE * 0.4);
-        ctx.lineTo(config.ENEMY_SIZE * 0.4, config.ENEMY_SIZE * 0.7);
-        ctx.lineTo(config.ENEMY_SIZE * 0.8, config.ENEMY_SIZE * 0.3);
-        ctx.closePath();
-        ctx.stroke();
+        strokeShape(ctx, shapes.enemy, config.ENEMY_SIZE);
 
         ctx.restore();
     }

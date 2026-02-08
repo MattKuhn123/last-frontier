@@ -2,6 +2,7 @@
 import { canvas, ctx, wrap } from './utils.js';
 import { keys } from './input.js';
 import { config } from './debug.js';
+import { shapes, strokeShape } from './shapes.js';
 
 export let ship = null;
 export let invincibleTimer = 0;
@@ -63,13 +64,7 @@ export function drawShip() {
 
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(0, -config.SHIP_SIZE);
-    ctx.lineTo(-config.SHIP_SIZE * 0.7, config.SHIP_SIZE * 0.7);
-    ctx.lineTo(0, config.SHIP_SIZE * 0.4);
-    ctx.lineTo(config.SHIP_SIZE * 0.7, config.SHIP_SIZE * 0.7);
-    ctx.closePath();
-    ctx.stroke();
+    strokeShape(ctx, shapes.player, config.SHIP_SIZE);
 
     if (ship.thrusting && Math.random() > 0.3) {
         ctx.strokeStyle = '#f80';

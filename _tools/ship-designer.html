@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ship Designer — Last Frontier</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #111;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #fff;
+            font-size: 18px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #888;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        /* --- Ship type selector --- */
+        .type-row { display: flex; gap: 6px; margin-bottom: 16px; }
+        .type-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 6px 16px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .type-btn:hover { border-color: #888; color: #fff; }
+        .type-btn.active { border-color: #4f4; color: #4f4; }
+
+        /* --- Preset row --- */
+        .preset-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+        .preset-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #999;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+        .preset-btn:hover { border-color: #666; color: #fff; }
+        .preset-btn .delete { color: #666; margin-left: 6px; }
+        .preset-btn .delete:hover { color: #f44; }
+
+        /* --- Canvas layout --- */
+        .canvas-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+        .edit-area { position: relative; }
+        #edit-canvas {
+            border: 1px solid #222;
+            cursor: crosshair;
+            display: block;
+        }
+        .edit-hint {
+            color: #555;
+            font-size: 10px;
+            margin-top: 6px;
+        }
+        .preview-area {}
+        #preview-canvas {
+            border: 1px solid #222;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* --- Controls --- */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .control-row label {
+            width: 70px;
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .control-row input[type="color"] {
+            width: 40px;
+            height: 24px;
+            border: 1px solid #444;
+            background: transparent;
+            cursor: pointer;
+        }
+        .control-row input[type="range"] {
+            flex: 1;
+            accent-color: #4f4;
+        }
+        .control-row .value {
+            width: 40px;
+            text-align: right;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        /* --- Vertex list --- */
+        .vertex-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #222;
+            padding: 6px;
+            margin-bottom: 12px;
+            font-size: 11px;
+        }
+        .vertex-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 0;
+            color: #aaa;
+        }
+        .vertex-item .idx { color: #666; width: 20px; }
+        .vertex-item .coords { color: #4f4; }
+        .vertex-item .del-btn {
+            color: #444;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .vertex-item .del-btn:hover { color: #f44; }
+
+        /* --- Buttons --- */
+        .btn {
+            background: transparent;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 8px 20px;
+            cursor: pointer;
+            border: 1px solid;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+        }
+        .btn-action { color: #4f4; border-color: #4f4; }
+        .btn-action:hover { background: #4f4; color: #000; }
+        .btn-download { color: #4af; border-color: #4af; }
+        .btn-download:hover { background: #4af; color: #000; }
+        .btn-save { color: #fa4; border-color: #fa4; }
+        .btn-save:hover { background: #fa4; color: #000; }
+        .btn-danger { color: #f44; border-color: #f44; }
+        .btn-danger:hover { background: #f44; color: #000; }
+
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; align-items: center; }
+        .actions label {
+            color: #888;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        .actions input[type="checkbox"] { accent-color: #4f4; }
+
+        .file-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .file-row span { color: #888; font-size: 11px; text-transform: uppercase; }
+        .file-row input[type="text"] {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 6px 10px;
+            width: 160px;
+        }
+
+        /* --- JSON output --- */
+        #json-output {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            color: #4f4;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 10px;
+            width: 100%;
+            height: 60px;
+            resize: vertical;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ship Designer</h1>
+
+    <h2>Ship Type</h2>
+    <div class="type-row" id="type-btns">
+        <button class="type-btn active" data-type="player">Player</button>
+        <button class="type-btn" data-type="enemy">Enemy</button>
+        <button class="type-btn" data-type="wingman">Wingman</button>
+        <button class="type-btn" data-type="boss">Boss</button>
+    </div>
+
+    <h2>Saved Presets</h2>
+    <div class="preset-row" id="custom-presets"></div>
+
+    <div class="canvas-row">
+        <div class="edit-area">
+            <canvas id="edit-canvas" width="400" height="400"></canvas>
+            <div class="edit-hint">Click to add &middot; Drag to move &middot; Right-click to delete</div>
+        </div>
+        <div class="preview-area">
+            <canvas id="preview-canvas" width="180" height="180"></canvas>
+            <div class="controls">
+                <div class="control-row">
+                    <label>Color</label>
+                    <input type="color" id="ship-color" value="#ffffff">
+                </div>
+                <div class="control-row">
+                    <label>Line</label>
+                    <input type="range" id="line-width" min="0.5" max="4" step="0.5" value="1.5">
+                    <span class="value" id="line-width-val">1.5</span>
+                </div>
+                <div class="control-row">
+                    <label>Preview</label>
+                    <input type="range" id="preview-size" min="10" max="60" step="1" value="20">
+                    <span class="value" id="preview-size-val">20</span>
+                </div>
+            </div>
+            <div style="margin-top: 12px;">
+                <h2>Vertices</h2>
+                <div class="vertex-list" id="vertex-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-danger" id="clear-btn">Clear</button>
+        <button class="btn btn-action" id="reset-btn">Reset Default</button>
+        <label><input type="checkbox" id="snap-toggle" checked> Snap (0.05)</label>
+        <label><input type="checkbox" id="symmetry-toggle"> Symmetry</label>
+    </div>
+
+    <h2>Vertex JSON</h2>
+    <textarea id="json-output" readonly></textarea>
+
+    <div class="file-row">
+        <span>Preset name</span>
+        <input type="text" id="preset-name" placeholder="my-ship">
+        <button class="btn btn-save" id="save-btn">Save Preset</button>
+    </div>
+    <div class="file-row">
+        <button class="btn btn-download" id="download-btn">Download shapes.js</button>
+        <button class="btn btn-action" id="copy-btn">Copy JSON</button>
+    </div>
+
+<script>
+// --- Default shapes (same as js/shapes.js) ---
+const DEFAULTS = {
+    player: [[0, -1], [-0.7, 0.7], [0, 0.4], [0.7, 0.7]],
+    enemy: [[0, -1], [-0.8, 0.3], [-0.4, 0.7], [0, 0.4], [0.4, 0.7], [0.8, 0.3]],
+    wingman: [[0, -1], [-0.67, 0.67], [0, 0.33], [0.67, 0.67]],
+    boss: [[0, -1], [-0.6, -0.3], [-1, 0.4], [-0.5, 0.8], [0, 0.5], [0.5, 0.8], [1, 0.4], [0.6, -0.3]]
+};
+
+// --- State ---
+const allShapes = {};
+for (const key of Object.keys(DEFAULTS)) {
+    allShapes[key] = DEFAULTS[key].map(v => [...v]);
+}
+
+let currentType = 'player';
+let draggingIdx = -1;
+let hoveredIdx = -1;
+
+// --- Canvas setup ---
+const editCanvas = document.getElementById('edit-canvas');
+const editCtx = editCanvas.getContext('2d');
+const previewCanvas = document.getElementById('preview-canvas');
+const previewCtx = previewCanvas.getContext('2d');
+
+// Coordinate system: shape coords [-1.5, 1.5] mapped to canvas [0, 400]
+const GRID_RANGE = 1.5;
+const SCALE = editCanvas.width / (GRID_RANGE * 2);
+const CENTER = editCanvas.width / 2;
+
+function toCanvas(sx, sy) {
+    return [CENTER + sx * SCALE, CENTER + sy * SCALE];
+}
+
+function toShape(cx, cy) {
+    return [(cx - CENTER) / SCALE, (cy - CENTER) / SCALE];
+}
+
+function snapVal(v) {
+    if (!document.getElementById('snap-toggle').checked) return v;
+    return Math.round(v / 0.05) * 0.05;
+}
+
+function roundDisplay(v) {
+    return Math.round(v * 100) / 100;
+}
+
+// --- Current vertices shorthand ---
+function verts() { return allShapes[currentType]; }
+
+// --- Distance helpers ---
+function distPt(a, b) {
+    return Math.hypot(a[0] - b[0], a[1] - b[1]);
+}
+
+function distToSegment(p, a, b) {
+    const dx = b[0] - a[0], dy = b[1] - a[1];
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return distPt(p, a);
+    let t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+    return distPt(p, [a[0] + t * dx, a[1] + t * dy]);
+}
+
+function findInsertIndex(vertices, point) {
+    if (vertices.length < 2) return vertices.length;
+    let minDist = Infinity;
+    let bestIdx = 0;
+    for (let i = 0; i < vertices.length; i++) {
+        const j = (i + 1) % vertices.length;
+        const d = distToSegment(point, vertices[i], vertices[j]);
+        if (d < minDist) {
+            minDist = d;
+            bestIdx = i + 1;
+        }
+    }
+    return bestIdx;
+}
+
+function findVertex(canvasX, canvasY, threshold) {
+    const [sx, sy] = toShape(canvasX, canvasY);
+    for (let i = 0; i < verts().length; i++) {
+        if (distPt([sx, sy], verts()[i]) < threshold) return i;
+    }
+    return -1;
+}
+
+// --- Symmetry helper ---
+function findMirror(vertices, idx) {
+    const [x, y] = vertices[idx];
+    if (Math.abs(x) < 0.02) return -1; // on center line, no mirror
+    for (let i = 0; i < vertices.length; i++) {
+        if (i === idx) continue;
+        if (Math.abs(vertices[i][0] + x) < 0.05 && Math.abs(vertices[i][1] - y) < 0.05) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// --- Edit canvas rendering ---
+function drawEditCanvas() {
+    const ctx = editCtx;
+    const w = editCanvas.width, h = editCanvas.height;
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, w, h);
+
+    // Grid
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1;
+    for (let v = -GRID_RANGE; v <= GRID_RANGE; v += 0.25) {
+        const [cx, cy] = toCanvas(v, -GRID_RANGE);
+        const [cx2, cy2] = toCanvas(v, GRID_RANGE);
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx2, cy2); ctx.stroke();
+        const [rx, ry] = toCanvas(-GRID_RANGE, v);
+        const [rx2, ry2] = toCanvas(GRID_RANGE, v);
+        ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx2, ry2); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(CENTER, 0); ctx.lineTo(CENTER, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, CENTER); ctx.lineTo(w, CENTER); ctx.stroke();
+
+    // Unit circle (reference)
+    ctx.strokeStyle = '#1f1f1f';
+    ctx.beginPath();
+    ctx.arc(CENTER, CENTER, SCALE, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const vertices = verts();
+    if (vertices.length === 0) return;
+
+    // Polygon fill (subtle)
+    if (vertices.length >= 3) {
+        ctx.fillStyle = 'rgba(68, 255, 68, 0.05)';
+        ctx.beginPath();
+        for (let i = 0; i < vertices.length; i++) {
+            const [cx, cy] = toCanvas(vertices[i][0], vertices[i][1]);
+            if (i === 0) ctx.moveTo(cx, cy);
+            else ctx.lineTo(cx, cy);
+        }
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // Edges
+    ctx.strokeStyle = '#4f4';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i = 0; i < vertices.length; i++) {
+        const [cx, cy] = toCanvas(vertices[i][0], vertices[i][1]);
+        if (i === 0) ctx.moveTo(cx, cy);
+        else ctx.lineTo(cx, cy);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    // Vertices
+    for (let i = 0; i < vertices.length; i++) {
+        const [cx, cy] = toCanvas(vertices[i][0], vertices[i][1]);
+        const isHovered = i === hoveredIdx;
+        const isDragging = i === draggingIdx;
+
+        ctx.fillStyle = isDragging ? '#fff' : isHovered ? '#8f8' : '#4f4';
+        ctx.beginPath();
+        ctx.arc(cx, cy, isHovered || isDragging ? 7 : 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Index label
+        ctx.fillStyle = '#111';
+        ctx.font = '10px Courier New';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(i, cx, cy);
+    }
+}
+
+// --- Preview rendering ---
+let previewAngle = 0;
+
+function drawPreview() {
+    const ctx = previewCtx;
+    const w = previewCanvas.width, h = previewCanvas.height;
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, w, h);
+
+    const vertices = verts();
+    if (vertices.length < 2) {
+        requestAnimationFrame(drawPreview);
+        return;
+    }
+
+    const size = parseFloat(document.getElementById('preview-size').value);
+    const color = document.getElementById('ship-color').value;
+    const lineW = parseFloat(document.getElementById('line-width').value);
+
+    previewAngle += 0.02;
+
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate(previewAngle);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineW;
+    ctx.beginPath();
+    for (let i = 0; i < vertices.length; i++) {
+        const px = vertices[i][0] * size;
+        const py = vertices[i][1] * size;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+
+    // Border label
+    ctx.fillStyle = '#333';
+    ctx.font = '10px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText(currentType.toUpperCase(), w / 2, h - 6);
+
+    requestAnimationFrame(drawPreview);
+}
+
+// --- Vertex list rendering ---
+function renderVertexList() {
+    const list = document.getElementById('vertex-list');
+    list.innerHTML = '';
+    const vertices = verts();
+    for (let i = 0; i < vertices.length; i++) {
+        const item = document.createElement('div');
+        item.className = 'vertex-item';
+        item.innerHTML = `
+            <span class="idx">${i}</span>
+            <span class="coords">[${roundDisplay(vertices[i][0])}, ${roundDisplay(vertices[i][1])}]</span>
+            <span class="del-btn" data-idx="${i}">\u00d7</span>
+        `;
+        item.querySelector('.del-btn').onclick = () => {
+            vertices.splice(i, 1);
+            refresh();
+        };
+        list.appendChild(item);
+    }
+}
+
+// --- JSON output ---
+function updateJSON() {
+    const vertices = verts();
+    const formatted = vertices.map(v => `[${roundDisplay(v[0])}, ${roundDisplay(v[1])}]`).join(', ');
+    document.getElementById('json-output').value = `[${formatted}]`;
+}
+
+// --- Refresh all displays ---
+function refresh() {
+    drawEditCanvas();
+    renderVertexList();
+    updateJSON();
+}
+
+// --- Mouse events on edit canvas ---
+function getCanvasPos(e) {
+    const rect = editCanvas.getBoundingClientRect();
+    return [e.clientX - rect.left, e.clientY - rect.top];
+}
+
+editCanvas.addEventListener('mousedown', (e) => {
+    if (e.button === 2) return; // right-click handled by contextmenu
+    const [cx, cy] = getCanvasPos(e);
+    const hitThreshold = 12 / SCALE; // 12px in shape coords
+
+    const idx = findVertex(cx, cy, hitThreshold);
+    if (idx >= 0) {
+        draggingIdx = idx;
+    } else {
+        // Add new vertex
+        let [sx, sy] = toShape(cx, cy);
+        sx = snapVal(sx);
+        sy = snapVal(sy);
+        const insertIdx = findInsertIndex(verts(), [sx, sy]);
+        verts().splice(insertIdx, 0, [sx, sy]);
+
+        // If symmetry is on, add mirrored vertex
+        if (document.getElementById('symmetry-toggle').checked && Math.abs(sx) > 0.02) {
+            // Insert mirror on the other side
+            const mirrorPt = [-sx, sy];
+            const mirrorIdx = findInsertIndex(verts(), mirrorPt);
+            verts().splice(mirrorIdx, 0, mirrorPt);
+        }
+
+        refresh();
+    }
+});
+
+editCanvas.addEventListener('mousemove', (e) => {
+    const [cx, cy] = getCanvasPos(e);
+
+    if (draggingIdx >= 0) {
+        let [sx, sy] = toShape(cx, cy);
+        sx = snapVal(sx);
+        sy = snapVal(sy);
+
+        const symmetryOn = document.getElementById('symmetry-toggle').checked;
+        const mirrorIdx = symmetryOn ? findMirror(verts(), draggingIdx) : -1;
+
+        verts()[draggingIdx] = [sx, sy];
+        if (mirrorIdx >= 0) {
+            verts()[mirrorIdx] = [-sx, sy];
+        }
+        refresh();
+    } else {
+        const hitThreshold = 12 / SCALE;
+        const newHovered = findVertex(cx, cy, hitThreshold);
+        if (newHovered !== hoveredIdx) {
+            hoveredIdx = newHovered;
+            editCanvas.style.cursor = hoveredIdx >= 0 ? 'grab' : 'crosshair';
+            drawEditCanvas();
+        }
+    }
+});
+
+editCanvas.addEventListener('mouseup', () => {
+    draggingIdx = -1;
+});
+
+editCanvas.addEventListener('mouseleave', () => {
+    draggingIdx = -1;
+    hoveredIdx = -1;
+    editCanvas.style.cursor = 'crosshair';
+    drawEditCanvas();
+});
+
+editCanvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const [cx, cy] = getCanvasPos(e);
+    const hitThreshold = 12 / SCALE;
+    const idx = findVertex(cx, cy, hitThreshold);
+    if (idx >= 0) {
+        verts().splice(idx, 1);
+        refresh();
+    }
+});
+
+// --- Ship type buttons ---
+document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.onclick = () => {
+        currentType = btn.dataset.type;
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        refresh();
+    };
+});
+
+// --- Control inputs ---
+document.getElementById('line-width').addEventListener('input', (e) => {
+    document.getElementById('line-width-val').textContent = e.target.value;
+});
+document.getElementById('preview-size').addEventListener('input', (e) => {
+    document.getElementById('preview-size-val').textContent = e.target.value;
+});
+
+// --- Action buttons ---
+document.getElementById('clear-btn').onclick = () => {
+    allShapes[currentType] = [];
+    refresh();
+};
+
+document.getElementById('reset-btn').onclick = () => {
+    allShapes[currentType] = DEFAULTS[currentType].map(v => [...v]);
+    refresh();
+};
+
+document.getElementById('copy-btn').onclick = () => {
+    const textarea = document.getElementById('json-output');
+    textarea.select();
+    navigator.clipboard.writeText(textarea.value);
+};
+
+// --- Preset management ---
+function loadPresets() {
+    try { return JSON.parse(localStorage.getItem('ship-presets') || '{}'); } catch { return {}; }
+}
+
+function savePresets(presets) {
+    localStorage.setItem('ship-presets', JSON.stringify(presets));
+}
+
+function renderPresets() {
+    const row = document.getElementById('custom-presets');
+    row.innerHTML = '';
+    const presets = loadPresets();
+    for (const name of Object.keys(presets)) {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.innerHTML = `${name} <span class="delete">\u00d7</span>`;
+        btn.querySelector('.delete').onclick = (e) => {
+            e.stopPropagation();
+            const p = loadPresets();
+            delete p[name];
+            savePresets(p);
+            renderPresets();
+        };
+        btn.onclick = () => {
+            const p = loadPresets();
+            allShapes[currentType] = p[name].map(v => [...v]);
+            refresh();
+        };
+        row.appendChild(btn);
+    }
+}
+
+document.getElementById('save-btn').onclick = () => {
+    const name = document.getElementById('preset-name').value.trim();
+    if (!name) return;
+    const presets = loadPresets();
+    presets[name] = verts().map(v => [...v]);
+    savePresets(presets);
+    document.getElementById('preset-name').value = '';
+    renderPresets();
+};
+
+// --- Download shapes.js ---
+document.getElementById('download-btn').onclick = () => {
+    function formatVerts(vertices) {
+        return vertices.map(v => `[${roundDisplay(v[0])}, ${roundDisplay(v[1])}]`).join(', ');
+    }
+
+    const content = `// --- Ship Shape Definitions ---
+// Each shape is an array of [x, y] vertex pairs normalized to size 1.
+// Nose points "up" at (0, -1). The game rotates to face movement direction.
+
+export const shapes = {
+    player: [
+        ${formatVerts(allShapes.player)}
+    ],
+    enemy: [
+        ${formatVerts(allShapes.enemy)}
+    ],
+    wingman: [
+        ${formatVerts(allShapes.wingman)}
+    ],
+    boss: [
+        ${formatVerts(allShapes.boss)}
+    ]
+};
+
+// Draws a shape polygon. Call within a ctx.save()/restore() block
+// that has already set translate, rotate, strokeStyle, and lineWidth.
+export function strokeShape(ctx, vertices, size) {
+    ctx.beginPath();
+    for (let i = 0; i < vertices.length; i++) {
+        const px = vertices[i][0] * size;
+        const py = vertices[i][1] * size;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.stroke();
+}
+`;
+
+    const blob = new Blob([content], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'shapes.js';
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+// --- Init ---
+renderPresets();
+refresh();
+drawPreview();
+</script>
+</body>
+</html>

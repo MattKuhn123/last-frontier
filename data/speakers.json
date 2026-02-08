@@ -1,0 +1,6 @@
+{
+    "HQ":       { "color": "#ff0" },
+    "BOSS":     { "color": "#f44" },
+    "INTEL":    { "color": "#f90" },
+    "DISPATCH": { "color": "#aaf" }
+}

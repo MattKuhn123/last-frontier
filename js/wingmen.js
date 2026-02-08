@@ -9,11 +9,10 @@ import { shapes, strokeShape } from './shapes.js';
 const PICKUP_RADIUS = 15;
 const PICKUP_PULSE_SPEED = 0.05;
 
-// Wingman definitions
-const WINGMAN_TYPES = {
-    sierra: { name: 'SIERRA', color: '#4f4', fireRate: 20, targetPriority: 'nearest' },
-    tango:  { name: 'TANGO',  color: '#48f', fireRate: 35, targetPriority: 'enemies' }
-};
+// Wingman definitions — loaded from data/wingmen.json
+export const wingmanTypes = {};
+const res = await fetch('data/wingmen.json');
+Object.assign(wingmanTypes, await res.json());
 
 export let pickup = null;
 export let activeWingman = null;
@@ -47,7 +46,7 @@ export function collectPickup() {
 }
 
 function activateWingman(type) {
-    const def = WINGMAN_TYPES[type];
+    const def = wingmanTypes[type];
     // Enter from a random edge
     const side = Math.floor(rand(0, 4));
     let x, y;
@@ -162,7 +161,7 @@ export function drawWingmen() {
     // Draw pickup
     if (pickup) {
         const glow = 0.5 + 0.5 * Math.sin(pickup.pulse);
-        const def = WINGMAN_TYPES[pickup.type];
+        const def = wingmanTypes[pickup.type];
         ctx.save();
         ctx.translate(pickup.x, pickup.y);
 

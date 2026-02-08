@@ -1,16 +1,23 @@
 // --- Radio-Comm Dialogue System ---
 import { setDialogueAdvanceCallback } from './input.js';
+import { wingmanTypes } from './wingmen.js';
 
 const TYPEWRITER_SPEED = 30; // ms per character
 
-const SPEAKER_COLORS = {
-    SIERRA: '#4f4',
-    TANGO: '#48f',
-    HQ: '#ff0',
-    BOSS: '#f44',
-    INTEL: '#f90',
-    DISPATCH: '#aaf'
-};
+// NPC speakers loaded from data; wingman speakers derived automatically
+export const speakerColors = {};
+const res = await fetch('data/speakers.json');
+Object.assign(speakerColors, await res.json());
+
+function getSpeakerColor(name) {
+    // Check NPC speakers first
+    if (speakerColors[name]) return speakerColors[name].color;
+    // Check wingman types (keyed by lowercase, display name is uppercase)
+    for (const key of Object.keys(wingmanTypes)) {
+        if (wingmanTypes[key].name === name) return wingmanTypes[key].color;
+    }
+    return '#aaa';
+}
 
 let dialogueLines = [];
 let currentLineIndex = 0;
@@ -41,7 +48,7 @@ function showLine(index) {
 
     const line = dialogueLines[index];
     speakerEl.textContent = line.speaker + ':';
-    speakerEl.style.color = SPEAKER_COLORS[line.speaker] || '#aaa';
+    speakerEl.style.color = getSpeakerColor(line.speaker);
     textEl.textContent = '';
     currentCharIndex = 0;
     isTyping = true;

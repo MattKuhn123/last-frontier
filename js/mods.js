@@ -6,12 +6,18 @@ import { config } from './config.js';
 import { shapes } from './shapes.js';
 import { missions } from './missions.js';
 import { sounds } from './sounds.js';
+import { wingmanTypes } from './wingmen.js';
+import { enemyTypes } from './enemies.js';
+import { speakerColors } from './dialogue.js';
 
 const MOD_KEYS = {
     config:   'lf-mod-config',
     shapes:   'lf-mod-shapes',
     sfx:      'lf-mod-sfx',
-    missions: 'lf-mod-missions'
+    missions: 'lf-mod-missions',
+    wingmen:  'lf-mod-wingmen',
+    enemies:  'lf-mod-enemies',
+    speakers: 'lf-mod-speakers'
 };
 
 // Store original defaults for reset (exported for diff computation)
@@ -28,6 +34,11 @@ const missionsDefaults = JSON.parse(JSON.stringify(missions));
 
 // Deep-copy the original sounds for reset
 const soundsDefaults = JSON.parse(JSON.stringify(sounds));
+
+// Deep-copy the original wingman/enemy types for reset
+const wingmenDefaults = JSON.parse(JSON.stringify(wingmanTypes));
+const enemiesDefaults = JSON.parse(JSON.stringify(enemyTypes));
+const speakersDefaults = JSON.parse(JSON.stringify(speakerColors));
 
 function loadJSON(key) {
     try {
@@ -71,11 +82,38 @@ function applySfxMod() {
     }
 }
 
+function applyWingmenMod() {
+    const mod = loadJSON(MOD_KEYS.wingmen);
+    if (!mod) return;
+    for (const key of Object.keys(mod)) {
+        wingmanTypes[key] = mod[key];
+    }
+}
+
+function applyEnemiesMod() {
+    const mod = loadJSON(MOD_KEYS.enemies);
+    if (!mod) return;
+    for (const key of Object.keys(mod)) {
+        enemyTypes[key] = mod[key];
+    }
+}
+
+function applySpeakersMod() {
+    const mod = loadJSON(MOD_KEYS.speakers);
+    if (!mod) return;
+    for (const key of Object.keys(mod)) {
+        speakerColors[key] = mod[key];
+    }
+}
+
 // Apply mods at import time
 applyConfigMod();
 applyShapesMod();
 applyMissionsMod();
 applySfxMod();
+applyWingmenMod();
+applyEnemiesMod();
+applySpeakersMod();
 
 // --- Public API for future UI use ---
 
@@ -105,11 +143,46 @@ export function resetSfxToDefaults() {
     localStorage.removeItem(MOD_KEYS.sfx);
 }
 
+export function resetWingmenToDefaults() {
+    // Remove any added keys
+    for (const key of Object.keys(wingmanTypes)) {
+        if (!(key in wingmenDefaults)) delete wingmanTypes[key];
+    }
+    // Restore defaults
+    for (const key of Object.keys(wingmenDefaults)) {
+        wingmanTypes[key] = JSON.parse(JSON.stringify(wingmenDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.wingmen);
+}
+
+export function resetEnemiesToDefaults() {
+    for (const key of Object.keys(enemyTypes)) {
+        if (!(key in enemiesDefaults)) delete enemyTypes[key];
+    }
+    for (const key of Object.keys(enemiesDefaults)) {
+        enemyTypes[key] = JSON.parse(JSON.stringify(enemiesDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.enemies);
+}
+
+export function resetSpeakersToDefaults() {
+    for (const key of Object.keys(speakerColors)) {
+        if (!(key in speakersDefaults)) delete speakerColors[key];
+    }
+    for (const key of Object.keys(speakersDefaults)) {
+        speakerColors[key] = JSON.parse(JSON.stringify(speakersDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.speakers);
+}
+
 export function resetAllMods() {
     resetConfigToDefaults();
     resetShapesToDefaults();
     resetMissionsToDefaults();
     resetSfxToDefaults();
+    resetWingmenToDefaults();
+    resetEnemiesToDefaults();
+    resetSpeakersToDefaults();
 }
 
 export function saveConfigMod(partial) {
@@ -124,5 +197,8 @@ export function hasActiveMods() {
     return !!(localStorage.getItem(MOD_KEYS.config) ||
               localStorage.getItem(MOD_KEYS.shapes) ||
               localStorage.getItem(MOD_KEYS.sfx) ||
-              localStorage.getItem(MOD_KEYS.missions));
+              localStorage.getItem(MOD_KEYS.missions) ||
+              localStorage.getItem(MOD_KEYS.wingmen) ||
+              localStorage.getItem(MOD_KEYS.enemies) ||
+              localStorage.getItem(MOD_KEYS.speakers));
 }

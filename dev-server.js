@@ -29,10 +29,15 @@ const MIME = {
 
 // Allowed write targets (path relative to ROOT => actual file)
 const WRITE_TARGETS = {
-    '/api/save-config':   'data/config.json',
-    '/api/save-shapes':   'data/shapes.json',
-    '/api/save-missions': 'data/missions.json',
-    '/api/save-sounds': 'data/sounds.json',
+    '/api/save-config':     'data/config.json',
+    '/api/save-shapes':     'data/shapes.json',
+    '/api/save-missions':   'data/missions.json',
+    '/api/save-sounds':     'data/sounds.json',
+    '/api/save-music':      'data/music.json',
+    '/api/save-objectives': 'data/objectives.json',
+    '/api/save-wingmen':    'data/wingmen.json',
+    '/api/save-enemies':    'data/enemies.json',
+    '/api/save-speakers':   'data/speakers.json',
 };
 
 function readBody(req) {

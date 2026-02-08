@@ -7,7 +7,7 @@ import { buildDebugPanel } from './debug.js';
 import { bullets, resetBullets, updateBullets, drawBullets } from './bullets.js';
 import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from './asteroids.js';
 import { particles, resetParticles, spawnParticles, updateParticles, drawParticles } from './particles.js';
-import { enemies, resetEnemies, spawnEnemy, spawnCorruptEnemy, updateEnemies, drawEnemies } from './enemies.js';
+import { enemies, resetEnemies, spawnEnemy, updateEnemies, drawEnemies } from './enemies.js';
 import { resetWingmen, spawnWingmanPickup, updateWingmen, drawWingmen, activeWingman } from './wingmen.js';
 import { boss, resetBoss, spawnBoss, updateBoss, drawBoss, hideBossHealthBar } from './boss.js';
 import { checkCollisions } from './collisions.js';
@@ -429,11 +429,7 @@ function handleSpawning() {
     if (mission.enemySpawnInterval > 0 && canSpawnMore) {
         enemySpawnTimer--;
         if (enemySpawnTimer <= 0) {
-            if (mission.enemyType === 'corrupt') {
-                spawnCorruptEnemy();
-            } else {
-                spawnEnemy();
-            }
+            spawnEnemy(mission.enemyType);
             enemiesSpawned++;
             enemySpawnTimer = mission.enemySpawnInterval;
         }

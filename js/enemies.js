@@ -6,13 +6,18 @@ import { spawnParticles } from './particles.js';
 import { config } from './config.js';
 import { shapes, strokeShape } from './shapes.js';
 
+// Enemy type definitions — loaded from data/enemies.json
+export const enemyTypes = {};
+const res = await fetch('data/enemies.json');
+Object.assign(enemyTypes, await res.json());
+
 export let enemies = [];
 
 export function resetEnemies() {
     enemies = [];
 }
 
-export function spawnEnemy() {
+export function spawnEnemy(type) {
     // Spawn at a random screen edge
     const side = Math.floor(rand(0, 4));
     let x, y;
@@ -23,6 +28,7 @@ export function spawnEnemy() {
         case 3: x = -20; y = rand(0, canvas.height); break;
     }
 
+    const def = enemyTypes[type] || enemyTypes.normal;
     enemies.push({
         x, y,
         radius: config.ENEMY_SIZE,
@@ -30,14 +36,8 @@ export function spawnEnemy() {
         dx: 0,
         dy: 0,
         fireCooldown: rand(30, config.ENEMY_FIRE_INTERVAL),
-        color: '#f44'
+        color: def.color
     });
-}
-
-export function spawnCorruptEnemy() {
-    spawnEnemy();
-    const e = enemies[enemies.length - 1];
-    e.color = '#88f'; // blue for corrupt law enforcement
 }
 
 export function updateEnemies() {

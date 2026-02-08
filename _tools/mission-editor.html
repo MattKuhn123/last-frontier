@@ -238,10 +238,10 @@
 // ============================================================
 const DATA_URL = '../data/missions.json';
 
-const MUSIC_TRACKS = ['combat', 'easy', 'scary', 'strategy', 'victory', 'you-lost', 'zen'];
-const OBJECTIVES = ['clear', 'survive', 'boss'];
-const ENEMY_TYPES = ['normal', 'corrupt'];
-const WINGMAN_TYPES = ['sierra', 'tango'];
+let MUSIC_TRACKS = [];
+let OBJECTIVES = [];
+let ENEMY_TYPES = [];
+let WINGMAN_TYPES = [];
 
 let DEFAULTS = [];   // filled by fetchDefaults()
 let missions = [];
@@ -680,10 +680,20 @@ if (location.hostname === 'localhost' && location.port === '8080') {
 // ============================================================
 async function init() {
     try {
-        const res = await fetch(DATA_URL);
-        DEFAULTS = await res.json();
+        const [missionsRes, musicRes, objectivesRes, enemiesRes, wingmenRes] = await Promise.all([
+            fetch(DATA_URL),
+            fetch('../data/music.json'),
+            fetch('../data/objectives.json'),
+            fetch('../data/enemies.json'),
+            fetch('../data/wingmen.json')
+        ]);
+        DEFAULTS = await missionsRes.json();
+        MUSIC_TRACKS = await musicRes.json();
+        OBJECTIVES = await objectivesRes.json();
+        ENEMY_TYPES = Object.keys(await enemiesRes.json());
+        WINGMAN_TYPES = Object.keys(await wingmenRes.json());
     } catch (e) {
-        console.error('Failed to load missions data:', e);
+        console.error('Failed to load data files:', e);
         DEFAULTS = [];
     }
 

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SFX Designer — Last Frontier</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #111;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 30px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #fff;
+            font-size: 18px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #888;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        /* --- Presets --- */
+        .preset-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .preset-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .preset-btn:hover { border-color: #888; color: #fff; }
+        .preset-btn.active { border-color: #4f4; color: #4f4; }
+        .preset-btn .delete {
+            color: #666;
+            margin-left: 6px;
+            cursor: pointer;
+        }
+        .preset-btn .delete:hover { color: #f44; }
+
+        /* --- Controls --- */
+        .section {
+            border: 1px solid #222;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+        .control-row label {
+            width: 90px;
+            flex-shrink: 0;
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .control-row input[type="range"] {
+            flex: 1;
+            accent-color: #4f4;
+            height: 4px;
+        }
+        .control-row .value {
+            width: 70px;
+            text-align: right;
+            color: #fff;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        /* --- Waveform selectors --- */
+        .wave-btns { display: flex; gap: 4px; flex: 1; }
+        .wave-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 3px 10px;
+            cursor: pointer;
+        }
+        .wave-btn:hover { border-color: #666; }
+        .wave-btn.active { border-color: #4f4; color: #4f4; }
+
+        /* --- Waveform display --- */
+        #waveform {
+            width: 100%;
+            height: 80px;
+            border: 1px solid #222;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        /* --- Actions --- */
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .btn {
+            background: transparent;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 8px 20px;
+            cursor: pointer;
+            border: 1px solid;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+        }
+        .btn-play { color: #4f4; border-color: #4f4; }
+        .btn-play:hover { background: #4f4; color: #000; }
+        .btn-download { color: #4af; border-color: #4af; }
+        .btn-download:hover { background: #4af; color: #000; }
+        .btn-save { color: #fa4; border-color: #fa4; }
+        .btn-save:hover { background: #fa4; color: #000; }
+
+        .actions label {
+            color: #888;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        .actions input[type="checkbox"] { accent-color: #4f4; }
+
+        .file-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .file-row span { color: #888; font-size: 11px; text-transform: uppercase; }
+        .file-row input[type="text"] {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 6px 10px;
+            width: 180px;
+        }
+        .file-row .ext { color: #666; }
+    </style>
+</head>
+<body>
+    <h1>SFX Designer</h1>
+
+    <h2>Presets</h2>
+    <div class="preset-row" id="built-in-presets"></div>
+    <div class="preset-row" id="custom-presets"></div>
+
+    <div class="section">
+        <h2>Noise Layer</h2>
+        <div class="control-row">
+            <label>Decay</label>
+            <input type="range" id="noiseDecay" min="0.5" max="8" step="0.1" value="3">
+            <span class="value" id="noiseDecay-val"></span>
+        </div>
+        <div class="control-row">
+            <label>Filter Hz</label>
+            <input type="range" id="noiseFilter" min="100" max="8000" step="50" value="600">
+            <span class="value" id="noiseFilter-val"></span>
+        </div>
+        <div class="control-row">
+            <label>Volume</label>
+            <input type="range" id="noiseVolume" min="0" max="1" step="0.01" value="0.6">
+            <span class="value" id="noiseVolume-val"></span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Tone Layer</h2>
+        <div class="control-row">
+            <label>Waveform</label>
+            <div class="wave-btns">
+                <button class="wave-btn active" data-wave="sine">sine</button>
+                <button class="wave-btn" data-wave="square">square</button>
+                <button class="wave-btn" data-wave="sawtooth">saw</button>
+                <button class="wave-btn" data-wave="triangle">tri</button>
+            </div>
+        </div>
+        <div class="control-row">
+            <label>Start Hz</label>
+            <input type="range" id="toneStart" min="20" max="2000" step="1" value="80">
+            <span class="value" id="toneStart-val"></span>
+        </div>
+        <div class="control-row">
+            <label>End Hz</label>
+            <input type="range" id="toneEnd" min="20" max="2000" step="1" value="30">
+            <span class="value" id="toneEnd-val"></span>
+        </div>
+        <div class="control-row">
+            <label>Decay</label>
+            <input type="range" id="toneDecay" min="0.5" max="8" step="0.1" value="2">
+            <span class="value" id="toneDecay-val"></span>
+        </div>
+        <div class="control-row">
+            <label>Volume</label>
+            <input type="range" id="toneVolume" min="0" max="1" step="0.01" value="0.5">
+            <span class="value" id="toneVolume-val"></span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Master</h2>
+        <div class="control-row">
+            <label>Duration</label>
+            <input type="range" id="duration" min="0.05" max="2" step="0.01" value="0.4">
+            <span class="value" id="duration-val"></span>
+        </div>
+    </div>
+
+    <canvas id="waveform"></canvas>
+
+    <div class="actions">
+        <button class="btn btn-play" id="play-btn">Play</button>
+        <label><input type="checkbox" id="auto-play"> Auto-play</label>
+    </div>
+
+    <div class="file-row">
+        <span>Filename</span>
+        <input type="text" id="filename" value="explosion">
+        <span class="ext">.wav</span>
+        <button class="btn btn-download" id="download-btn">Download</button>
+    </div>
+
+    <div class="file-row">
+        <span>Save as</span>
+        <input type="text" id="preset-name" placeholder="my-sound">
+        <button class="btn btn-save" id="save-btn">Save Preset</button>
+    </div>
+
+<script>
+// --- Built-in presets ---
+const BUILT_IN = {
+    explosion: {
+        duration: 0.4, noiseDecay: 3, noiseFilter: 600, noiseVolume: 0.6,
+        toneType: 'sine', toneStart: 80, toneEnd: 30, toneDecay: 2, toneVolume: 0.5
+    },
+    laser: {
+        duration: 0.15, noiseDecay: 5, noiseFilter: 3000, noiseVolume: 0.2,
+        toneType: 'square', toneStart: 1200, toneEnd: 200, toneDecay: 1.5, toneVolume: 0.6
+    },
+    hit: {
+        duration: 0.2, noiseDecay: 4, noiseFilter: 800, noiseVolume: 0.7,
+        toneType: 'sine', toneStart: 200, toneEnd: 60, toneDecay: 3, toneVolume: 0.4
+    },
+    powerup: {
+        duration: 0.5, noiseDecay: 2, noiseFilter: 4000, noiseVolume: 0.15,
+        toneType: 'sine', toneStart: 400, toneEnd: 1200, toneDecay: 0.8, toneVolume: 0.6
+    },
+    thud: {
+        duration: 0.25, noiseDecay: 5, noiseFilter: 300, noiseVolume: 0.5,
+        toneType: 'sine', toneStart: 60, toneEnd: 25, toneDecay: 2.5, toneVolume: 0.7
+    }
+};
+
+// --- Param names that map to slider IDs ---
+const SLIDER_PARAMS = ['duration', 'noiseDecay', 'noiseFilter', 'noiseVolume', 'toneStart', 'toneEnd', 'toneDecay', 'toneVolume'];
+
+// --- Read current UI state into a params object ---
+function readParams() {
+    const p = {};
+    for (const id of SLIDER_PARAMS) {
+        p[id] = parseFloat(document.getElementById(id).value);
+    }
+    p.toneType = document.querySelector('.wave-btn.active').dataset.wave;
+    return p;
+}
+
+// --- Apply a params object to the UI ---
+function applyParams(p) {
+    for (const id of SLIDER_PARAMS) {
+        const el = document.getElementById(id);
+        el.value = p[id];
+        updateValueDisplay(el);
+    }
+    document.querySelectorAll('.wave-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.wave === p.toneType);
+    });
+    drawWaveform();
+}
+
+// --- Update the value readout next to a slider ---
+function updateValueDisplay(el) {
+    const display = document.getElementById(el.id + '-val');
+    const val = parseFloat(el.value);
+    if (el.id === 'duration') display.textContent = val.toFixed(2) + 's';
+    else if (el.id.includes('Filter') || el.id.includes('Start') || el.id.includes('End')) display.textContent = val + ' Hz';
+    else display.textContent = val.toFixed(el.step < 1 ? (el.id.includes('Decay') ? 1 : 2) : 0);
+}
+
+// --- Synthesis ---
+const SAMPLE_RATE = 44100;
+
+function synthesize(params) {
+    const numSamples = Math.floor(SAMPLE_RATE * params.duration);
+    const samples = new Float32Array(numSamples);
+
+    // Noise layer
+    const noise = new Float32Array(numSamples);
+    for (let i = 0; i < numSamples; i++) {
+        const progress = i / numSamples;
+        noise[i] = (Math.random() * 2 - 1) * Math.pow(1 - progress, params.noiseDecay);
+    }
+
+    // Low-pass filter the noise (single-pole IIR)
+    const alpha = Math.min(1, (2 * Math.PI * params.noiseFilter) / SAMPLE_RATE);
+    let prev = 0;
+    for (let i = 0; i < numSamples; i++) {
+        prev += alpha * (noise[i] - prev);
+        noise[i] = prev;
+    }
+
+    // Tone layer
+    const tone = new Float32Array(numSamples);
+    let phase = 0;
+    for (let i = 0; i < numSamples; i++) {
+        const progress = i / numSamples;
+        const freq = params.toneStart * Math.pow(params.toneEnd / Math.max(1, params.toneStart), progress);
+        const envelope = Math.pow(1 - progress, params.toneDecay);
+        phase += (2 * Math.PI * freq) / SAMPLE_RATE;
+
+        let s;
+        switch (params.toneType) {
+            case 'sine':     s = Math.sin(phase); break;
+            case 'square':   s = Math.sin(phase) > 0 ? 1 : -1; break;
+            case 'sawtooth': s = ((phase % (2 * Math.PI)) / Math.PI) - 1; break;
+            case 'triangle':
+                const t = (phase % (2 * Math.PI)) / (2 * Math.PI);
+                s = 4 * Math.abs(t - 0.5) - 1;
+                break;
+            default: s = Math.sin(phase);
+        }
+        tone[i] = s * envelope;
+    }
+
+    // Mix
+    for (let i = 0; i < numSamples; i++) {
+        samples[i] = noise[i] * params.noiseVolume + tone[i] * params.toneVolume;
+    }
+
+    // Normalize
+    let peak = 0;
+    for (let i = 0; i < numSamples; i++) peak = Math.max(peak, Math.abs(samples[i]));
+    if (peak > 0) {
+        const scale = 0.9 / peak;
+        for (let i = 0; i < numSamples; i++) samples[i] *= scale;
+    }
+
+    return samples;
+}
+
+// --- Playback ---
+let audioCtx = null;
+
+function play() {
+    if (!audioCtx) audioCtx = new AudioContext();
+    const params = readParams();
+    const samples = synthesize(params);
+
+    const buffer = audioCtx.createBuffer(1, samples.length, SAMPLE_RATE);
+    buffer.getChannelData(0).set(samples);
+
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(audioCtx.destination);
+    src.start();
+}
+
+// --- WAV encoding ---
+function writeString(view, offset, str) {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+}
+
+function samplesToWav(samples) {
+    const numSamples = samples.length;
+    const buffer = new ArrayBuffer(44 + numSamples * 2);
+    const view = new DataView(buffer);
+
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + numSamples * 2, true);
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, SAMPLE_RATE, true);
+    view.setUint32(28, SAMPLE_RATE * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(view, 36, 'data');
+    view.setUint32(40, numSamples * 2, true);
+
+    for (let i = 0; i < numSamples; i++) {
+        const val = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(44 + i * 2, val < 0 ? val * 32768 : val * 32767, true);
+    }
+    return buffer;
+}
+
+function download() {
+    const params = readParams();
+    const samples = synthesize(params);
+    const wav = samplesToWav(samples);
+    const blob = new Blob([wav], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (document.getElementById('filename').value || 'sound') + '.wav';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// --- Waveform display ---
+function drawWaveform() {
+    const canvas = document.getElementById('waveform');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = canvas.offsetHeight * 2;
+
+    const params = readParams();
+    const samples = synthesize(params);
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Center line
+    ctx.strokeStyle = '#222';
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+
+    // Waveform
+    ctx.strokeStyle = '#4f4';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    const step = Math.max(1, Math.floor(samples.length / canvas.width));
+    for (let x = 0; x < canvas.width; x++) {
+        const i = Math.floor((x / canvas.width) * samples.length);
+        const y = (1 - samples[i]) * canvas.height / 2;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+}
+
+// --- Preset management ---
+function loadCustomPresets() {
+    try {
+        return JSON.parse(localStorage.getItem('sfx-presets') || '{}');
+    } catch { return {}; }
+}
+
+function saveCustomPresets(presets) {
+    localStorage.setItem('sfx-presets', JSON.stringify(presets));
+}
+
+function renderPresets() {
+    // Built-in
+    const builtInRow = document.getElementById('built-in-presets');
+    builtInRow.innerHTML = '';
+    for (const name of Object.keys(BUILT_IN)) {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.textContent = name;
+        btn.onclick = () => {
+            applyParams(BUILT_IN[name]);
+            document.getElementById('filename').value = name;
+            highlightPreset(btn);
+            if (document.getElementById('auto-play').checked) play();
+        };
+        builtInRow.appendChild(btn);
+    }
+
+    // Custom
+    const customRow = document.getElementById('custom-presets');
+    customRow.innerHTML = '';
+    const custom = loadCustomPresets();
+    for (const name of Object.keys(custom)) {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.innerHTML = name + '<span class="delete">\u00d7</span>';
+        btn.querySelector('.delete').onclick = (e) => {
+            e.stopPropagation();
+            const presets = loadCustomPresets();
+            delete presets[name];
+            saveCustomPresets(presets);
+            renderPresets();
+        };
+        btn.onclick = () => {
+            applyParams(custom[name]);
+            document.getElementById('filename').value = name;
+            highlightPreset(btn);
+            if (document.getElementById('auto-play').checked) play();
+        };
+        customRow.appendChild(btn);
+    }
+}
+
+function highlightPreset(activeBtn) {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    activeBtn.classList.add('active');
+}
+
+// --- Wire up events ---
+document.getElementById('play-btn').onclick = play;
+document.getElementById('download-btn').onclick = download;
+
+document.getElementById('save-btn').onclick = () => {
+    const name = document.getElementById('preset-name').value.trim();
+    if (!name) return;
+    const presets = loadCustomPresets();
+    presets[name] = readParams();
+    saveCustomPresets(presets);
+    document.getElementById('preset-name').value = '';
+    renderPresets();
+};
+
+// Sliders: update display + auto-play + redraw waveform
+for (const id of SLIDER_PARAMS) {
+    const el = document.getElementById(id);
+    updateValueDisplay(el);
+    el.addEventListener('input', () => {
+        updateValueDisplay(el);
+        drawWaveform();
+        if (document.getElementById('auto-play').checked) play();
+    });
+}
+
+// Waveform type buttons
+document.querySelectorAll('.wave-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.wave-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        drawWaveform();
+        if (document.getElementById('auto-play').checked) play();
+    };
+});
+
+// --- Init ---
+renderPresets();
+drawWaveform();
+</script>
+</body>
+</html>

@@ -4,23 +4,6 @@ Remaining hardcoded game data that should be moved to `data/` JSON files, follow
 
 ## High Impact
 
-### Narrative Text → `data/narrative.json`
-- Opening crawl lines (main.js lines 91-116, 25 lines of story text)
-- Boss choice speech (main.js line 336)
-- Both ending narratives — join and fight (main.js lines 511-545)
-- Game over text ("MISSION FAILED", "Press ENTER to try again")
-- Title screen text ("LAST FRONTIER", "YEAR 2746", controls legend)
-
-### State Music Mapping → `data/state-music.json`
-- `stateMusic` object in main.js (lines 52-61) maps game states to track names
-- Currently: title→zen, crawl→strategy, briefing→strategy, mission_complete→easy, ending→victory, game_over→you-lost
-
-### Asteroid Definitions → `data/asteroids.json`
-- Size-to-radius mapping: 3→50, 2→25, 1→12 (asteroids.js lines 16-17)
-- Point values: 3→20, 2→50, 1→100 (asteroids.js line 53)
-- Vertex count: 10 (asteroids.js line 7)
-- Color: `#aaa` (asteroids.js line 76)
-
 ### Boss Attack Patterns → expand `data/config.json` or new `data/boss.json`
 - Attack cooldown ranges: single shot 40±10, spread 150±30, summon 360±60 (boss.js lines 113, 126, 134)
 - Spread shot angle spacing: 0.25 rad (boss.js line 123)

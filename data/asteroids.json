@@ -1,0 +1,7 @@
+{
+    "vertices": 10,
+    "color": "#aaa",
+    "lineWidth": 1.5,
+    "sizeRadius": { "3": 50, "2": 25, "1": 12 },
+    "points": { "3": 20, "2": 50, "1": 100 }
+}

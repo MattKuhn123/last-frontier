@@ -4,7 +4,8 @@ import { ship } from './ship.js';
 import { spawnParticles } from './particles.js';
 import { config } from './config.js';
 
-const ASTEROID_VERTICES = 10;
+export const asteroidDefs = {};
+Object.assign(asteroidDefs, await fetch('data/asteroids.json').then(r => r.json()));
 
 export let asteroids = [];
 
@@ -13,13 +14,12 @@ export function resetAsteroids() {
 }
 
 export function createAsteroid(x, y, size) {
-    const sizeRadius = { 3: 50, 2: 25, 1: 12 };
-    const r = sizeRadius[size];
+    const r = asteroidDefs.sizeRadius[size];
     const angle = rand(0, Math.PI * 2);
     const speed = config.ASTEROID_SPEED * (4 - size) * rand(0.5, 1.2);
 
     const offsets = [];
-    for (let i = 0; i < ASTEROID_VERTICES; i++) {
+    for (let i = 0; i < asteroidDefs.vertices; i++) {
         offsets.push(1 + rand(-config.ASTEROID_JAGGEDNESS, config.ASTEROID_JAGGEDNESS));
     }
 
@@ -50,8 +50,7 @@ export function spawnAsteroids(count, sizes) {
 
 export function splitAsteroid(index) {
     const asteroid = asteroids[index];
-    const points = { 3: 20, 2: 50, 1: 100 };
-    const earned = points[asteroid.size];
+    const earned = asteroidDefs.points[asteroid.size];
 
     spawnParticles(asteroid.x, asteroid.y, 6);
 
@@ -73,15 +72,15 @@ export function updateAsteroids() {
 }
 
 export function drawAsteroids() {
-    ctx.strokeStyle = '#aaa';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = asteroidDefs.color;
+    ctx.lineWidth = asteroidDefs.lineWidth;
     for (const a of asteroids) {
         ctx.save();
         ctx.translate(a.x, a.y);
         ctx.rotate(a.rotAngle);
         ctx.beginPath();
-        for (let i = 0; i < ASTEROID_VERTICES; i++) {
-            const angle = (i / ASTEROID_VERTICES) * Math.PI * 2;
+        for (let i = 0; i < asteroidDefs.vertices; i++) {
+            const angle = (i / asteroidDefs.vertices) * Math.PI * 2;
             const r = a.radius * a.offsets[i];
             if (i === 0) ctx.moveTo(r * Math.cos(angle), r * Math.sin(angle));
             else ctx.lineTo(r * Math.cos(angle), r * Math.sin(angle));

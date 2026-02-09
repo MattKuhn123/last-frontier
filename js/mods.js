@@ -10,6 +10,7 @@ import { wingmanTypes } from './wingmen.js';
 import { enemyTypes } from './enemies.js';
 import { speakerColors } from './dialogue.js';
 import { narrative } from './narrative.js';
+import { asteroidDefs } from './asteroids.js';
 
 const MOD_KEYS = {
     config:   'lf-mod-config',
@@ -19,7 +20,8 @@ const MOD_KEYS = {
     wingmen:  'lf-mod-wingmen',
     enemies:  'lf-mod-enemies',
     speakers:  'lf-mod-speakers',
-    narrative: 'lf-mod-narrative'
+    narrative: 'lf-mod-narrative',
+    asteroids: 'lf-mod-asteroids'
 };
 
 // Store original defaults for reset (exported for diff computation)
@@ -42,6 +44,7 @@ const wingmenDefaults = JSON.parse(JSON.stringify(wingmanTypes));
 const enemiesDefaults = JSON.parse(JSON.stringify(enemyTypes));
 const speakersDefaults = JSON.parse(JSON.stringify(speakerColors));
 const narrativeDefaults = JSON.parse(JSON.stringify(narrative));
+const asteroidDefsDefaults = JSON.parse(JSON.stringify(asteroidDefs));
 
 function loadJSON(key) {
     try {
@@ -117,6 +120,16 @@ function applyNarrativeMod() {
     }
 }
 
+function applyAsteroidsMod() {
+    const mod = loadJSON(MOD_KEYS.asteroids);
+    if (!mod) return;
+    for (const key of Object.keys(mod)) {
+        if (key in asteroidDefsDefaults) {
+            asteroidDefs[key] = mod[key];
+        }
+    }
+}
+
 // Apply mods at import time
 applyConfigMod();
 applyShapesMod();
@@ -126,6 +139,7 @@ applyWingmenMod();
 applyEnemiesMod();
 applySpeakersMod();
 applyNarrativeMod();
+applyAsteroidsMod();
 
 // --- Public API for future UI use ---
 
@@ -197,6 +211,16 @@ export function resetNarrativeToDefaults() {
     localStorage.removeItem(MOD_KEYS.narrative);
 }
 
+export function resetAsteroidsToDefaults() {
+    for (const key of Object.keys(asteroidDefs)) {
+        if (!(key in asteroidDefsDefaults)) delete asteroidDefs[key];
+    }
+    for (const key of Object.keys(asteroidDefsDefaults)) {
+        asteroidDefs[key] = JSON.parse(JSON.stringify(asteroidDefsDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.asteroids);
+}
+
 export function resetAllMods() {
     resetConfigToDefaults();
     resetShapesToDefaults();
@@ -206,6 +230,7 @@ export function resetAllMods() {
     resetEnemiesToDefaults();
     resetSpeakersToDefaults();
     resetNarrativeToDefaults();
+    resetAsteroidsToDefaults();
 }
 
 export function saveConfigMod(partial) {
@@ -224,5 +249,6 @@ export function hasActiveMods() {
               localStorage.getItem(MOD_KEYS.wingmen) ||
               localStorage.getItem(MOD_KEYS.enemies) ||
               localStorage.getItem(MOD_KEYS.speakers) ||
-              localStorage.getItem(MOD_KEYS.narrative));
+              localStorage.getItem(MOD_KEYS.narrative) ||
+              localStorage.getItem(MOD_KEYS.asteroids));
 }

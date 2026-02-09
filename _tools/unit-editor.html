@@ -209,6 +209,7 @@
         </div>
     </div>
 
+<script src="tools.js"></script>
 <script>
 // ============================================================
 // DATA
@@ -385,64 +386,14 @@ function drawPreview() {
 }
 
 // ============================================================
-// FORM HELPERS
+// FORM HELPERS (tool-specific)
 // ============================================================
-function makeSection(title) {
-    const div = document.createElement('div');
-    div.className = 'section';
-    const h = document.createElement('h2');
-    h.textContent = title;
-    div.appendChild(h);
-    return div;
-}
-
-function fieldRow(labelText, inputEl) {
-    const row = document.createElement('div');
-    row.className = 'field-row';
-    const lbl = document.createElement('label');
-    lbl.textContent = labelText;
-    row.appendChild(lbl);
-    if (inputEl) row.appendChild(inputEl);
-    return row;
-}
-
 function staticText(value) {
     const span = document.createElement('span');
     span.style.color = '#888';
     span.style.fontSize = '12px';
     span.textContent = value;
     return span;
-}
-
-function textInput(value, onChange) {
-    const inp = document.createElement('input');
-    inp.type = 'text';
-    inp.value = value;
-    inp.oninput = () => onChange(inp.value);
-    return inp;
-}
-
-function numberInput(value, min, max, onChange) {
-    const inp = document.createElement('input');
-    inp.type = 'number';
-    inp.value = value;
-    inp.min = min;
-    inp.max = max;
-    inp.oninput = () => onChange(parseInt(inp.value) || 0);
-    return inp;
-}
-
-function selectInput(value, options, onChange) {
-    const sel = document.createElement('select');
-    for (const opt of options) {
-        const o = document.createElement('option');
-        o.value = opt;
-        o.textContent = opt;
-        if (opt === value) o.selected = true;
-        sel.appendChild(o);
-    }
-    sel.onchange = () => onChange(sel.value);
-    return sel;
 }
 
 function colorInput(value, onChange) {
@@ -531,40 +482,17 @@ document.getElementById('apply-btn').onclick = () => {
     localStorage.setItem('lf-mod-wingmen', JSON.stringify(wingmenData));
     localStorage.setItem('lf-mod-enemies', JSON.stringify(enemiesData));
     localStorage.setItem('lf-mod-speakers', JSON.stringify(speakersData));
-    const btn = document.getElementById('apply-btn');
-    btn.textContent = 'Applied!';
-    setTimeout(() => { btn.textContent = 'Apply to Game'; }, 1500);
+    flashButton('apply-btn', 'Applied!');
 };
 
 // ============================================================
 // SAVE AS DEFAULT (dev server only)
 // ============================================================
-if (location.hostname === 'localhost' && location.port === '8080') {
-    const defBtn = document.getElementById('default-btn');
-    defBtn.style.display = '';
-    defBtn.onclick = () => {
-        Promise.all([
-            fetch('/api/save-wingmen', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(wingmenData, null, 4) + '\n'
-            }),
-            fetch('/api/save-enemies', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(enemiesData, null, 4) + '\n'
-            }),
-            fetch('/api/save-speakers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(speakersData, null, 4) + '\n'
-            })
-        ])
-            .then(() => { defBtn.textContent = 'Saved!'; })
-            .catch(() => { defBtn.textContent = 'Error'; })
-            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
-    };
-}
+setupSaveDefault('default-btn', () => Promise.all([
+    saveJSON('/api/save-wingmen', wingmenData),
+    saveJSON('/api/save-enemies', enemiesData),
+    saveJSON('/api/save-speakers', speakersData)
+]));
 
 // ============================================================
 // INIT

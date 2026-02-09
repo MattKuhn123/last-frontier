@@ -232,6 +232,7 @@
         </div>
     </div>
 
+<script src="tools.js"></script>
 <script>
 // ============================================================
 // DATA — loaded from data/missions.json (single source of truth)
@@ -397,58 +398,8 @@ function renderDetail() {
 }
 
 // ============================================================
-// FORM HELPERS
+// FORM HELPERS (tool-specific)
 // ============================================================
-function makeSection(title) {
-    const div = document.createElement('div');
-    div.className = 'section';
-    const h = document.createElement('h2');
-    h.textContent = title;
-    div.appendChild(h);
-    return div;
-}
-
-function fieldRow(labelText, inputEl) {
-    const row = document.createElement('div');
-    row.className = 'field-row';
-    const lbl = document.createElement('label');
-    lbl.textContent = labelText;
-    row.appendChild(lbl);
-    if (inputEl) row.appendChild(inputEl);
-    return row;
-}
-
-function textInput(value, onChange) {
-    const inp = document.createElement('input');
-    inp.type = 'text';
-    inp.value = value;
-    inp.oninput = () => onChange(inp.value);
-    return inp;
-}
-
-function numberInput(value, min, max, onChange) {
-    const inp = document.createElement('input');
-    inp.type = 'number';
-    inp.value = value;
-    inp.min = min;
-    inp.max = max;
-    inp.oninput = () => onChange(parseInt(inp.value) || 0);
-    return inp;
-}
-
-function selectInput(value, options, onChange) {
-    const sel = document.createElement('select');
-    for (const opt of options) {
-        const o = document.createElement('option');
-        o.value = opt;
-        o.textContent = opt;
-        if (opt === value) o.selected = true;
-        sel.appendChild(o);
-    }
-    sel.onchange = () => onChange(sel.value);
-    return sel;
-}
-
 function asteroidSizesCheckboxes(mission) {
     const group = document.createElement('div');
     group.className = 'checkbox-group';
@@ -599,42 +550,20 @@ document.getElementById('add-mission-btn').onclick = () => {
 // ============================================================
 // PRESETS
 // ============================================================
-function loadPresets() {
-    try { return JSON.parse(localStorage.getItem('mission-presets') || '{}'); } catch { return {}; }
-}
-function savePresets(p) { localStorage.setItem('mission-presets', JSON.stringify(p)); }
-
-function renderPresets() {
-    const row = document.getElementById('presets');
-    row.innerHTML = '';
-    const presets = loadPresets();
-    for (const name of Object.keys(presets)) {
-        const btn = document.createElement('button');
-        btn.className = 'preset-btn';
-        btn.innerHTML = `${name} <span class="delete">\u00d7</span>`;
-        btn.querySelector('.delete').onclick = (e) => {
-            e.stopPropagation();
-            const p = loadPresets(); delete p[name]; savePresets(p); renderPresets();
-        };
-        btn.onclick = () => {
-            missions = JSON.parse(JSON.stringify(presets[name]));
-            selectedIndex = missions.length > 0 ? 0 : -1;
-            renderList();
-            renderDetail();
-        };
-        row.appendChild(btn);
-    }
-}
-
-document.getElementById('save-btn').onclick = () => {
-    const name = document.getElementById('preset-name').value.trim();
-    if (!name) return;
-    const presets = loadPresets();
-    presets[name] = JSON.parse(JSON.stringify(missions));
-    savePresets(presets);
-    document.getElementById('preset-name').value = '';
-    renderPresets();
-};
+const presetSystem = setupPresets({
+    container: 'presets',
+    storageKey: 'mission-presets',
+    getData: () => JSON.parse(JSON.stringify(missions)),
+    setData: (data) => {
+        missions = JSON.parse(JSON.stringify(data));
+        selectedIndex = missions.length > 0 ? 0 : -1;
+        renderList();
+        renderDetail();
+    },
+    saveInput: 'preset-name',
+    saveBtn: 'save-btn'
+});
+const renderPresets = presetSystem.render;
 
 document.getElementById('reset-all-btn').onclick = () => {
     missions = JSON.parse(JSON.stringify(DEFAULTS));
@@ -647,33 +576,18 @@ document.getElementById('reset-all-btn').onclick = () => {
 // APPLY TO GAME
 // ============================================================
 document.getElementById('apply-btn').onclick = () => {
-    // Reassign IDs based on position
     const output = missions.map((m, i) => ({ ...m, id: i + 1 }));
     localStorage.setItem('lf-mod-missions', JSON.stringify(output));
-    const btn = document.getElementById('apply-btn');
-    btn.textContent = 'Applied!';
-    setTimeout(() => { btn.textContent = 'Apply to Game'; }, 1500);
+    flashButton('apply-btn', 'Applied!');
 };
 
 // ============================================================
 // SAVE AS DEFAULT (dev server only — writes JSON to data/missions.json)
 // ============================================================
-if (location.hostname === 'localhost' && location.port === '8080') {
-    const defBtn = document.getElementById('default-btn');
-    defBtn.style.display = '';
-    defBtn.onclick = () => {
-        const output = missions.map((m, i) => ({ ...m, id: i + 1 }));
-        fetch('/api/save-missions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(output, null, 4)
-        })
-            .then(r => r.json())
-            .then(() => { defBtn.textContent = 'Saved!'; })
-            .catch(() => { defBtn.textContent = 'Error'; })
-            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
-    };
-}
+setupSaveDefault('default-btn', () => {
+    const output = missions.map((m, i) => ({ ...m, id: i + 1 }));
+    return saveJSON('/api/save-missions', output);
+});
 
 // ============================================================
 // INIT — fetch defaults from data/missions.json, then render

@@ -125,6 +125,7 @@
         <span class="apply-hint" style="color:#555;font-size:11px;">Saves current sound as the in-game explosion</span>
     </div>
 
+<script src="tools.js"></script>
 <script>
 // --- Built-in presets ---
 const BUILT_IN = {
@@ -393,37 +394,22 @@ document.querySelectorAll('.wave-btn').forEach(btn => {
 document.getElementById('apply-btn').onclick = () => {
     const params = readParams();
     const soundName = document.getElementById('filename').value.trim() || 'explosion';
-    // Read existing mods, merge in this sound
     let mods = {};
     try { mods = JSON.parse(localStorage.getItem('lf-mod-sfx') || '{}'); } catch {}
     mods[soundName] = params;
     localStorage.setItem('lf-mod-sfx', JSON.stringify(mods));
-    document.getElementById('apply-btn').textContent = 'Applied!';
-    setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
+    flashButton('apply-btn', 'Applied!');
 };
 
 // --- Save as Default (dev server only, writes JSON to data/sounds.json) ---
-if (location.hostname === 'localhost' && location.port === '8080') {
-    const defBtn = document.getElementById('default-btn');
-    defBtn.style.display = '';
-    defBtn.onclick = () => {
-        const params = readParams();
-        const name = document.getElementById('filename').value.trim() || 'explosion';
-        // Build the full sounds.json object (same pattern as other tools)
-        const snapshot = {};
-        for (const key of Object.keys(BUILT_IN)) snapshot[key] = BUILT_IN[key];
-        snapshot[name] = params;
-        fetch('/api/save-sounds', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(snapshot, null, 4) + '\n'
-        })
-            .then(r => r.json())
-            .then(() => { defBtn.textContent = 'Saved!'; })
-            .catch(() => { defBtn.textContent = 'Error'; })
-            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
-    };
-}
+setupSaveDefault('default-btn', () => {
+    const params = readParams();
+    const name = document.getElementById('filename').value.trim() || 'explosion';
+    const snapshot = {};
+    for (const key of Object.keys(BUILT_IN)) snapshot[key] = BUILT_IN[key];
+    snapshot[name] = params;
+    return saveJSON('/api/save-sounds', snapshot);
+});
 
 // --- Init ---
 renderPresets();

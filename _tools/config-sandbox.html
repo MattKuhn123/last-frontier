@@ -94,6 +94,7 @@
         <div class="slider-group" id="sliders-other"></div>
     </div>
 
+<script src="tools.js"></script>
 <script>
 // --- Defaults (loaded from data/config.json) ---
 const DATA_URL = '../data/config.json';
@@ -603,42 +604,22 @@ function onConfigChange() {
 // ============================================================
 // PRESETS
 // ============================================================
-function loadPresets() {
-    try { return JSON.parse(localStorage.getItem('config-presets') || '{}'); } catch { return {}; }
-}
-function savePresets(p) { localStorage.setItem('config-presets', JSON.stringify(p)); }
-
-function renderPresets() {
-    const row = document.getElementById('presets');
-    row.innerHTML = '';
-    const presets = loadPresets();
-    for (const name of Object.keys(presets)) {
-        const btn = document.createElement('button');
-        btn.className = 'preset-btn';
-        btn.innerHTML = `${name} <span class="delete">\u00d7</span>`;
-        btn.querySelector('.delete').onclick = (e) => {
-            e.stopPropagation();
-            const p = loadPresets(); delete p[name]; savePresets(p); renderPresets();
-        };
-        btn.onclick = () => {
-            Object.assign(config, DEFAULTS, presets[name]);
-            syncSliders(); onConfigChange();
-        };
-        row.appendChild(btn);
-    }
-}
-
-document.getElementById('save-btn').onclick = () => {
-    const name = document.getElementById('preset-name').value.trim();
-    if (!name) return;
-    const presets = loadPresets();
-    const snapshot = {};
-    for (const key of Object.keys(DEFAULTS)) snapshot[key] = config[key];
-    presets[name] = snapshot;
-    savePresets(presets);
-    document.getElementById('preset-name').value = '';
-    renderPresets();
-};
+const presets = setupPresets({
+    container: 'presets',
+    storageKey: 'config-presets',
+    getData: () => {
+        const snapshot = {};
+        for (const key of Object.keys(DEFAULTS)) snapshot[key] = config[key];
+        return snapshot;
+    },
+    setData: (data) => {
+        Object.assign(config, DEFAULTS, data);
+        syncSliders(); onConfigChange();
+    },
+    saveInput: 'preset-name',
+    saveBtn: 'save-btn'
+});
+const renderPresets = presets.render;
 
 document.getElementById('reset-all-btn').onclick = () => {
     Object.assign(config, DEFAULTS);
@@ -683,32 +664,19 @@ document.getElementById('apply-btn').onclick = () => {
     }
     if (Object.keys(diff).length === 0) {
         localStorage.removeItem('lf-mod-config');
-        document.getElementById('apply-btn').textContent = 'Cleared!';
+        flashButton('apply-btn', 'Cleared!');
     } else {
         localStorage.setItem('lf-mod-config', JSON.stringify(diff));
-        document.getElementById('apply-btn').textContent = 'Applied!';
+        flashButton('apply-btn', 'Applied!');
     }
-    setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
 };
 
 // --- Save as Default (dev server only — writes JSON to data/config.json) ---
-if (location.hostname === 'localhost' && location.port === '8080') {
-    const defBtn = document.getElementById('default-btn');
-    defBtn.style.display = '';
-    defBtn.onclick = () => {
-        const snapshot = {};
-        for (const key of Object.keys(DEFAULTS)) snapshot[key] = config[key];
-        fetch('/api/save-config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(snapshot, null, 4) + '\n'
-        })
-            .then(r => r.json())
-            .then(() => { defBtn.textContent = 'Saved!'; })
-            .catch(() => { defBtn.textContent = 'Error'; })
-            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
-    };
-}
+setupSaveDefault('default-btn', () => {
+    const snapshot = {};
+    for (const key of Object.keys(DEFAULTS)) snapshot[key] = config[key];
+    return saveJSON('/api/save-config', snapshot);
+});
 
 // --- Init — fetch defaults from data/config.json, then boot ---
 async function init() {

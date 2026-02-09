@@ -130,6 +130,7 @@
         <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
     </div>
 
+<script src="tools.js"></script>
 <script>
 // --- Defaults (loaded from data/shapes.json) ---
 const DATA_URL = '../data/shapes.json';
@@ -503,47 +504,18 @@ document.getElementById('copy-btn').onclick = () => {
 };
 
 // --- Preset management ---
-function loadPresets() {
-    try { return JSON.parse(localStorage.getItem('ship-presets') || '{}'); } catch { return {}; }
-}
-
-function savePresets(presets) {
-    localStorage.setItem('ship-presets', JSON.stringify(presets));
-}
-
-function renderPresets() {
-    const row = document.getElementById('custom-presets');
-    row.innerHTML = '';
-    const presets = loadPresets();
-    for (const name of Object.keys(presets)) {
-        const btn = document.createElement('button');
-        btn.className = 'preset-btn';
-        btn.innerHTML = `${name} <span class="delete">\u00d7</span>`;
-        btn.querySelector('.delete').onclick = (e) => {
-            e.stopPropagation();
-            const p = loadPresets();
-            delete p[name];
-            savePresets(p);
-            renderPresets();
-        };
-        btn.onclick = () => {
-            const p = loadPresets();
-            allShapes[currentType] = p[name].map(v => [...v]);
-            refresh();
-        };
-        row.appendChild(btn);
-    }
-}
-
-document.getElementById('save-btn').onclick = () => {
-    const name = document.getElementById('preset-name').value.trim();
-    if (!name) return;
-    const presets = loadPresets();
-    presets[name] = verts().map(v => [...v]);
-    savePresets(presets);
-    document.getElementById('preset-name').value = '';
-    renderPresets();
-};
+const presetSystem = setupPresets({
+    container: 'custom-presets',
+    storageKey: 'ship-presets',
+    getData: () => verts().map(v => [...v]),
+    setData: (data) => {
+        allShapes[currentType] = data.map(v => [...v]);
+        refresh();
+    },
+    saveInput: 'preset-name',
+    saveBtn: 'save-btn'
+});
+const renderPresets = presetSystem.render;
 
 // --- Download shapes.json ---
 document.getElementById('download-btn').onclick = () => {
@@ -567,7 +539,6 @@ document.getElementById('apply-btn').onclick = () => {
     for (const type of Object.keys(DEFAULTS)) {
         const current = allShapes[type];
         const def = DEFAULTS[type];
-        // Check if shape differs from default
         if (current.length !== def.length ||
             current.some((v, i) => v[0] !== def[i][0] || v[1] !== def[i][1])) {
             diff[type] = current.map(v => [roundDisplay(v[0]), roundDisplay(v[1])]);
@@ -575,34 +546,21 @@ document.getElementById('apply-btn').onclick = () => {
     }
     if (Object.keys(diff).length === 0) {
         localStorage.removeItem('lf-mod-shapes');
-        document.getElementById('apply-btn').textContent = 'Cleared!';
+        flashButton('apply-btn', 'Cleared!');
     } else {
         localStorage.setItem('lf-mod-shapes', JSON.stringify(diff));
-        document.getElementById('apply-btn').textContent = 'Applied!';
+        flashButton('apply-btn', 'Applied!');
     }
-    setTimeout(() => { document.getElementById('apply-btn').textContent = 'Apply to Game'; }, 1500);
 };
 
 // --- Save as Default (dev server only — writes JSON to data/shapes.json) ---
-if (location.hostname === 'localhost' && location.port === '8080') {
-    const defBtn = document.getElementById('default-btn');
-    defBtn.style.display = '';
-    defBtn.onclick = () => {
-        const snapshot = {};
-        for (const type of Object.keys(DEFAULTS)) {
-            snapshot[type] = allShapes[type].map(v => [roundDisplay(v[0]), roundDisplay(v[1])]);
-        }
-        fetch('/api/save-shapes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(snapshot, null, 4) + '\n'
-        })
-            .then(r => r.json())
-            .then(() => { defBtn.textContent = 'Saved!'; })
-            .catch(() => { defBtn.textContent = 'Error'; })
-            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
-    };
-}
+setupSaveDefault('default-btn', () => {
+    const snapshot = {};
+    for (const type of Object.keys(DEFAULTS)) {
+        snapshot[type] = allShapes[type].map(v => [roundDisplay(v[0]), roundDisplay(v[1])]);
+    }
+    return saveJSON('/api/save-shapes', snapshot);
+});
 
 // --- Init — fetch defaults from data/shapes.json, then boot ---
 async function init() {

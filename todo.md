@@ -4,13 +4,6 @@ Remaining hardcoded game data that should be moved to `data/` JSON files, follow
 
 ## High Impact
 
-### Boss Attack Patterns → expand `data/config.json` or new `data/boss.json`
-- Attack cooldown ranges: single shot 40±10, spread 150±30, summon 360±60 (boss.js lines 113, 126, 134)
-- Spread shot angle spacing: 0.25 rad (boss.js line 123)
-- Movement sine wave: amplitude 200, frequency 0.001 (boss.js lines 84-85)
-- Boss colors: normal `#f44`, flash `#fff`, detail `#faa`/`#a22` (boss.js lines 146-153)
-- Entry position threshold, spawn velocity (boss.js lines 23-31)
-
 ## Medium Impact
 
 ### Enemy Destruction Particles

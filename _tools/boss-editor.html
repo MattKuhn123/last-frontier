@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Boss Editor — Last Frontier</title>
+    <link rel="stylesheet" href="tools.css">
+    <style>
+        body { padding: 20px; }
+        h1 { margin-bottom: 16px; }
+        h2 { margin-bottom: 8px; margin-top: 0; }
+        .btn { font-size: 12px; padding: 6px 16px; }
+        .action-row input[type="text"] { width: 120px; font-size: 12px; padding: 5px 8px; }
+
+        /* Toolbar */
+        .toolbar {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 12px;
+        }
+
+        /* Visualization sections */
+        .viz-section { margin-bottom: 28px; }
+        .viz-section canvas { border: 1px solid #222; display: block; width: 100%; }
+        .slider-group { padding: 8px 0; }
+
+        /* Config slider rows */
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 5px;
+        }
+        .config-row label {
+            width: 100px;
+            color: #888;
+            font-size: 10px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .config-row input[type="range"] { flex: 1; accent-color: #4f4; height: 4px; }
+        .config-row input[type="color"] {
+            width: 40px; height: 22px;
+            border: 1px solid #444;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+        }
+        .config-row .val {
+            width: 50px;
+            text-align: right;
+            color: #fff;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+        .config-row .rst { color: #444; cursor: pointer; font-size: 10px; flex-shrink: 0; }
+        .config-row .rst:hover { color: #f44; }
+    </style>
+</head>
+<body>
+    <h1>Boss Editor</h1>
+
+    <div class="toolbar">
+        <h2>Presets</h2>
+        <div class="preset-row" id="presets"></div>
+        <div class="action-row">
+            <input type="text" id="preset-name" placeholder="my-boss">
+            <button class="btn btn-save" id="save-btn">Save</button>
+            <button class="btn btn-download" id="download-btn">Download boss.json</button>
+            <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+            <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
+        </div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Boss Preview</h2>
+        <canvas id="boss-canvas" height="320"></canvas>
+    </div>
+
+    <div class="viz-section">
+        <h2>Entry</h2>
+        <div class="slider-group" id="sliders-entry"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Movement</h2>
+        <div class="slider-group" id="sliders-movement"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Single Shot</h2>
+        <div class="slider-group" id="sliders-single"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Spread Shot</h2>
+        <div class="slider-group" id="sliders-spread"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Summon</h2>
+        <div class="slider-group" id="sliders-summon"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Colors &amp; Rendering</h2>
+        <div class="slider-group" id="sliders-colors"></div>
+    </div>
+
+<script src="tools.js"></script>
+<script>
+// --- Defaults (loaded from data/boss.json) ---
+const DATA_URL = '../data/boss.json';
+let DEFAULTS = {};
+const boss = {};
+
+// Boss shape (same as in shapes.json / config-sandbox)
+const bossShape = [[0,-1],[-0.6,-0.3],[-1,0.4],[-0.5,0.8],[0,0.5],[0.5,0.8],[1,0.4],[0.6,-0.3]];
+
+function strokeShape(c, verts, size) {
+    c.beginPath();
+    for (let i = 0; i < verts.length; i++) {
+        if (i === 0) c.moveTo(verts[i][0]*size, verts[i][1]*size);
+        else c.lineTo(verts[i][0]*size, verts[i][1]*size);
+    }
+    c.closePath(); c.stroke();
+}
+
+// --- Nested path helpers ---
+function getByPath(obj, path) {
+    return path.split('.').reduce((o, k) => o && o[k], obj);
+}
+
+function setByPath(obj, path, val) {
+    const keys = path.split('.');
+    let o = obj;
+    for (let i = 0; i < keys.length - 1; i++) {
+        if (!o[keys[i]]) o[keys[i]] = {};
+        o = o[keys[i]];
+    }
+    o[keys[keys.length - 1]] = val;
+}
+
+// Deep copy helper
+function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+// Deep assign (merges src into dst recursively)
+function deepAssign(dst, src) {
+    for (const key of Object.keys(src)) {
+        if (src[key] && typeof src[key] === 'object' && !Array.isArray(src[key])) {
+            if (!dst[key]) dst[key] = {};
+            deepAssign(dst[key], src[key]);
+        } else {
+            dst[key] = src[key];
+        }
+    }
+}
+
+// Slider definitions: [containerId, label, path, min, max, step]
+const SLIDER_DEFS = [
+    // Entry
+    ['sliders-entry', 'Spawn Y',      'entry.spawnY',    -200, 0,    5],
+    ['sliders-entry', 'Velocity',      'entry.velocity',  0.1,  3,    0.1],
+    ['sliders-entry', 'Target Y',      'entry.targetY',   20,   300,  5],
+
+    // Movement
+    ['sliders-movement', 'Sine Amp',   'movement.sineAmplitude',  10,  400, 10],
+    ['sliders-movement', 'Sine Freq',  'movement.sineFrequency',  0.0001, 0.005, 0.0001],
+    ['sliders-movement', 'Accel',      'movement.acceleration',   0.005,  0.1,   0.005],
+
+    // Single Shot
+    ['sliders-single', 'Cooldown',       'attacks.singleShot.cooldown',         10, 200, 5],
+    ['sliders-single', 'CD Variance',    'attacks.singleShot.cooldownVariance', 0,  50,  5],
+    ['sliders-single', 'Speed',          'attacks.singleShot.speed',            1,  10,  0.5],
+    ['sliders-single', 'Initial CD',     'attacks.singleShot.initialCooldown',  10, 300, 10],
+
+    // Spread
+    ['sliders-spread', 'Cooldown',       'attacks.spread.cooldown',         30,  400, 10],
+    ['sliders-spread', 'CD Variance',    'attacks.spread.cooldownVariance', 0,   100, 5],
+    ['sliders-spread', 'Speed',          'attacks.spread.speed',            1,   10,  0.5],
+    ['sliders-spread', 'Angle Spacing',  'attacks.spread.angleSpacing',     0.05, 1,  0.05],
+    ['sliders-spread', 'Count',          'attacks.spread.count',            1,   5,   1],
+    ['sliders-spread', 'Initial CD',     'attacks.spread.initialCooldown',  10,  400, 10],
+
+    // Summon
+    ['sliders-summon', 'Cooldown',       'attacks.summon.cooldown',         60,  600, 10],
+    ['sliders-summon', 'CD Variance',    'attacks.summon.cooldownVariance', 0,   120, 10],
+    ['sliders-summon', 'Initial CD',     'attacks.summon.initialCooldown',  60,  600, 10],
+
+    // Rendering sliders (non-color)
+    ['sliders-colors', 'Flash Dur',      'flashDuration',    1,   30,  1],
+    ['sliders-colors', 'Line Width',     'lineWidth',        0.5, 5,   0.5],
+    ['sliders-colors', 'Detail Width',   'detailLineWidth',  0.5, 4,   0.5],
+    ['sliders-colors', 'Detail Radius',  'detailRadius',     0.1, 0.8, 0.05],
+];
+
+// Color picker definitions: [containerId, label, path]
+const COLOR_DEFS = [
+    ['sliders-colors', 'Normal',        'colors.normal'],
+    ['sliders-colors', 'Flash',         'colors.flash'],
+    ['sliders-colors', 'Detail Normal', 'colors.detailNormal'],
+    ['sliders-colors', 'Detail Flash',  'colors.detailFlash'],
+];
+
+// ============================================================
+// CANVAS HELPERS
+// ============================================================
+function initCanvas(id) {
+    const el = document.getElementById(id);
+    const dpr = window.devicePixelRatio || 1;
+    const rect = el.getBoundingClientRect();
+    el.width = rect.width * dpr;
+    el.height = el.height * dpr;
+    const c = el.getContext('2d');
+    c.scale(dpr, dpr);
+    return { el, ctx: c, w: rect.width, h: el.height / dpr };
+}
+
+// ============================================================
+// BOSS PREVIEW VISUALIZATION
+// ============================================================
+const bossCvs = initCanvas('boss-canvas');
+
+// Animation state
+let animTime = 0;
+let singleTimer = 0;
+let spreadTimer = 0;
+let summonTimer = 0;
+let flashTimer = 0;
+let vizBullets = [];
+
+function resetViz() {
+    animTime = 0;
+    const b = boss;
+    singleTimer = getByPath(b, 'attacks.singleShot.initialCooldown') || 60;
+    spreadTimer = getByPath(b, 'attacks.spread.initialCooldown') || 180;
+    summonTimer = getByPath(b, 'attacks.summon.initialCooldown') || 300;
+    flashTimer = 0;
+    vizBullets = [];
+}
+
+function drawBossViz() {
+    const { ctx: c, w, h } = bossCvs;
+    c.fillStyle = '#0a0a0a';
+    c.fillRect(0, 0, w, h);
+
+    animTime++;
+    const bossSize = 30;
+    const bossX = w / 2 + Math.sin(animTime * getByPath(boss, 'movement.sineFrequency')) * Math.min(getByPath(boss, 'movement.sineAmplitude'), w * 0.35);
+    const bossY = 70;
+    const bossAngle = Math.PI / 2; // facing down
+
+    // --- Update timers ---
+    singleTimer--;
+    if (singleTimer <= 0) {
+        // Fire single shot downward
+        vizBullets.push({
+            x: bossX,
+            y: bossY + bossSize,
+            dx: Math.cos(bossAngle) * getByPath(boss, 'attacks.singleShot.speed'),
+            dy: Math.sin(bossAngle) * getByPath(boss, 'attacks.singleShot.speed'),
+            type: 'single',
+            life: 90
+        });
+        flashTimer = getByPath(boss, 'flashDuration');
+        const variance = getByPath(boss, 'attacks.singleShot.cooldownVariance');
+        singleTimer = getByPath(boss, 'attacks.singleShot.cooldown') + (Math.random() * 2 - 1) * variance;
+    }
+
+    spreadTimer--;
+    if (spreadTimer <= 0) {
+        // Fire spread
+        const count = getByPath(boss, 'attacks.spread.count');
+        const spacing = getByPath(boss, 'attacks.spread.angleSpacing');
+        const speed = getByPath(boss, 'attacks.spread.speed');
+        for (let i = -count; i <= count; i++) {
+            const a = bossAngle + i * spacing;
+            vizBullets.push({
+                x: bossX,
+                y: bossY + bossSize,
+                dx: Math.cos(a) * speed,
+                dy: Math.sin(a) * speed,
+                type: 'spread',
+                life: 90
+            });
+        }
+        flashTimer = getByPath(boss, 'flashDuration');
+        const variance = getByPath(boss, 'attacks.spread.cooldownVariance');
+        spreadTimer = getByPath(boss, 'attacks.spread.cooldown') + (Math.random() * 2 - 1) * variance;
+    }
+
+    summonTimer--;
+    if (summonTimer <= 0) {
+        const variance = getByPath(boss, 'attacks.summon.cooldownVariance');
+        summonTimer = getByPath(boss, 'attacks.summon.cooldown') + (Math.random() * 2 - 1) * variance;
+    }
+
+    if (flashTimer > 0) flashTimer--;
+
+    // --- Draw bullets ---
+    for (let i = vizBullets.length - 1; i >= 0; i--) {
+        const b = vizBullets[i];
+        b.x += b.dx;
+        b.y += b.dy;
+        b.life--;
+        if (b.life <= 0 || b.x < 0 || b.x > w || b.y < 0 || b.y > h) {
+            vizBullets.splice(i, 1);
+            continue;
+        }
+        const alpha = Math.max(0.2, b.life / 90);
+        c.fillStyle = b.type === 'single'
+            ? `rgba(255,100,100,${alpha})`
+            : `rgba(255,200,100,${alpha})`;
+        c.beginPath();
+        c.arc(b.x, b.y, b.type === 'single' ? 2.5 : 2, 0, Math.PI * 2);
+        c.fill();
+    }
+
+    // --- Draw boss ---
+    c.save();
+    c.translate(bossX, bossY);
+    c.rotate(bossAngle + Math.PI / 2);
+
+    c.strokeStyle = flashTimer > 0 ? getByPath(boss, 'colors.flash') : getByPath(boss, 'colors.normal');
+    c.lineWidth = getByPath(boss, 'lineWidth');
+    strokeShape(c, bossShape, bossSize);
+
+    // Detail circle
+    c.strokeStyle = flashTimer > 0 ? getByPath(boss, 'colors.detailFlash') : getByPath(boss, 'colors.detailNormal');
+    c.lineWidth = getByPath(boss, 'detailLineWidth');
+    c.beginPath();
+    c.arc(0, 0, bossSize * getByPath(boss, 'detailRadius'), 0, Math.PI * 2);
+    c.stroke();
+    c.restore();
+
+    // --- Cooldown bars ---
+    const barY = h - 50;
+    const barH = 12;
+    const barW = w - 40;
+    const barX = 20;
+
+    const bars = [
+        { label: 'SINGLE', timer: singleTimer, max: getByPath(boss, 'attacks.singleShot.cooldown'), color: '#f66' },
+        { label: 'SPREAD', timer: spreadTimer, max: getByPath(boss, 'attacks.spread.cooldown'), color: '#fa4' },
+        { label: 'SUMMON', timer: summonTimer, max: getByPath(boss, 'attacks.summon.cooldown'), color: '#4af' },
+    ];
+
+    for (let i = 0; i < bars.length; i++) {
+        const bar = bars[i];
+        const y = barY + i * (barH + 4);
+        const pct = Math.max(0, Math.min(1, bar.timer / bar.max));
+
+        // Background
+        c.fillStyle = '#1a1a1a';
+        c.fillRect(barX, y, barW, barH);
+
+        // Fill
+        c.fillStyle = bar.color;
+        c.fillRect(barX, y, barW * (1 - pct), barH);
+
+        // Label
+        c.fillStyle = '#888';
+        c.font = '9px Courier New';
+        c.textAlign = 'left';
+        c.textBaseline = 'middle';
+        c.fillText(bar.label, barX + 4, y + barH / 2);
+    }
+
+    // Legend
+    c.fillStyle = '#555';
+    c.font = '9px Courier New';
+    c.textAlign = 'right';
+    c.textBaseline = 'top';
+    c.fillText('single=red  spread=orange  summon=blue', w - 20, 6);
+}
+
+// ============================================================
+// SLIDERS
+// ============================================================
+function buildSliders() {
+    const containerIds = new Set(SLIDER_DEFS.map(d => d[0]).concat(COLOR_DEFS.map(d => d[0])));
+    for (const id of containerIds) {
+        document.getElementById(id).innerHTML = '';
+    }
+
+    // Color pickers first in the colors section
+    for (const [containerId, labelText, path] of COLOR_DEFS) {
+        const container = document.getElementById(containerId);
+        const row = document.createElement('div');
+        row.className = 'config-row';
+
+        const label = document.createElement('label');
+        label.textContent = labelText;
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = toHex6(getByPath(boss, path));
+        colorInput.id = 'color-' + path;
+
+        const val = document.createElement('span');
+        val.className = 'val';
+        val.textContent = getByPath(boss, path);
+        val.id = 'cval-' + path;
+
+        const rst = document.createElement('span');
+        rst.className = 'rst';
+        rst.textContent = '\u21ba';
+        rst.title = 'Reset to ' + getByPath(DEFAULTS, path);
+        rst.onclick = () => {
+            const def = getByPath(DEFAULTS, path);
+            setByPath(boss, path, def);
+            colorInput.value = toHex6(def);
+            val.textContent = def;
+        };
+
+        colorInput.addEventListener('input', () => {
+            setByPath(boss, path, colorInput.value);
+            val.textContent = colorInput.value;
+        });
+
+        row.append(label, colorInput, val, rst);
+        container.appendChild(row);
+    }
+
+    // Sliders
+    for (const [containerId, labelText, path, min, max, step] of SLIDER_DEFS) {
+        const container = document.getElementById(containerId);
+
+        const row = document.createElement('div');
+        row.className = 'config-row';
+
+        const label = document.createElement('label');
+        label.textContent = labelText;
+
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = min; slider.max = max; slider.step = step;
+        slider.value = getByPath(boss, path);
+        slider.id = 'slider-' + path;
+
+        const val = document.createElement('span');
+        val.className = 'val';
+        val.textContent = formatVal(getByPath(boss, path), step);
+        val.id = 'val-' + path;
+
+        const rst = document.createElement('span');
+        rst.className = 'rst';
+        rst.textContent = '\u21ba';
+        rst.title = 'Reset to ' + getByPath(DEFAULTS, path);
+        rst.onclick = () => {
+            const def = getByPath(DEFAULTS, path);
+            setByPath(boss, path, def);
+            slider.value = def;
+            val.textContent = formatVal(def, step);
+            resetViz();
+        };
+
+        slider.addEventListener('input', () => {
+            setByPath(boss, path, parseFloat(slider.value));
+            val.textContent = formatVal(getByPath(boss, path), step);
+            resetViz();
+        });
+
+        row.append(label, slider, val, rst);
+        container.appendChild(row);
+    }
+}
+
+function formatVal(v, step) {
+    if (step >= 1) return v.toString();
+    return v.toFixed(Math.max(0, -Math.floor(Math.log10(step))));
+}
+
+// Expand short hex (#f44) to full 6-char hex (#ff4444) for color inputs
+function toHex6(hex) {
+    if (hex.length === 4) {
+        return '#' + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
+    }
+    return hex;
+}
+
+function syncSliders() {
+    for (const [,, path,,, step] of SLIDER_DEFS) {
+        const s = document.getElementById('slider-' + path);
+        const v = document.getElementById('val-' + path);
+        if (s) { s.value = getByPath(boss, path); v.textContent = formatVal(getByPath(boss, path), step); }
+    }
+    for (const [,, path] of COLOR_DEFS) {
+        const ci = document.getElementById('color-' + path);
+        const cv = document.getElementById('cval-' + path);
+        if (ci) { ci.value = toHex6(getByPath(boss, path)); cv.textContent = getByPath(boss, path); }
+    }
+}
+
+// ============================================================
+// PRESETS
+// ============================================================
+const presets = setupPresets({
+    container: 'presets',
+    storageKey: 'boss-presets',
+    getData: () => deepCopy(boss),
+    setData: (data) => {
+        // Reset to defaults first, then apply preset
+        deepAssign(boss, deepCopy(DEFAULTS));
+        deepAssign(boss, data);
+        syncSliders();
+        resetViz();
+    },
+    saveInput: 'preset-name',
+    saveBtn: 'save-btn'
+});
+const renderPresets = presets.render;
+
+document.getElementById('reset-all-btn').onclick = () => {
+    // Clear boss and re-copy defaults
+    for (const key of Object.keys(boss)) delete boss[key];
+    deepAssign(boss, deepCopy(DEFAULTS));
+    syncSliders();
+    resetViz();
+};
+
+document.getElementById('download-btn').onclick = () => {
+    const content = JSON.stringify(boss, null, 4);
+    const blob = new Blob([content + '\n'], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'boss.json'; a.click();
+    URL.revokeObjectURL(url);
+};
+
+// --- Apply to Game (writes diff to localStorage) ---
+document.getElementById('apply-btn').onclick = () => {
+    const diff = {};
+    const topKeys = ['entry', 'movement', 'attacks', 'colors', 'flashDuration', 'lineWidth', 'detailLineWidth', 'detailRadius'];
+    for (const key of topKeys) {
+        if (JSON.stringify(boss[key]) !== JSON.stringify(DEFAULTS[key])) {
+            diff[key] = deepCopy(boss[key]);
+        }
+    }
+    if (Object.keys(diff).length === 0) {
+        localStorage.removeItem('lf-mod-boss');
+        flashButton('apply-btn', 'Cleared!');
+    } else {
+        localStorage.setItem('lf-mod-boss', JSON.stringify(diff));
+        flashButton('apply-btn', 'Applied!');
+    }
+};
+
+// --- Save as Default (dev server only) ---
+setupSaveDefault('default-btn', () => {
+    return saveJSON('/api/save-boss', deepCopy(boss));
+});
+
+// ============================================================
+// MAIN LOOP
+// ============================================================
+const TARGET_FPS = 60;
+const FRAME_DURATION = 1000 / TARGET_FPS;
+let lastFrameTime = 0;
+
+function loop(timestamp) {
+    requestAnimationFrame(loop);
+    const elapsed = timestamp - lastFrameTime;
+    if (elapsed < FRAME_DURATION) return;
+    lastFrameTime = timestamp - (elapsed % FRAME_DURATION);
+    drawBossViz();
+}
+
+// --- Init ---
+async function init() {
+    try {
+        const res = await fetch(DATA_URL);
+        DEFAULTS = await res.json();
+    } catch (e) {
+        console.error('Failed to load boss data:', e);
+    }
+    deepAssign(boss, deepCopy(DEFAULTS));
+    buildSliders();
+    renderPresets();
+    resetViz();
+    requestAnimationFrame(loop);
+}
+
+init();
+</script>
+</body>
+</html>

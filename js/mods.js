@@ -11,6 +11,7 @@ import { enemyTypes } from './enemies.js';
 import { speakerColors } from './dialogue.js';
 import { narrative } from './narrative.js';
 import { asteroidDefs } from './asteroids.js';
+import { bossDefs } from './boss.js';
 
 const MOD_KEYS = {
     config:   'lf-mod-config',
@@ -21,7 +22,8 @@ const MOD_KEYS = {
     enemies:  'lf-mod-enemies',
     speakers:  'lf-mod-speakers',
     narrative: 'lf-mod-narrative',
-    asteroids: 'lf-mod-asteroids'
+    asteroids: 'lf-mod-asteroids',
+    boss:      'lf-mod-boss'
 };
 
 // Store original defaults for reset (exported for diff computation)
@@ -45,6 +47,7 @@ const enemiesDefaults = JSON.parse(JSON.stringify(enemyTypes));
 const speakersDefaults = JSON.parse(JSON.stringify(speakerColors));
 const narrativeDefaults = JSON.parse(JSON.stringify(narrative));
 const asteroidDefsDefaults = JSON.parse(JSON.stringify(asteroidDefs));
+const bossDefsDefaults = JSON.parse(JSON.stringify(bossDefs));
 
 function loadJSON(key) {
     try {
@@ -130,6 +133,16 @@ function applyAsteroidsMod() {
     }
 }
 
+function applyBossMod() {
+    const mod = loadJSON(MOD_KEYS.boss);
+    if (!mod) return;
+    for (const key of Object.keys(mod)) {
+        if (key in bossDefsDefaults) {
+            bossDefs[key] = mod[key];
+        }
+    }
+}
+
 // Apply mods at import time
 applyConfigMod();
 applyShapesMod();
@@ -140,6 +153,7 @@ applyEnemiesMod();
 applySpeakersMod();
 applyNarrativeMod();
 applyAsteroidsMod();
+applyBossMod();
 
 // --- Public API for future UI use ---
 
@@ -221,6 +235,16 @@ export function resetAsteroidsToDefaults() {
     localStorage.removeItem(MOD_KEYS.asteroids);
 }
 
+export function resetBossToDefaults() {
+    for (const key of Object.keys(bossDefs)) {
+        if (!(key in bossDefsDefaults)) delete bossDefs[key];
+    }
+    for (const key of Object.keys(bossDefsDefaults)) {
+        bossDefs[key] = JSON.parse(JSON.stringify(bossDefsDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.boss);
+}
+
 export function resetAllMods() {
     resetConfigToDefaults();
     resetShapesToDefaults();
@@ -231,6 +255,7 @@ export function resetAllMods() {
     resetSpeakersToDefaults();
     resetNarrativeToDefaults();
     resetAsteroidsToDefaults();
+    resetBossToDefaults();
 }
 
 export function saveConfigMod(partial) {
@@ -250,5 +275,6 @@ export function hasActiveMods() {
               localStorage.getItem(MOD_KEYS.enemies) ||
               localStorage.getItem(MOD_KEYS.speakers) ||
               localStorage.getItem(MOD_KEYS.narrative) ||
-              localStorage.getItem(MOD_KEYS.asteroids));
+              localStorage.getItem(MOD_KEYS.asteroids) ||
+              localStorage.getItem(MOD_KEYS.boss));
 }

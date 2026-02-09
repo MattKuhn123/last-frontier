@@ -1,0 +1,43 @@
+{
+    "entry": {
+        "spawnY": -50,
+        "velocity": 0.5,
+        "targetY": 100
+    },
+    "movement": {
+        "sineAmplitude": 200,
+        "sineFrequency": 0.001,
+        "acceleration": 0.03
+    },
+    "attacks": {
+        "singleShot": {
+            "cooldown": 40,
+            "cooldownVariance": 10,
+            "speed": 4,
+            "initialCooldown": 60
+        },
+        "spread": {
+            "cooldown": 150,
+            "cooldownVariance": 30,
+            "speed": 3.5,
+            "angleSpacing": 0.25,
+            "count": 2,
+            "initialCooldown": 180
+        },
+        "summon": {
+            "cooldown": 360,
+            "cooldownVariance": 60,
+            "initialCooldown": 300
+        }
+    },
+    "colors": {
+        "normal": "#f44",
+        "flash": "#fff",
+        "detailNormal": "#a22",
+        "detailFlash": "#faa"
+    },
+    "flashDuration": 8,
+    "lineWidth": 2,
+    "detailLineWidth": 1,
+    "detailRadius": 0.3
+}

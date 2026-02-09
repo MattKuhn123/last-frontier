@@ -7,6 +7,9 @@ import { spawnParticles } from './particles.js';
 import { config } from './config.js';
 import { shapes, strokeShape } from './shapes.js';
 
+export const bossDefs = {};
+Object.assign(bossDefs, await fetch('data/boss.json').then(r => r.json()));
+
 export let boss = null;
 
 export function resetBoss() {
@@ -16,17 +19,17 @@ export function resetBoss() {
 export function spawnBoss() {
     boss = {
         x: canvas.width / 2,
-        y: -50,
+        y: bossDefs.entry.spawnY,
         radius: config.BOSS_SIZE,
         angle: Math.PI / 2,
         dx: 0,
-        dy: 0.5,
+        dy: bossDefs.entry.velocity,
         hp: config.BOSS_MAX_HP,
         maxHp: config.BOSS_MAX_HP,
         phase: 'enter', // enter, fight, defeated
-        fireCooldown: 60,
-        spreadCooldown: 180,
-        summonCooldown: 300,
+        fireCooldown: bossDefs.attacks.singleShot.initialCooldown,
+        spreadCooldown: bossDefs.attacks.spread.initialCooldown,
+        summonCooldown: bossDefs.attacks.summon.initialCooldown,
         flashTimer: 0
     };
     updateBossHealthBar();
@@ -35,7 +38,7 @@ export function spawnBoss() {
 export function damageBoss() {
     if (!boss || boss.phase !== 'fight') return false;
     boss.hp--;
-    boss.flashTimer = 8;
+    boss.flashTimer = bossDefs.flashDuration;
     updateBossHealthBar();
     spawnParticles(boss.x + rand(-20, 20), boss.y + rand(-20, 20), 3, 'rgba(255, 80, 80, 1)');
 
@@ -67,7 +70,7 @@ export function updateBoss() {
 
     if (boss.phase === 'enter') {
         boss.y += boss.dy;
-        if (boss.y >= 100) {
+        if (boss.y >= bossDefs.entry.targetY) {
             boss.phase = 'fight';
             boss.dy = 0;
         }
@@ -81,12 +84,12 @@ export function updateBoss() {
     if (!ship) return;
 
     // Move toward a position above/around the player
-    const targetX = ship.x + Math.sin(Date.now() * 0.001) * 200;
+    const targetX = ship.x + Math.sin(Date.now() * bossDefs.movement.sineFrequency) * bossDefs.movement.sineAmplitude;
     const targetY = Math.min(ship.y - 150, canvas.height * 0.4);
     const toTarget = angleTo(boss, { x: targetX, y: targetY });
 
-    boss.dx += Math.cos(toTarget) * 0.03;
-    boss.dy += Math.sin(toTarget) * 0.03;
+    boss.dx += Math.cos(toTarget) * bossDefs.movement.acceleration;
+    boss.dy += Math.sin(toTarget) * bossDefs.movement.acceleration;
 
     const speed = Math.hypot(boss.dx, boss.dy);
     if (speed > config.BOSS_SPEED) {
@@ -108,22 +111,22 @@ export function updateBoss() {
         addBullet(
             boss.x + Math.cos(boss.angle) * config.BOSS_SIZE,
             boss.y + Math.sin(boss.angle) * config.BOSS_SIZE,
-            boss.angle, 4, false
+            boss.angle, bossDefs.attacks.singleShot.speed, false
         );
-        boss.fireCooldown = 40 + rand(-10, 10);
+        boss.fireCooldown = bossDefs.attacks.singleShot.cooldown + rand(-bossDefs.attacks.singleShot.cooldownVariance, bossDefs.attacks.singleShot.cooldownVariance);
     }
 
     // Spread shots
     boss.spreadCooldown--;
     if (boss.spreadCooldown <= 0) {
-        for (let i = -2; i <= 2; i++) {
+        for (let i = -bossDefs.attacks.spread.count; i <= bossDefs.attacks.spread.count; i++) {
             addBullet(
                 boss.x + Math.cos(boss.angle) * config.BOSS_SIZE,
                 boss.y + Math.sin(boss.angle) * config.BOSS_SIZE,
-                boss.angle + i * 0.25, 3.5, false
+                boss.angle + i * bossDefs.attacks.spread.angleSpacing, bossDefs.attacks.spread.speed, false
             );
         }
-        boss.spreadCooldown = 150 + rand(-30, 30);
+        boss.spreadCooldown = bossDefs.attacks.spread.cooldown + rand(-bossDefs.attacks.spread.cooldownVariance, bossDefs.attacks.spread.cooldownVariance);
     }
 
     // Summon fighters
@@ -131,7 +134,7 @@ export function updateBoss() {
     if (boss.summonCooldown <= 0) {
         spawnEnemy();
         if (boss.hp < boss.maxHp / 2) spawnEnemy(); // extra when low
-        boss.summonCooldown = 360 + rand(-60, 60);
+        boss.summonCooldown = bossDefs.attacks.summon.cooldown + rand(-bossDefs.attacks.summon.cooldownVariance, bossDefs.attacks.summon.cooldownVariance);
     }
 }
 
@@ -143,17 +146,17 @@ export function drawBoss() {
     ctx.rotate(boss.angle + Math.PI / 2);
 
     // Flash white when hit
-    ctx.strokeStyle = boss.flashTimer > 0 ? '#fff' : '#f44';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = boss.flashTimer > 0 ? bossDefs.colors.flash : bossDefs.colors.normal;
+    ctx.lineWidth = bossDefs.lineWidth;
 
     // Large menacing ship shape
     strokeShape(ctx, shapes.boss, config.BOSS_SIZE);
 
     // Center detail
-    ctx.strokeStyle = boss.flashTimer > 0 ? '#faa' : '#a22';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = boss.flashTimer > 0 ? bossDefs.colors.detailFlash : bossDefs.colors.detailNormal;
+    ctx.lineWidth = bossDefs.detailLineWidth;
     ctx.beginPath();
-    ctx.arc(0, 0, config.BOSS_SIZE * 0.3, 0, Math.PI * 2);
+    ctx.arc(0, 0, config.BOSS_SIZE * bossDefs.detailRadius, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.restore();

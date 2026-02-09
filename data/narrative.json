@@ -1,0 +1,71 @@
+{
+    "title": {
+        "name": "LAST FRONTIER",
+        "subtitle": "YEAR 2746",
+        "prompt": "Press ENTER to begin",
+        "controls": "ARROWS/WASD: Move  |  SPACE: Shoot  |  P: Pause"
+    },
+    "crawl": [
+        "YEAR 2746.",
+        "",
+        "The frontier colonies have known",
+        "a generation of peace.",
+        "",
+        "The Syndicate Corporation managed trade,",
+        "supplied resources, and kept the shipping lanes safe.",
+        "",
+        "Then, without warning, they seized power.",
+        "",
+        "Overnight, trade hubs became military outposts.",
+        "Supply ships became gunships.",
+        "The corporation revealed itself",
+        "as something far worse.",
+        "",
+        "Colonies that resisted were silenced.",
+        "Those that didn't were told to be grateful.",
+        "",
+        "Now a veteran named Cole",
+        "fights his final fight",
+        "",
+        "in...",
+        "",
+        "The Last Frontier"
+    ],
+    "bossChoice": "You've proven yourself, Cole. I could use someone like you. The Syndicate could give you everything \u2014 power, freedom, purpose. Or you can keep fighting for people who will never know your name. What do you say?",
+    "endings": {
+        "join": {
+            "title": "YOU JOINED THE SYNDICATE",
+            "color": "#f44",
+            "lines": [
+                "Cole holstered his weapon and took the hand offered.",
+                "His wingmen never heard from him again.",
+                "The Syndicate grew stronger.",
+                "And the frontier grew darker."
+            ]
+        },
+        "fight": {
+            "title": "THE SYNDICATE FALLS",
+            "color": "#4f4",
+            "lines": [
+                "Cole pulled the trigger.",
+                "The Syndicate crumbled without its leader.",
+                "The wingmen were reassigned. Just another rotation.",
+                "And Cole? He just kept flying."
+            ]
+        }
+    },
+    "gameOver": {
+        "title": "MISSION FAILED",
+        "prompt": "Press ENTER to try again"
+    },
+    "stateMusic": {
+        "TITLE": "zen",
+        "CRAWL": "strategy",
+        "BRIEFING": "strategy",
+        "PLAYING": null,
+        "MISSION_COMPLETE": "easy",
+        "BOSS_CHOICE": null,
+        "ENDING": "victory",
+        "GAME_OVER": "you-lost"
+    }
+}

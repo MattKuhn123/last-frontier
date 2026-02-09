@@ -38,6 +38,7 @@ const WRITE_TARGETS = {
     '/api/save-wingmen':    'data/wingmen.json',
     '/api/save-enemies':    'data/enemies.json',
     '/api/save-speakers':   'data/speakers.json',
+    '/api/save-narrative':  'data/narrative.json',
 };
 
 function readBody(req) {

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Narrative Editor — Last Frontier</title>
+    <link rel="stylesheet" href="tools.css">
+    <style>
+        body { padding: 20px; }
+        h1 { margin-bottom: 16px; }
+        h2 { margin-bottom: 8px; margin-top: 0; }
+        .btn { font-size: 12px; padding: 6px 16px; }
+
+        .toolbar {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 12px;
+        }
+
+        .sections { max-width: 700px; }
+
+        .section {
+            border: 1px solid #222;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .field-row label {
+            width: 100px;
+            flex-shrink: 0;
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .field-row input[type="text"],
+        .field-row select {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 5px 8px;
+            flex: 1;
+            min-width: 0;
+        }
+        .field-row input[type="color"] {
+            width: 36px;
+            height: 28px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            cursor: pointer;
+            padding: 0;
+        }
+        .field-row .color-hex {
+            color: #888;
+            font-size: 11px;
+            width: 60px;
+        }
+
+        textarea {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 8px;
+            width: 100%;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* --- Line List (crawl lines, ending lines) --- */
+        .line-list {
+            border: 1px solid #222;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .line-entry {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .line-entry .drag-handle {
+            color: #333;
+            cursor: grab;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .line-entry .drag-handle:hover { color: #888; }
+        .line-entry input[type="text"] {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 4px 6px;
+            flex: 1;
+            min-width: 0;
+        }
+        .line-entry .pause-chip {
+            flex: 1;
+            color: #666;
+            font-size: 11px;
+            font-style: italic;
+            padding: 4px 6px;
+        }
+        .line-entry .delete-line {
+            color: #444;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 3px 2px;
+            flex-shrink: 0;
+        }
+        .line-entry .delete-line:hover { color: #f44; }
+        .line-entry.drag-over { border-top: 2px solid #4f4; }
+        .line-buttons {
+            display: flex;
+            gap: 6px;
+        }
+        .add-line-btn {
+            background: transparent;
+            border: 1px dashed #333;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+        .add-line-btn:hover { border-color: #4f4; color: #4f4; }
+
+        /* --- State Music --- */
+        .music-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .music-row .state-label {
+            width: 140px;
+            flex-shrink: 0;
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .music-row select {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 5px 8px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .action-row input[type="text"] { width: 120px; font-size: 12px; padding: 5px 8px; }
+    </style>
+</head>
+<body>
+    <h1>Narrative Editor</h1>
+
+    <div class="toolbar">
+        <h2>Presets</h2>
+        <div class="preset-row" id="presets"></div>
+        <div class="action-row">
+            <input type="text" id="preset-name" placeholder="my-narrative">
+            <button class="btn btn-save" id="save-btn">Save</button>
+            <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+            <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
+        </div>
+    </div>
+
+    <div class="sections" id="editor"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+let DEFAULTS = {};
+let narrative = {};
+let MUSIC_TRACKS = [];
+
+// ============================================================
+// LINE LIST BUILDER (reusable for crawl + ending lines)
+// ============================================================
+function buildLineList(lines, onUpdate) {
+    const container = document.createElement('div');
+    container.className = 'line-list';
+
+    let dragSrc = null;
+
+    function rebuild() {
+        container.innerHTML = '';
+        lines.forEach((line, i) => {
+            const entry = document.createElement('div');
+            entry.className = 'line-entry';
+            entry.draggable = true;
+            entry.dataset.index = i;
+
+            const handle = document.createElement('span');
+            handle.className = 'drag-handle';
+            handle.textContent = '\u2261';
+
+            const del = document.createElement('span');
+            del.className = 'delete-line';
+            del.textContent = '\u00d7';
+            del.onclick = () => {
+                lines.splice(i, 1);
+                onUpdate(lines);
+                rebuild();
+            };
+
+            if (line === '') {
+                // Blank line = pause
+                const chip = document.createElement('span');
+                chip.className = 'pause-chip';
+                chip.textContent = '[pause]';
+                entry.append(handle, chip, del);
+            } else {
+                const inp = document.createElement('input');
+                inp.type = 'text';
+                inp.value = line;
+                inp.oninput = () => { lines[i] = inp.value; onUpdate(lines); };
+                entry.append(handle, inp, del);
+            }
+
+            // Drag events
+            entry.addEventListener('dragstart', (e) => {
+                dragSrc = i;
+                e.dataTransfer.effectAllowed = 'move';
+                entry.style.opacity = '0.4';
+            });
+            entry.addEventListener('dragend', () => { entry.style.opacity = ''; });
+            entry.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                entry.classList.add('drag-over');
+            });
+            entry.addEventListener('dragleave', () => { entry.classList.remove('drag-over'); });
+            entry.addEventListener('drop', (e) => {
+                e.preventDefault();
+                entry.classList.remove('drag-over');
+                if (dragSrc === null || dragSrc === i) return;
+                const moved = lines.splice(dragSrc, 1)[0];
+                lines.splice(i, 0, moved);
+                onUpdate(lines);
+                dragSrc = null;
+                rebuild();
+            });
+
+            container.appendChild(entry);
+        });
+
+        // Add buttons
+        const btns = document.createElement('div');
+        btns.className = 'line-buttons';
+
+        const addLineBtn = document.createElement('button');
+        addLineBtn.className = 'add-line-btn';
+        addLineBtn.textContent = '+ Add Line';
+        addLineBtn.onclick = () => {
+            lines.push('');
+            onUpdate(lines);
+            rebuild();
+            // Focus new input (last non-pause entry)
+            const entries = container.querySelectorAll('.line-entry');
+            const last = entries[entries.length - 1];
+            if (last) {
+                const inp = last.querySelector('input[type="text"]');
+                if (inp) inp.focus();
+            }
+        };
+
+        const addPauseBtn = document.createElement('button');
+        addPauseBtn.className = 'add-line-btn';
+        addPauseBtn.textContent = '+ Add Pause';
+        addPauseBtn.onclick = () => {
+            lines.push('');
+            onUpdate(lines);
+            rebuild();
+        };
+
+        btns.append(addLineBtn, addPauseBtn);
+        container.appendChild(btns);
+    }
+
+    rebuild();
+    return container;
+}
+
+// ============================================================
+// FORM HELPERS
+// ============================================================
+function makeSection(title) {
+    const div = document.createElement('div');
+    div.className = 'section';
+    const h = document.createElement('h2');
+    h.textContent = title;
+    div.appendChild(h);
+    return div;
+}
+
+function fieldRow(labelText, inputEl) {
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    const lbl = document.createElement('label');
+    lbl.textContent = labelText;
+    row.appendChild(lbl);
+    if (inputEl) row.appendChild(inputEl);
+    return row;
+}
+
+function textInput(value, onChange) {
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = value;
+    inp.oninput = () => onChange(inp.value);
+    return inp;
+}
+
+function musicSelect(value, onChange) {
+    const sel = document.createElement('select');
+    // "none" option for null
+    const noneOpt = document.createElement('option');
+    noneOpt.value = '';
+    noneOpt.textContent = '(none)';
+    if (value === null || value === '') noneOpt.selected = true;
+    sel.appendChild(noneOpt);
+
+    for (const track of MUSIC_TRACKS) {
+        const o = document.createElement('option');
+        o.value = track;
+        o.textContent = track;
+        if (track === value) o.selected = true;
+        sel.appendChild(o);
+    }
+    sel.onchange = () => onChange(sel.value || null);
+    return sel;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+    const editor = document.getElementById('editor');
+    editor.innerHTML = '';
+
+    // --- Title Screen ---
+    const titleSection = makeSection('Title Screen');
+    titleSection.appendChild(fieldRow('Name', textInput(narrative.title.name, v => { narrative.title.name = v; })));
+    titleSection.appendChild(fieldRow('Subtitle', textInput(narrative.title.subtitle, v => { narrative.title.subtitle = v; })));
+    titleSection.appendChild(fieldRow('Prompt', textInput(narrative.title.prompt, v => { narrative.title.prompt = v; })));
+    titleSection.appendChild(fieldRow('Controls', textInput(narrative.title.controls, v => { narrative.title.controls = v; })));
+    editor.appendChild(titleSection);
+
+    // --- Opening Crawl ---
+    const crawlSection = makeSection('Opening Crawl');
+    crawlSection.appendChild(buildLineList(narrative.crawl, (updated) => { narrative.crawl = updated; }));
+    editor.appendChild(crawlSection);
+
+    // --- Boss Choice ---
+    const bossSection = makeSection('Boss Choice');
+    const bossArea = document.createElement('textarea');
+    bossArea.value = narrative.bossChoice;
+    bossArea.oninput = () => { narrative.bossChoice = bossArea.value; };
+    bossSection.appendChild(bossArea);
+    editor.appendChild(bossSection);
+
+    // --- Ending: Join ---
+    const joinSection = makeSection('Ending: Join');
+    joinSection.appendChild(fieldRow('Title', textInput(narrative.endings.join.title, v => { narrative.endings.join.title = v; })));
+
+    const joinColorRow = fieldRow('Color', null);
+    const joinColorPicker = document.createElement('input');
+    joinColorPicker.type = 'color';
+    joinColorPicker.value = narrative.endings.join.color;
+    const joinColorHex = document.createElement('span');
+    joinColorHex.className = 'color-hex';
+    joinColorHex.textContent = narrative.endings.join.color;
+    joinColorPicker.oninput = () => {
+        narrative.endings.join.color = joinColorPicker.value;
+        joinColorHex.textContent = joinColorPicker.value;
+    };
+    joinColorRow.append(joinColorPicker, joinColorHex);
+    joinSection.appendChild(joinColorRow);
+
+    joinSection.appendChild(buildLineList(narrative.endings.join.lines, (updated) => { narrative.endings.join.lines = updated; }));
+    editor.appendChild(joinSection);
+
+    // --- Ending: Fight ---
+    const fightSection = makeSection('Ending: Fight');
+    fightSection.appendChild(fieldRow('Title', textInput(narrative.endings.fight.title, v => { narrative.endings.fight.title = v; })));
+
+    const fightColorRow = fieldRow('Color', null);
+    const fightColorPicker = document.createElement('input');
+    fightColorPicker.type = 'color';
+    fightColorPicker.value = narrative.endings.fight.color;
+    const fightColorHex = document.createElement('span');
+    fightColorHex.className = 'color-hex';
+    fightColorHex.textContent = narrative.endings.fight.color;
+    fightColorPicker.oninput = () => {
+        narrative.endings.fight.color = fightColorPicker.value;
+        fightColorHex.textContent = fightColorPicker.value;
+    };
+    fightColorRow.append(fightColorPicker, fightColorHex);
+    fightSection.appendChild(fightColorRow);
+
+    fightSection.appendChild(buildLineList(narrative.endings.fight.lines, (updated) => { narrative.endings.fight.lines = updated; }));
+    editor.appendChild(fightSection);
+
+    // --- Game Over ---
+    const goSection = makeSection('Game Over');
+    goSection.appendChild(fieldRow('Title', textInput(narrative.gameOver.title, v => { narrative.gameOver.title = v; })));
+    goSection.appendChild(fieldRow('Prompt', textInput(narrative.gameOver.prompt, v => { narrative.gameOver.prompt = v; })));
+    editor.appendChild(goSection);
+
+    // --- State Music ---
+    const musicSection = makeSection('State Music');
+    for (const state of Object.keys(narrative.stateMusic)) {
+        const row = document.createElement('div');
+        row.className = 'music-row';
+        const lbl = document.createElement('span');
+        lbl.className = 'state-label';
+        lbl.textContent = state;
+        row.appendChild(lbl);
+        row.appendChild(musicSelect(narrative.stateMusic[state], v => { narrative.stateMusic[state] = v; }));
+        musicSection.appendChild(row);
+    }
+    editor.appendChild(musicSection);
+}
+
+// ============================================================
+// PRESETS
+// ============================================================
+function loadPresets() {
+    try { return JSON.parse(localStorage.getItem('narrative-presets') || '{}'); } catch { return {}; }
+}
+function savePresets(p) { localStorage.setItem('narrative-presets', JSON.stringify(p)); }
+
+function renderPresets() {
+    const row = document.getElementById('presets');
+    row.innerHTML = '';
+    const presets = loadPresets();
+    for (const name of Object.keys(presets)) {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.innerHTML = `${name} <span class="delete">\u00d7</span>`;
+        btn.querySelector('.delete').onclick = (e) => {
+            e.stopPropagation();
+            const p = loadPresets(); delete p[name]; savePresets(p); renderPresets();
+        };
+        btn.onclick = () => {
+            narrative = JSON.parse(JSON.stringify(presets[name]));
+            render();
+        };
+        row.appendChild(btn);
+    }
+}
+
+document.getElementById('save-btn').onclick = () => {
+    const name = document.getElementById('preset-name').value.trim();
+    if (!name) return;
+    const presets = loadPresets();
+    presets[name] = JSON.parse(JSON.stringify(narrative));
+    savePresets(presets);
+    document.getElementById('preset-name').value = '';
+    renderPresets();
+};
+
+document.getElementById('reset-all-btn').onclick = () => {
+    narrative = JSON.parse(JSON.stringify(DEFAULTS));
+    render();
+};
+
+// ============================================================
+// APPLY TO GAME
+// ============================================================
+document.getElementById('apply-btn').onclick = () => {
+    localStorage.setItem('lf-mod-narrative', JSON.stringify(narrative));
+    const btn = document.getElementById('apply-btn');
+    btn.textContent = 'Applied!';
+    setTimeout(() => { btn.textContent = 'Apply to Game'; }, 1500);
+};
+
+// ============================================================
+// SAVE AS DEFAULT (dev server only)
+// ============================================================
+if (location.hostname === 'localhost' && location.port === '8080') {
+    const defBtn = document.getElementById('default-btn');
+    defBtn.style.display = '';
+    defBtn.onclick = () => {
+        fetch('/api/save-narrative', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(narrative, null, 4)
+        })
+            .then(r => r.json())
+            .then(() => { defBtn.textContent = 'Saved!'; })
+            .catch(() => { defBtn.textContent = 'Error'; })
+            .finally(() => setTimeout(() => { defBtn.textContent = 'Save as Default'; }, 1500));
+    };
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+    try {
+        const [narrativeRes, musicRes] = await Promise.all([
+            fetch('../data/narrative.json'),
+            fetch('../data/music.json')
+        ]);
+        DEFAULTS = await narrativeRes.json();
+        MUSIC_TRACKS = await musicRes.json();
+    } catch (e) {
+        console.error('Failed to load data files:', e);
+        DEFAULTS = {};
+    }
+
+    // Start from defaults, then override with any existing mod
+    narrative = JSON.parse(JSON.stringify(DEFAULTS));
+    try {
+        const existing = JSON.parse(localStorage.getItem('lf-mod-narrative'));
+        if (existing && typeof existing === 'object' && existing.title) {
+            narrative = existing;
+        }
+    } catch {}
+
+    render();
+    renderPresets();
+}
+
+init();
+</script>
+</body>
+</html>

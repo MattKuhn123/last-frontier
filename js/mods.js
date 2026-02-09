@@ -9,6 +9,7 @@ import { sounds } from './sounds.js';
 import { wingmanTypes } from './wingmen.js';
 import { enemyTypes } from './enemies.js';
 import { speakerColors } from './dialogue.js';
+import { narrative } from './narrative.js';
 
 const MOD_KEYS = {
     config:   'lf-mod-config',
@@ -17,7 +18,8 @@ const MOD_KEYS = {
     missions: 'lf-mod-missions',
     wingmen:  'lf-mod-wingmen',
     enemies:  'lf-mod-enemies',
-    speakers: 'lf-mod-speakers'
+    speakers:  'lf-mod-speakers',
+    narrative: 'lf-mod-narrative'
 };
 
 // Store original defaults for reset (exported for diff computation)
@@ -39,6 +41,7 @@ const soundsDefaults = JSON.parse(JSON.stringify(sounds));
 const wingmenDefaults = JSON.parse(JSON.stringify(wingmanTypes));
 const enemiesDefaults = JSON.parse(JSON.stringify(enemyTypes));
 const speakersDefaults = JSON.parse(JSON.stringify(speakerColors));
+const narrativeDefaults = JSON.parse(JSON.stringify(narrative));
 
 function loadJSON(key) {
     try {
@@ -106,6 +109,14 @@ function applySpeakersMod() {
     }
 }
 
+function applyNarrativeMod() {
+    const mod = loadJSON(MOD_KEYS.narrative);
+    if (!mod) return;
+    for (const key of Object.keys(mod)) {
+        narrative[key] = mod[key];
+    }
+}
+
 // Apply mods at import time
 applyConfigMod();
 applyShapesMod();
@@ -114,6 +125,7 @@ applySfxMod();
 applyWingmenMod();
 applyEnemiesMod();
 applySpeakersMod();
+applyNarrativeMod();
 
 // --- Public API for future UI use ---
 
@@ -175,6 +187,16 @@ export function resetSpeakersToDefaults() {
     localStorage.removeItem(MOD_KEYS.speakers);
 }
 
+export function resetNarrativeToDefaults() {
+    for (const key of Object.keys(narrative)) {
+        if (!(key in narrativeDefaults)) delete narrative[key];
+    }
+    for (const key of Object.keys(narrativeDefaults)) {
+        narrative[key] = JSON.parse(JSON.stringify(narrativeDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.narrative);
+}
+
 export function resetAllMods() {
     resetConfigToDefaults();
     resetShapesToDefaults();
@@ -183,6 +205,7 @@ export function resetAllMods() {
     resetWingmenToDefaults();
     resetEnemiesToDefaults();
     resetSpeakersToDefaults();
+    resetNarrativeToDefaults();
 }
 
 export function saveConfigMod(partial) {
@@ -200,5 +223,6 @@ export function hasActiveMods() {
               localStorage.getItem(MOD_KEYS.missions) ||
               localStorage.getItem(MOD_KEYS.wingmen) ||
               localStorage.getItem(MOD_KEYS.enemies) ||
-              localStorage.getItem(MOD_KEYS.speakers));
+              localStorage.getItem(MOD_KEYS.speakers) ||
+              localStorage.getItem(MOD_KEYS.narrative));
 }

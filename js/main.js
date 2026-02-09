@@ -16,6 +16,7 @@ import { startDialogue, hideDialogue } from './dialogue.js';
 import { missions } from './missions.js';
 import { playTrack, stopTrack, fadeOut, initAudioContext, playExplosionSFX } from './music.js';
 import { hasActiveMods, resetAllMods } from './mods.js';
+import { narrative } from './narrative.js';
 
 // --- Screen Shake ---
 const SHAKE_DURATION = 80;
@@ -49,17 +50,6 @@ const State = {
     TRANSITION: 'TRANSITION'
 };
 
-const stateMusic = {
-    [State.TITLE]:            "zen",
-    [State.CRAWL]:            "strategy",
-    [State.BRIEFING]:         "strategy",
-    [State.PLAYING]:          null, // ignored — uses mission.music instead
-    [State.MISSION_COMPLETE]: "easy",
-    [State.BOSS_CHOICE]:      null,
-    [State.ENDING]:           "victory",
-    [State.GAME_OVER]:        "you-lost",
-};
-
 let state = State.TITLE;
 let score = 0;
 let lives = 3;
@@ -88,33 +78,6 @@ function transitionTo(callback) {
 }
 
 // --- Opening Crawl ---
-const crawlLines = [
-    "YEAR 2746.",
-    "",
-    "The frontier colonies have known",
-    "a generation of peace.",
-    "",
-    "The Syndicate Corporation managed trade,",
-    "supplied resources, and kept the shipping lanes safe.",
-    "",
-    "Then, without warning, they seized power.",
-    "",
-    "Overnight, trade hubs became military outposts.",
-    "Supply ships became gunships.",
-    "The corporation revealed itself",
-    "as something far worse.",
-    "",
-    "Colonies that resisted were silenced.",
-    "Those that didn't were told to be grateful.",
-    "",
-    "Now a veteran named Cole",
-    "fights his final fight",
-    "",
-    "in...",
-    "",
-    "The Last Frontier"
-];
-
 let crawlLineIndex = 0;
 let crawlFadeTimer = 0;
 let crawlAlpha = 0;
@@ -125,7 +88,7 @@ const CRAWL_GAP = 10;        // frames of black between lines
 
 function startCrawl() {
     state = State.CRAWL;
-    playTrack(stateMusic[State.CRAWL]);
+    playTrack(narrative.stateMusic[State.CRAWL]);
     crawlLineIndex = 0;
     crawlFadeTimer = 0;
     crawlAlpha = 0;
@@ -141,11 +104,11 @@ function updateCrawl() {
     crawlFadeTimer++;
 
     // Skip blank lines quickly
-    if (crawlLines[crawlLineIndex] === "") {
+    if (narrative.crawl[crawlLineIndex] === "") {
         if (crawlFadeTimer >= CRAWL_GAP) {
             crawlFadeTimer = 0;
             crawlLineIndex++;
-            if (crawlLineIndex >= crawlLines.length) {
+            if (crawlLineIndex >= narrative.crawl.length) {
                 setTitleStartCallback(null);
                 startNewGame();
             }
@@ -165,7 +128,7 @@ function updateCrawl() {
         crawlFadeTimer = 0;
         crawlLineIndex++;
         crawlAlpha = 0;
-        if (crawlLineIndex >= crawlLines.length) {
+        if (crawlLineIndex >= narrative.crawl.length) {
             setTitleStartCallback(null);
             startNewGame();
         }
@@ -176,11 +139,11 @@ function drawCrawl() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (crawlLineIndex < crawlLines.length && crawlLines[crawlLineIndex] !== "") {
+    if (crawlLineIndex < narrative.crawl.length && narrative.crawl[crawlLineIndex] !== "") {
         ctx.fillStyle = `rgba(170, 170, 170, ${crawlAlpha})`;
         ctx.font = '16px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(crawlLines[crawlLineIndex], canvas.width / 2, canvas.height / 2);
+        ctx.fillText(narrative.crawl[crawlLineIndex], canvas.width / 2, canvas.height / 2);
     }
 
     // Skip prompt
@@ -215,7 +178,7 @@ document.getElementById('reset-mods-btn').addEventListener('click', () => {
 // --- Title Screen ---
 function showTitle() {
     state = State.TITLE;
-    playTrack(stateMusic[State.TITLE]);
+    playTrack(narrative.stateMusic[State.TITLE]);
     hideHud();
     hideDialogue();
     hideBossHealthBar();
@@ -243,7 +206,7 @@ function startNewGame() {
 // --- Briefing ---
 function startBriefing() {
     state = State.BRIEFING;
-    playTrack(stateMusic[State.BRIEFING]);
+    playTrack(narrative.stateMusic[State.BRIEFING]);
     const mission = missions[currentMissionIndex];
 
     // Clear gameplay
@@ -305,7 +268,7 @@ function startMission() {
 // --- Mission Complete ---
 function missionComplete() {
     state = State.MISSION_COMPLETE;
-    playTrack(stateMusic[State.MISSION_COMPLETE]);
+    playTrack(narrative.stateMusic[State.MISSION_COMPLETE]);
     const mission = missions[currentMissionIndex];
 
     if (mission.completionDialogue.length > 0) {
@@ -329,11 +292,11 @@ function advanceToNextMission() {
 // --- Boss Choice ---
 function showBossChoice() {
     state = State.BOSS_CHOICE;
-    playTrack(stateMusic[State.BOSS_CHOICE]);
+    playTrack(narrative.stateMusic[State.BOSS_CHOICE]);
     const choiceEl = document.getElementById('boss-choice');
     const speechEl = document.getElementById('boss-speech');
     choiceEl.classList.remove('hidden');
-    speechEl.textContent = "You've proven yourself, Cole. I could use someone like you. The Syndicate could give you everything — power, freedom, purpose. Or you can keep fighting for people who will never know your name. What do you say?";
+    speechEl.textContent = narrative.bossChoice;
 
     document.getElementById('choice-join').onclick = () => {
         choiceEl.classList.add('hidden');
@@ -348,7 +311,7 @@ function showBossChoice() {
 // --- Endings ---
 function showEnding(type) {
     state = State.ENDING;
-    playTrack(stateMusic[State.ENDING]);
+    playTrack(narrative.stateMusic[State.ENDING]);
     endingType = type;
     hideBossHealthBar();
     hideHud();
@@ -369,7 +332,7 @@ function showEnding(type) {
 // --- Game Over ---
 function triggerGameOver() {
     state = State.GAME_OVER;
-    playTrack(stateMusic[State.GAME_OVER]);
+    playTrack(narrative.stateMusic[State.GAME_OVER]);
     hideDialogue();
     hideBossHealthBar();
     hideHud();
@@ -465,30 +428,30 @@ function drawTitleScreen() {
     ctx.fillStyle = '#fff';
     ctx.font = '36px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('LAST FRONTIER', canvas.width / 2, canvas.height / 2 - 60);
+    ctx.fillText(narrative.title.name, canvas.width / 2, canvas.height / 2 - 60);
 
     ctx.fillStyle = '#888';
     ctx.font = '14px monospace';
-    ctx.fillText('YEAR 2746', canvas.width / 2, canvas.height / 2 - 25);
+    ctx.fillText(narrative.title.subtitle, canvas.width / 2, canvas.height / 2 - 25);
 
     ctx.fillStyle = '#666';
     ctx.font = '16px monospace';
-    ctx.fillText('Press ENTER to begin', canvas.width / 2, canvas.height / 2 + 30);
+    ctx.fillText(narrative.title.prompt, canvas.width / 2, canvas.height / 2 + 30);
 
     ctx.fillStyle = '#444';
     ctx.font = '12px monospace';
-    ctx.fillText('ARROWS/WASD: Move  |  SPACE: Shoot  |  P: Pause', canvas.width / 2, canvas.height / 2 + 70);
+    ctx.fillText(narrative.title.controls, canvas.width / 2, canvas.height / 2 + 70);
 }
 
 function drawGameOverScreen() {
     ctx.fillStyle = '#fff';
     ctx.font = '40px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('MISSION FAILED', canvas.width / 2, canvas.height / 2 - 20);
+    ctx.fillText(narrative.gameOver.title, canvas.width / 2, canvas.height / 2 - 20);
 
     ctx.fillStyle = '#888';
     ctx.font = '18px monospace';
-    ctx.fillText('Press ENTER to try again', canvas.width / 2, canvas.height / 2 + 25);
+    ctx.fillText(narrative.gameOver.prompt, canvas.width / 2, canvas.height / 2 + 25);
 }
 
 function drawPausedScreen() {
@@ -504,41 +467,17 @@ function drawEndingScreen() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (endingType === 'join') {
-        ctx.fillStyle = '#f44';
-        ctx.font = '28px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('YOU JOINED THE SYNDICATE', canvas.width / 2, canvas.height / 2 - 60);
+    const ending = narrative.endings[endingType];
+    ctx.fillStyle = ending.color;
+    ctx.font = '28px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(ending.title, canvas.width / 2, canvas.height / 2 - 60);
 
-        ctx.fillStyle = '#aaa';
-        ctx.font = '14px monospace';
-        const lines = [
-            'Cole holstered his weapon and took the hand offered.',
-            'His wingmen never heard from him again.',
-            'The Syndicate grew stronger.',
-            'And the frontier grew darker.'
-        ];
-        lines.forEach((line, i) => {
-            ctx.fillText(line, canvas.width / 2, canvas.height / 2 - 10 + i * 25);
-        });
-    } else {
-        ctx.fillStyle = '#4f4';
-        ctx.font = '28px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('THE SYNDICATE FALLS', canvas.width / 2, canvas.height / 2 - 60);
-
-        ctx.fillStyle = '#aaa';
-        ctx.font = '14px monospace';
-        const lines = [
-            'Cole pulled the trigger.',
-            'The Syndicate crumbled without its leader.',
-            'The wingmen were reassigned. Just another rotation.',
-            'And Cole? He just kept flying.'
-        ];
-        lines.forEach((line, i) => {
-            ctx.fillText(line, canvas.width / 2, canvas.height / 2 - 10 + i * 25);
-        });
-    }
+    ctx.fillStyle = '#aaa';
+    ctx.font = '14px monospace';
+    ending.lines.forEach((line, i) => {
+        ctx.fillText(line, canvas.width / 2, canvas.height / 2 - 10 + i * 25);
+    });
 
     ctx.fillStyle = '#666';
     ctx.font = '14px monospace';
@@ -695,7 +634,7 @@ function onFirstInteraction() {
     initAudioContext();
     document.removeEventListener('keydown', onFirstInteraction);
     document.removeEventListener('click', onFirstInteraction);
-    playTrack(stateMusic[state]);
+    playTrack(narrative.stateMusic[state]);
 }
 document.addEventListener('keydown', onFirstInteraction);
 document.addEventListener('click', onFirstInteraction);

@@ -4,6 +4,16 @@ Remaining hardcoded game data that should be moved to `data/` JSON files, follow
 
 ## High Impact
 
+### MIDI Music Playback
+- Replace WAV-based music with MIDI file playback using Web Audio oscillators
+- New `js/midi.js` parser: fetch `.mid` files, parse binary format into event lists
+- New `data/instruments.json`: channel-to-instrument mapping (waveform, ADSR envelope)
+- Update `music.js`: swap `loadBuffer`/`AudioBufferSourceNode` for MIDI parsing + oscillator scheduling
+- Each note-on creates an OscillatorNode + GainNode with ADSR envelope
+- Keep intro/loop/outro structure (separate `.mid` files)
+- Instrument definitions are JSON, so they slot into the mod system naturally
+- Benefits: tiny file sizes, moddable instruments, consistent synth aesthetic
+
 ## Medium Impact
 
 ### Enemy Destruction Particles

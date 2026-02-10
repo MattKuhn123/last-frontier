@@ -119,13 +119,13 @@ const KEY_MAP = {
     SHOOT_COOLDOWN:      ['bullets', 'shootCooldown'],
     ASTEROID_SPEED:      ['asteroids', 'speed'],
     ASTEROID_JAGGEDNESS: ['asteroids', 'jaggedness'],
-    ENEMY_SIZE:          ['enemies', 'size'],
-    ENEMY_SPEED:         ['enemies', 'speed'],
-    ENEMY_TURN_SPEED:    ['enemies', 'turnSpeed'],
-    ENEMY_FIRE_INTERVAL: ['enemies', 'fireInterval'],
-    ENEMY_BULLET_SPEED:  ['enemies', 'bulletSpeed'],
-    WINGMAN_DURATION:    ['wingmen', 'duration'],
-    WINGMAN_SPEED:       ['wingmen', 'speed'],
+    ENEMY_SIZE:          ['enemies', 'normal.size'],
+    ENEMY_SPEED:         ['enemies', 'normal.speed'],
+    ENEMY_TURN_SPEED:    ['enemies', 'normal.turnSpeed'],
+    ENEMY_FIRE_INTERVAL: ['enemies', 'normal.fireInterval'],
+    ENEMY_BULLET_SPEED:  ['enemies', 'normal.bulletSpeed'],
+    WINGMAN_DURATION:    ['wingmen', 'sierra.duration'],
+    WINGMAN_SPEED:       ['wingmen', 'sierra.speed'],
     BOSS_SIZE:           ['boss', 'size'],
     BOSS_MAX_HP:         ['boss', 'maxHp'],
     BOSS_SPEED:          ['boss', 'speed'],
@@ -714,7 +714,7 @@ function computeDomainDiffs() {
         if (config[flatKey] !== DEFAULTS[flatKey]) {
             const [domain, jsonKey] = KEY_MAP[flatKey];
             if (!diffs[domain]) diffs[domain] = {};
-            diffs[domain][jsonKey] = config[flatKey];
+            setByPath(diffs[domain], jsonKey, config[flatKey]);
         }
     }
     return diffs;
@@ -749,7 +749,7 @@ setupSaveDefault('default-btn', async () => {
         for (const flatKey of Object.keys(KEY_MAP)) {
             const [d, jsonKey] = KEY_MAP[flatKey];
             if (d === domain) {
-                full[jsonKey] = config[flatKey];
+                setByPath(full, jsonKey, config[flatKey]);
             }
         }
         results.push(saveJSON(SAVE_ENDPOINTS[domain], full));
@@ -771,13 +771,13 @@ async function init() {
 
     // Extract shapes from domain data
     shapes.player = domainData.ship?.shape || [[0,-1],[-0.7,0.7],[0,0.4],[0.7,0.7]];
-    shapes.enemy = domainData.enemies?.shape || [[0,-1],[-0.8,0.3],[-0.4,0.7],[0,0.4],[0.4,0.7],[0.8,0.3]];
+    shapes.enemy = domainData.enemies?.normal?.shape || [[0,-1],[-0.8,0.3],[-0.4,0.7],[0,0.4],[0.4,0.7],[0.8,0.3]];
     shapes.boss = domainData.boss?.shape || [[0,-1],[-0.6,-0.3],[-1,0.4],[-0.5,0.8],[0,0.5],[0.5,0.8],[1,0.4],[0.6,-0.3]];
 
     // Build flat DEFAULTS and config from domain data via KEY_MAP
     for (const flatKey of Object.keys(KEY_MAP)) {
         const [domain, jsonKey] = KEY_MAP[flatKey];
-        const val = domainData[domain]?.[jsonKey];
+        const val = getByPath(domainData[domain] || {}, jsonKey);
         if (val !== undefined) {
             DEFAULTS[flatKey] = val;
             config[flatKey] = val;

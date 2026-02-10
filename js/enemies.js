@@ -29,11 +29,12 @@ export function spawnEnemy(type) {
     const def = enemyTypes[type] || enemyTypes.normal;
     enemies.push({
         x, y,
-        radius: enemyTypes.size,
+        type: type || 'normal',
+        radius: def.size,
         angle: ship ? angleTo({ x, y }, ship) : rand(0, Math.PI * 2),
         dx: 0,
         dy: 0,
-        fireCooldown: rand(30, enemyTypes.fireInterval),
+        fireCooldown: rand(30, def.fireInterval),
         color: def.color
     });
 }
@@ -43,11 +44,13 @@ export function updateEnemies() {
         const e = enemies[i];
         if (!ship) continue;
 
+        const def = enemyTypes[e.type] || enemyTypes.normal;
+
         // Rotate toward player
         const targetAngle = angleTo(e, ship);
         const diff = normalizeAngle(targetAngle - e.angle);
-        if (Math.abs(diff) > enemyTypes.turnSpeed) {
-            e.angle += diff > 0 ? enemyTypes.turnSpeed : -enemyTypes.turnSpeed;
+        if (Math.abs(diff) > def.turnSpeed) {
+            e.angle += diff > 0 ? def.turnSpeed : -def.turnSpeed;
         } else {
             e.angle = targetAngle;
         }
@@ -64,9 +67,9 @@ export function updateEnemies() {
 
         // Clamp speed
         const speed = Math.hypot(e.dx, e.dy);
-        if (speed > enemyTypes.speed) {
-            e.dx = (e.dx / speed) * enemyTypes.speed;
-            e.dy = (e.dy / speed) * enemyTypes.speed;
+        if (speed > def.speed) {
+            e.dx = (e.dx / speed) * def.speed;
+            e.dy = (e.dy / speed) * def.speed;
         }
 
         e.x += e.dx;
@@ -77,31 +80,33 @@ export function updateEnemies() {
         e.fireCooldown--;
         if (e.fireCooldown <= 0) {
             addBullet(
-                e.x + Math.cos(e.angle) * enemyTypes.size,
-                e.y + Math.sin(e.angle) * enemyTypes.size,
-                e.angle, enemyTypes.bulletSpeed, false
+                e.x + Math.cos(e.angle) * def.size,
+                e.y + Math.sin(e.angle) * def.size,
+                e.angle, def.bulletSpeed, false
             );
-            e.fireCooldown = enemyTypes.fireInterval + rand(-20, 20);
+            e.fireCooldown = def.fireInterval + rand(-20, 20);
         }
     }
 }
 
 export function destroyEnemy(index) {
     const e = enemies[index];
-    spawnParticles(e.x, e.y, 10, 'rgba(255, 80, 80, 1)');
+    spawnParticles(e.x, e.y, 10, e.color);
     enemies.splice(index, 1);
     return 200;
 }
 
 export function drawEnemies() {
     for (const e of enemies) {
+        const def = enemyTypes[e.type] || enemyTypes.normal;
+
         ctx.save();
         ctx.translate(e.x, e.y);
         ctx.rotate(e.angle + Math.PI / 2);
 
         ctx.strokeStyle = e.color;
         ctx.lineWidth = 1.5;
-        strokeShape(ctx, enemyTypes.shape, enemyTypes.size);
+        strokeShape(ctx, def.shape, def.size);
 
         ctx.restore();
     }

@@ -130,8 +130,8 @@ export function updateBoss() {
     // Summon fighters
     boss.summonCooldown--;
     if (boss.summonCooldown <= 0) {
-        spawnEnemy();
-        if (boss.hp < boss.maxHp / 2) spawnEnemy(); // extra when low
+        spawnEnemy('normal');
+        if (boss.hp < boss.maxHp / 2) spawnEnemy('normal'); // extra when low
         boss.summonCooldown = bossDefs.attacks.summon.cooldown + rand(-bossDefs.attacks.summon.cooldownVariance, bossDefs.attacks.summon.cooldownVariance);
     }
 }

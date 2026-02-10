@@ -72,19 +72,6 @@ Browser-based tool for designing ship shapes. Open it directly in your browser.
 - **Apply to Game** saves changed shapes to localStorage as a mod
 - **Download shapes.json** exports the vertex data for all 4 ship types
 
-### Config Sandbox (`_tools/config-sandbox.html`)
-
-Passive visualization tool for tuning game physics. Open it directly in your browser — no input required, everything animates automatically.
-
-- **Speed lanes** — player, enemy, boss, asteroid, and both bullet types race across the screen at their configured speeds for instant comparison
-- **Turn speed** — player and enemy ships rotate side by side showing relative turn rates and revolutions per second
-- **Bullet range** — player and enemy bullets auto-fire, fade as lifetime expires, with dashed range markers
-- **Time to kill** — auto-fires at a boss, shows HP draining in real time with elapsed timer, theoretical TTK, and measured TTK; loops automatically
-- All config values have **sliders** on the right with per-value reset buttons
-- **Save Preset** stores config snapshots in localStorage
-- **Apply to Game** saves changed values to localStorage as a mod
-- **Download config.json** exports all config values as JSON
-
 ### Mission Editor (`_tools/mission-editor.html`)
 
 Browser-based tool for editing the game's mission sequence. Open it directly in your browser.

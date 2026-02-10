@@ -28,3 +28,15 @@ export function normalizeAngle(a) {
     while (a < -Math.PI) a += Math.PI * 2;
     return a;
 }
+
+export function strokeShape(ctx, vertices, size) {
+    ctx.beginPath();
+    for (let i = 0; i < vertices.length; i++) {
+        const px = vertices[i][0] * size;
+        const py = vertices[i][1] * size;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.stroke();
+}

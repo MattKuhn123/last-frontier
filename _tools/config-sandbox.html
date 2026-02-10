@@ -96,10 +96,65 @@
 
 <script src="tools.js"></script>
 <script>
-// --- Defaults (loaded from data/config.json) ---
-const DATA_URL = '../data/config.json';
+// --- Domain data sources ---
+const DATA_URLS = {
+    ship:      '../data/ship.json',
+    bullets:   '../data/bullets.json',
+    asteroids: '../data/asteroids.json',
+    enemies:   '../data/enemies.json',
+    wingmen:   '../data/wingmen.json',
+    boss:      '../data/boss.json'
+};
+
+// Map each flat config key to [source, jsonKey]
+const KEY_MAP = {
+    SHIP_SIZE:           ['ship', 'size'],
+    TURN_SPEED:          ['ship', 'turnSpeed'],
+    THRUST_POWER:        ['ship', 'thrustPower'],
+    FRICTION:            ['ship', 'friction'],
+    INVINCIBLE_DURATION: ['ship', 'invincibleDuration'],
+    BULLET_SPEED:        ['bullets', 'speed'],
+    BULLET_LIFETIME:     ['bullets', 'lifetime'],
+    MAX_BULLETS:         ['bullets', 'maxBullets'],
+    SHOOT_COOLDOWN:      ['bullets', 'shootCooldown'],
+    ASTEROID_SPEED:      ['asteroids', 'speed'],
+    ASTEROID_JAGGEDNESS: ['asteroids', 'jaggedness'],
+    ENEMY_SIZE:          ['enemies', 'size'],
+    ENEMY_SPEED:         ['enemies', 'speed'],
+    ENEMY_TURN_SPEED:    ['enemies', 'turnSpeed'],
+    ENEMY_FIRE_INTERVAL: ['enemies', 'fireInterval'],
+    ENEMY_BULLET_SPEED:  ['enemies', 'bulletSpeed'],
+    WINGMAN_DURATION:    ['wingmen', 'duration'],
+    WINGMAN_SPEED:       ['wingmen', 'speed'],
+    BOSS_SIZE:           ['boss', 'size'],
+    BOSS_MAX_HP:         ['boss', 'maxHp'],
+    BOSS_SPEED:          ['boss', 'speed'],
+};
+
+// Mod localStorage keys per domain
+const MOD_KEYS = {
+    ship:      'lf-mod-ship',
+    bullets:   'lf-mod-bullets',
+    asteroids: 'lf-mod-asteroids',
+    enemies:   'lf-mod-enemies',
+    wingmen:   'lf-mod-wingmen',
+    boss:      'lf-mod-boss'
+};
+
+// Save-to-server endpoints per domain
+const SAVE_ENDPOINTS = {
+    ship:      '/api/save-ship',
+    bullets:   '/api/save-bullets',
+    asteroids: '/api/save-asteroids',
+    enemies:   '/api/save-enemies',
+    wingmen:   '/api/save-wingmen',
+    boss:      '/api/save-boss'
+};
+
 let DEFAULTS = {};
 const config = {};
+// Full domain data (for merging back non-config keys on save)
+const domainData = {};
 
 // Sliders grouped by visualization section
 // [containerId, label, configKey, min, max, step]
@@ -136,12 +191,8 @@ const SLIDER_DEFS = [
     ['sliders-other', 'Wingman dur.', 'WINGMAN_DURATION',    60, 1200,30],
 ];
 
-// --- Shapes ---
-const shapes = {
-    player: [[0,-1],[-0.7,0.7],[0,0.4],[0.7,0.7]],
-    enemy: [[0,-1],[-0.8,0.3],[-0.4,0.7],[0,0.4],[0.4,0.7],[0.8,0.3]],
-    boss: [[0,-1],[-0.6,-0.3],[-1,0.4],[-0.5,0.8],[0,0.5],[0.5,0.8],[1,0.4],[0.6,-0.3]]
-};
+// --- Shapes (loaded from domain data in init()) ---
+const shapes = {};
 
 function strokeShape(c, verts, size) {
     c.beginPath();
@@ -656,37 +707,82 @@ function loop(timestamp) {
     drawTTKViz();
 }
 
-// --- Apply to Game (writes diff to localStorage) ---
-document.getElementById('apply-btn').onclick = () => {
-    const diff = {};
-    for (const key of Object.keys(DEFAULTS)) {
-        if (config[key] !== DEFAULTS[key]) diff[key] = config[key];
+// --- Helper: compute per-domain diffs from flat config ---
+function computeDomainDiffs() {
+    const diffs = {};
+    for (const flatKey of Object.keys(KEY_MAP)) {
+        if (config[flatKey] !== DEFAULTS[flatKey]) {
+            const [domain, jsonKey] = KEY_MAP[flatKey];
+            if (!diffs[domain]) diffs[domain] = {};
+            diffs[domain][jsonKey] = config[flatKey];
+        }
     }
-    if (Object.keys(diff).length === 0) {
-        localStorage.removeItem('lf-mod-config');
+    return diffs;
+}
+
+// --- Apply to Game (writes per-domain diffs to localStorage) ---
+document.getElementById('apply-btn').onclick = () => {
+    const diffs = computeDomainDiffs();
+    let totalChanges = 0;
+    for (const domain of Object.keys(MOD_KEYS)) {
+        if (diffs[domain] && Object.keys(diffs[domain]).length > 0) {
+            localStorage.setItem(MOD_KEYS[domain], JSON.stringify(diffs[domain]));
+            totalChanges += Object.keys(diffs[domain]).length;
+        } else {
+            localStorage.removeItem(MOD_KEYS[domain]);
+        }
+    }
+    if (totalChanges === 0) {
         flashButton('apply-btn', 'Cleared!');
     } else {
-        localStorage.setItem('lf-mod-config', JSON.stringify(diff));
         flashButton('apply-btn', 'Applied!');
     }
 };
 
-// --- Save as Default (dev server only — writes JSON to data/config.json) ---
-setupSaveDefault('default-btn', () => {
-    const snapshot = {};
-    for (const key of Object.keys(DEFAULTS)) snapshot[key] = config[key];
-    return saveJSON('/api/save-config', snapshot);
+// --- Save as Default (dev server only — writes JSON to each domain file) ---
+setupSaveDefault('default-btn', async () => {
+    // Build full domain objects by merging slider values back into loaded domain data
+    const results = [];
+    for (const domain of Object.keys(DATA_URLS)) {
+        const full = JSON.parse(JSON.stringify(domainData[domain] || {}));
+        // Overlay any slider values for this domain
+        for (const flatKey of Object.keys(KEY_MAP)) {
+            const [d, jsonKey] = KEY_MAP[flatKey];
+            if (d === domain) {
+                full[jsonKey] = config[flatKey];
+            }
+        }
+        results.push(saveJSON(SAVE_ENDPOINTS[domain], full));
+    }
+    await Promise.all(results);
 });
 
-// --- Init — fetch defaults from data/config.json, then boot ---
+// --- Init — fetch defaults from all domain files, then boot ---
 async function init() {
     try {
-        const res = await fetch(DATA_URL);
-        DEFAULTS = await res.json();
+        const entries = Object.entries(DATA_URLS);
+        const responses = await Promise.all(entries.map(([, url]) => fetch(url).then(r => r.json())));
+        for (let i = 0; i < entries.length; i++) {
+            domainData[entries[i][0]] = responses[i];
+        }
     } catch (e) {
-        console.error('Failed to load config data:', e);
+        console.error('Failed to load domain data:', e);
     }
-    Object.assign(config, DEFAULTS);
+
+    // Extract shapes from domain data
+    shapes.player = domainData.ship?.shape || [[0,-1],[-0.7,0.7],[0,0.4],[0.7,0.7]];
+    shapes.enemy = domainData.enemies?.shape || [[0,-1],[-0.8,0.3],[-0.4,0.7],[0,0.4],[0.4,0.7],[0.8,0.3]];
+    shapes.boss = domainData.boss?.shape || [[0,-1],[-0.6,-0.3],[-1,0.4],[-0.5,0.8],[0,0.5],[0.5,0.8],[1,0.4],[0.6,-0.3]];
+
+    // Build flat DEFAULTS and config from domain data via KEY_MAP
+    for (const flatKey of Object.keys(KEY_MAP)) {
+        const [domain, jsonKey] = KEY_MAP[flatKey];
+        const val = domainData[domain]?.[jsonKey];
+        if (val !== undefined) {
+            DEFAULTS[flatKey] = val;
+            config[flatKey] = val;
+        }
+    }
 
     buildSliders();
     renderPresets();

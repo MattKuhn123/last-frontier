@@ -2,8 +2,8 @@
 // Reads mod overrides from localStorage and patches the live exported
 // objects. Runs at import time (after data modules finish loading).
 
-import { config } from './config.js';
-import { shapes } from './shapes.js';
+import { shipDefs } from './ship.js';
+import { bulletDefs } from './bullets.js';
 import { missions } from './missions.js';
 import { sounds } from './sounds.js';
 import { wingmanTypes } from './wingmen.js';
@@ -14,12 +14,12 @@ import { asteroidDefs } from './asteroids.js';
 import { bossDefs } from './boss.js';
 
 const MOD_KEYS = {
-    config:   'lf-mod-config',
-    shapes:   'lf-mod-shapes',
-    sfx:      'lf-mod-sfx',
-    missions: 'lf-mod-missions',
-    wingmen:  'lf-mod-wingmen',
-    enemies:  'lf-mod-enemies',
+    ship:      'lf-mod-ship',
+    bullets:   'lf-mod-bullets',
+    sfx:       'lf-mod-sfx',
+    missions:  'lf-mod-missions',
+    wingmen:   'lf-mod-wingmen',
+    enemies:   'lf-mod-enemies',
     speakers:  'lf-mod-speakers',
     narrative: 'lf-mod-narrative',
     asteroids: 'lf-mod-asteroids',
@@ -27,13 +27,8 @@ const MOD_KEYS = {
 };
 
 // Store original defaults for reset (exported for diff computation)
-export const configDefaults = { ...config };
-const shapesDefaults = {};
-for (const key of Object.keys(shapes)) {
-    if (Array.isArray(shapes[key])) {
-        shapesDefaults[key] = shapes[key].map(v => [...v]);
-    }
-}
+export const shipDefsDefaults = JSON.parse(JSON.stringify(shipDefs));
+export const bulletDefsDefaults = JSON.parse(JSON.stringify(bulletDefs));
 
 // Deep-copy the original missions array for reset
 const missionsDefaults = JSON.parse(JSON.stringify(missions));
@@ -42,12 +37,12 @@ const missionsDefaults = JSON.parse(JSON.stringify(missions));
 const soundsDefaults = JSON.parse(JSON.stringify(sounds));
 
 // Deep-copy the original wingman/enemy types for reset
-const wingmenDefaults = JSON.parse(JSON.stringify(wingmanTypes));
-const enemiesDefaults = JSON.parse(JSON.stringify(enemyTypes));
+export const wingmenDefaults = JSON.parse(JSON.stringify(wingmanTypes));
+export const enemiesDefaults = JSON.parse(JSON.stringify(enemyTypes));
 const speakersDefaults = JSON.parse(JSON.stringify(speakerColors));
 const narrativeDefaults = JSON.parse(JSON.stringify(narrative));
-const asteroidDefsDefaults = JSON.parse(JSON.stringify(asteroidDefs));
-const bossDefsDefaults = JSON.parse(JSON.stringify(bossDefs));
+export const asteroidDefsDefaults = JSON.parse(JSON.stringify(asteroidDefs));
+export const bossDefsDefaults = JSON.parse(JSON.stringify(bossDefs));
 
 function loadJSON(key) {
     try {
@@ -56,22 +51,22 @@ function loadJSON(key) {
     } catch { return null; }
 }
 
-function applyConfigMod() {
-    const mod = loadJSON(MOD_KEYS.config);
+function applyShipMod() {
+    const mod = loadJSON(MOD_KEYS.ship);
     if (!mod) return;
     for (const key of Object.keys(mod)) {
-        if (key in configDefaults) {
-            config[key] = mod[key];
+        if (key in shipDefsDefaults) {
+            shipDefs[key] = mod[key];
         }
     }
 }
 
-function applyShapesMod() {
-    const mod = loadJSON(MOD_KEYS.shapes);
+function applyBulletsMod() {
+    const mod = loadJSON(MOD_KEYS.bullets);
     if (!mod) return;
     for (const key of Object.keys(mod)) {
-        if (key in shapesDefaults) {
-            shapes[key] = mod[key].map(v => [...v]);
+        if (key in bulletDefsDefaults) {
+            bulletDefs[key] = mod[key];
         }
     }
 }
@@ -144,8 +139,8 @@ function applyBossMod() {
 }
 
 // Apply mods at import time
-applyConfigMod();
-applyShapesMod();
+applyShipMod();
+applyBulletsMod();
 applyMissionsMod();
 applySfxMod();
 applyWingmenMod();
@@ -157,18 +152,24 @@ applyBossMod();
 
 // --- Public API for future UI use ---
 
-export function resetConfigToDefaults() {
-    for (const key of Object.keys(configDefaults)) {
-        config[key] = configDefaults[key];
+export function resetShipToDefaults() {
+    for (const key of Object.keys(shipDefs)) {
+        if (!(key in shipDefsDefaults)) delete shipDefs[key];
     }
-    localStorage.removeItem(MOD_KEYS.config);
+    for (const key of Object.keys(shipDefsDefaults)) {
+        shipDefs[key] = JSON.parse(JSON.stringify(shipDefsDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.ship);
 }
 
-export function resetShapesToDefaults() {
-    for (const key of Object.keys(shapesDefaults)) {
-        shapes[key] = shapesDefaults[key].map(v => [...v]);
+export function resetBulletsToDefaults() {
+    for (const key of Object.keys(bulletDefs)) {
+        if (!(key in bulletDefsDefaults)) delete bulletDefs[key];
     }
-    localStorage.removeItem(MOD_KEYS.shapes);
+    for (const key of Object.keys(bulletDefsDefaults)) {
+        bulletDefs[key] = JSON.parse(JSON.stringify(bulletDefsDefaults[key]));
+    }
+    localStorage.removeItem(MOD_KEYS.bullets);
 }
 
 export function resetMissionsToDefaults() {
@@ -246,8 +247,8 @@ export function resetBossToDefaults() {
 }
 
 export function resetAllMods() {
-    resetConfigToDefaults();
-    resetShapesToDefaults();
+    resetShipToDefaults();
+    resetBulletsToDefaults();
     resetMissionsToDefaults();
     resetSfxToDefaults();
     resetWingmenToDefaults();
@@ -258,17 +259,9 @@ export function resetAllMods() {
     resetBossToDefaults();
 }
 
-export function saveConfigMod(partial) {
-    localStorage.setItem(MOD_KEYS.config, JSON.stringify(partial));
-}
-
-export function saveShapesMod(partial) {
-    localStorage.setItem(MOD_KEYS.shapes, JSON.stringify(partial));
-}
-
 export function hasActiveMods() {
-    return !!(localStorage.getItem(MOD_KEYS.config) ||
-              localStorage.getItem(MOD_KEYS.shapes) ||
+    return !!(localStorage.getItem(MOD_KEYS.ship) ||
+              localStorage.getItem(MOD_KEYS.bullets) ||
               localStorage.getItem(MOD_KEYS.sfx) ||
               localStorage.getItem(MOD_KEYS.missions) ||
               localStorage.getItem(MOD_KEYS.wingmen) ||

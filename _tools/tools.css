@@ -136,3 +136,143 @@ h2 {
     width: 160px;
 }
 .file-row .ext { color: #666; }
+
+/* --- Shape editor --- */
+.canvas-row { display: flex; gap: 20px; margin-bottom: 16px; }
+.edit-area { position: relative; }
+.edit-area canvas { border: 1px solid #222; cursor: crosshair; display: block; }
+.edit-hint { color: #555; font-size: 10px; margin-top: 6px; }
+.preview-area canvas { border: 1px solid #222; display: block; margin-bottom: 10px; }
+.preview-area .controls { display: flex; flex-direction: column; gap: 8px; }
+.preview-area .controls input[type="color"] {
+    width: 40px; height: 24px;
+    border: 1px solid #444;
+    background: transparent;
+    cursor: pointer;
+}
+.vertex-list {
+    max-height: 200px; overflow-y: auto;
+    border: 1px solid #222; padding: 6px;
+    margin-bottom: 12px; font-size: 11px;
+}
+.vertex-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; color: #aaa; }
+.vertex-item .idx { color: #666; width: 20px; }
+.vertex-item .coords { color: #4f4; }
+.vertex-item .del-btn { color: #444; cursor: pointer; margin-left: auto; }
+.vertex-item .del-btn:hover { color: #f44; }
+.json-output {
+    background: #0a0a0a; border: 1px solid #222; color: #4f4;
+    font-family: 'Courier New', monospace; font-size: 12px;
+    padding: 10px; width: 100%; height: 60px;
+    resize: vertical; margin-bottom: 16px;
+}
+
+/* --- Config slider rows (boss-editor style) --- */
+.config-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+}
+.config-row label {
+    width: 100px;
+    color: #888;
+    font-size: 10px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+.config-row input[type="range"] { flex: 1; accent-color: #4f4; height: 4px; }
+.config-row input[type="color"] {
+    width: 40px; height: 22px;
+    border: 1px solid #444;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
+.config-row .val {
+    width: 50px;
+    text-align: right;
+    color: #fff;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+.config-row .rst { color: #444; cursor: pointer; font-size: 10px; flex-shrink: 0; }
+.config-row .rst:hover { color: #f44; }
+
+/* --- Color pair (picker + hex text) --- */
+.color-pair {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+.color-pair input[type="text"] {
+    width: 80px;
+    flex: 0;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 5px 8px;
+}
+.color-pair input[type="color"] {
+    width: 50px;
+    height: 30px;
+    border: 1px solid #444;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+}
+
+/* --- Toolbar --- */
+.toolbar {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 12px;
+}
+
+/* --- Unit list + detail layout --- */
+.editor-layout { display: flex; gap: 20px; align-items: flex-start; }
+.unit-list-panel { width: 200px; flex-shrink: 0; }
+.unit-list {
+    border: 1px solid #222;
+    background: #0a0a0a;
+    min-height: 60px;
+}
+.unit-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; cursor: pointer;
+    border-bottom: 1px solid #1a1a1a; user-select: none;
+}
+.unit-item:hover { background: #1a1a1a; }
+.unit-item.selected { background: #1a2a1a; border-left: 2px solid #4f4; }
+.unit-item .swatch { width: 12px; height: 12px; border: 1px solid #444; flex-shrink: 0; }
+.unit-item .name { flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.unit-item .delete-unit { color: #444; cursor: pointer; font-size: 14px; flex-shrink: 0; padding: 0 2px; }
+.unit-item .delete-unit:hover { color: #f44; }
+.add-unit-btn {
+    width: 100%; padding: 8px;
+    background: transparent; border: 1px dashed #333;
+    color: #666; font-family: 'Courier New', monospace; font-size: 12px; cursor: pointer;
+}
+.add-unit-btn:hover { border-color: #4f4; color: #4f4; }
+.detail-panel { flex: 1; min-width: 0; }
+.no-selection { color: #444; font-size: 13px; padding: 40px 20px; text-align: center; }
+
+/* --- Field rows (shared) --- */
+.field-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.field-row label {
+    width: 130px; flex-shrink: 0; color: #888; font-size: 11px; text-transform: uppercase;
+}
+.field-row input[type="text"],
+.field-row input[type="number"],
+.field-row input[type="color"],
+.field-row select {
+    background: #1a1a1a; border: 1px solid #333; color: #fff;
+    font-family: 'Courier New', monospace; font-size: 12px; padding: 5px 8px;
+    flex: 1; min-width: 0;
+}
+.field-row input[type="color"] { width: 50px; height: 30px; flex: 0; padding: 2px; cursor: pointer; }

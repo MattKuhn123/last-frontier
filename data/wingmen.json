@@ -1,5 +1,5 @@
 {
-    "sierra": { "name": "SIERRA", "color": "#4f4", "fireRate": 20, "targetPriority": "nearest" },
-    "tango":  { "name": "TANGO",  "color": "#48f", "fireRate": 35, "targetPriority": "enemies" },
-    "foxtrot":  { "name": "FOXTROT",  "color": "#f44", "fireRate": 30, "targetPriority": "nearest" }
+    "sierra":  { "name": "SIERRA",  "color": "#4f4", "fireRate": 20, "targetPriority": "nearest", "duration": 600, "speed": 2.0, "shape": [[0,-1],[-0.67,0.67],[0,0.33],[0.67,0.67]] },
+    "tango":   { "name": "TANGO",   "color": "#48f", "fireRate": 35, "targetPriority": "enemies", "duration": 600, "speed": 2.0, "shape": [[0,-1],[-0.67,0.67],[0,0.33],[0.67,0.67]] },
+    "foxtrot": { "name": "FOXTROT", "color": "#f44", "fireRate": 30, "targetPriority": "nearest", "duration": 600, "speed": 2.0, "shape": [[0,-1],[-0.67,0.67],[0,0.33],[0.67,0.67]] }
 }

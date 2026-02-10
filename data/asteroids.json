@@ -1,4 +1,6 @@
 {
+    "speed": 0.5,
+    "jaggedness": 0.4,
     "vertices": 10,
     "color": "#aaa",
     "lineWidth": 1.5,

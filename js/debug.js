@@ -1,29 +1,51 @@
 // --- Debug Panel ---
-import { config } from './config.js';
-import { saveConfigMod, configDefaults } from './mods.js';
+import { shipDefs } from './ship.js';
+import { bulletDefs } from './bullets.js';
+import { asteroidDefs } from './asteroids.js';
+import { enemyTypes } from './enemies.js';
+import { wingmanTypes } from './wingmen.js';
+import { bossDefs } from './boss.js';
+import {
+    shipDefsDefaults, bulletDefsDefaults,
+    asteroidDefsDefaults, enemiesDefaults, wingmenDefaults, bossDefsDefaults
+} from './mods.js';
 
-// Metadata for building the panel: group label, key, step value
+let _infiniteLives = false;
+export function infiniteLives() { return _infiniteLives; }
+
+// Metadata for building the panel: group label, obj, key, step value
 const fields = [
-    { group: 'Ship', key: 'SHIP_SIZE', step: 1 },
-    { group: 'Ship', key: 'TURN_SPEED', step: 0.01 },
-    { group: 'Ship', key: 'THRUST_POWER', step: 0.01 },
-    { group: 'Ship', key: 'FRICTION', step: 0.001 },
-    { group: 'Ship', key: 'INVINCIBLE_DURATION', step: 10 },
-    { group: 'Bullets', key: 'BULLET_SPEED', step: 1 },
-    { group: 'Bullets', key: 'BULLET_LIFETIME', step: 5 },
-    { group: 'Bullets', key: 'MAX_BULLETS', step: 1 },
-    { group: 'Asteroids', key: 'ASTEROID_SPEED', step: 0.1 },
-    { group: 'Asteroids', key: 'ASTEROID_JAGGEDNESS', step: 0.05 },
-    { group: 'Enemies', key: 'ENEMY_SIZE', step: 1 },
-    { group: 'Enemies', key: 'ENEMY_SPEED', step: 0.1 },
-    { group: 'Enemies', key: 'ENEMY_TURN_SPEED', step: 0.01 },
-    { group: 'Enemies', key: 'ENEMY_FIRE_INTERVAL', step: 5 },
-    { group: 'Enemies', key: 'ENEMY_BULLET_SPEED', step: 0.5 },
-    { group: 'Wingmen', key: 'WINGMAN_DURATION', step: 60 },
-    { group: 'Wingmen', key: 'WINGMAN_SPEED', step: 0.1 },
-    { group: 'Boss', key: 'BOSS_SIZE', step: 1 },
-    { group: 'Boss', key: 'BOSS_MAX_HP', step: 1 },
-    { group: 'Boss', key: 'BOSS_SPEED', step: 0.1 },
+    { group: 'Ship', obj: shipDefs, key: 'size', step: 1 },
+    { group: 'Ship', obj: shipDefs, key: 'turnSpeed', step: 0.01 },
+    { group: 'Ship', obj: shipDefs, key: 'thrustPower', step: 0.01 },
+    { group: 'Ship', obj: shipDefs, key: 'friction', step: 0.001 },
+    { group: 'Ship', obj: shipDefs, key: 'invincibleDuration', step: 10 },
+    { group: 'Bullets', obj: bulletDefs, key: 'speed', step: 1 },
+    { group: 'Bullets', obj: bulletDefs, key: 'lifetime', step: 5 },
+    { group: 'Bullets', obj: bulletDefs, key: 'maxBullets', step: 1 },
+    { group: 'Bullets', obj: bulletDefs, key: 'shootCooldown', step: 1 },
+    { group: 'Asteroids', obj: asteroidDefs, key: 'speed', step: 0.1 },
+    { group: 'Asteroids', obj: asteroidDefs, key: 'jaggedness', step: 0.05 },
+    { group: 'Enemies', obj: enemyTypes, key: 'size', step: 1 },
+    { group: 'Enemies', obj: enemyTypes, key: 'speed', step: 0.1 },
+    { group: 'Enemies', obj: enemyTypes, key: 'turnSpeed', step: 0.01 },
+    { group: 'Enemies', obj: enemyTypes, key: 'fireInterval', step: 5 },
+    { group: 'Enemies', obj: enemyTypes, key: 'bulletSpeed', step: 0.5 },
+    { group: 'Wingmen', obj: wingmanTypes, key: 'duration', step: 60 },
+    { group: 'Wingmen', obj: wingmanTypes, key: 'speed', step: 0.1 },
+    { group: 'Boss', obj: bossDefs, key: 'size', step: 1 },
+    { group: 'Boss', obj: bossDefs, key: 'maxHp', step: 1 },
+    { group: 'Boss', obj: bossDefs, key: 'speed', step: 0.1 },
+];
+
+// Map each domain object to its defaults and localStorage key
+const domainMeta = [
+    { obj: shipDefs,     defaults: shipDefsDefaults,     modKey: 'lf-mod-ship' },
+    { obj: bulletDefs,   defaults: bulletDefsDefaults,    modKey: 'lf-mod-bullets' },
+    { obj: asteroidDefs, defaults: asteroidDefsDefaults,  modKey: 'lf-mod-asteroids' },
+    { obj: enemyTypes,   defaults: enemiesDefaults,       modKey: 'lf-mod-enemies' },
+    { obj: wingmanTypes, defaults: wingmenDefaults,       modKey: 'lf-mod-wingmen' },
+    { obj: bossDefs,     defaults: bossDefsDefaults,      modKey: 'lf-mod-boss' },
 ];
 
 export function buildDebugPanel() {
@@ -37,8 +59,8 @@ export function buildDebugPanel() {
     checkRow.className = 'debug-row debug-check';
     const cb = document.createElement('input');
     cb.type = 'checkbox';
-    cb.checked = config.infiniteLives;
-    cb.addEventListener('change', () => { config.infiniteLives = cb.checked; });
+    cb.checked = _infiniteLives;
+    cb.addEventListener('change', () => { _infiniteLives = cb.checked; });
     checkRow.appendChild(cb);
     checkRow.appendChild(document.createTextNode(' Infinite Lives'));
     panel.appendChild(checkRow);
@@ -63,10 +85,10 @@ export function buildDebugPanel() {
         const input = document.createElement('input');
         input.type = 'number';
         input.step = f.step;
-        input.value = config[f.key];
+        input.value = f.obj[f.key];
         input.addEventListener('input', () => {
             const v = parseFloat(input.value);
-            if (!isNaN(v)) config[f.key] = v;
+            if (!isNaN(v)) f.obj[f.key] = v;
         });
         row.appendChild(input);
 
@@ -85,14 +107,24 @@ export function buildDebugPanel() {
         'font-family:Courier New,monospace;font-size:11px;padding:4px 12px;cursor:pointer;' +
         'width:100%;margin-top:4px;';
     saveBtn.addEventListener('click', () => {
-        const diff = {};
-        for (const key of Object.keys(configDefaults)) {
-            if (config[key] !== configDefaults[key]) diff[key] = config[key];
+        let totalChanges = 0;
+        for (const dm of domainMeta) {
+            const diff = {};
+            for (const key of Object.keys(dm.defaults)) {
+                if (typeof dm.defaults[key] !== 'object' && dm.obj[key] !== dm.defaults[key]) {
+                    diff[key] = dm.obj[key];
+                }
+            }
+            if (Object.keys(diff).length > 0) {
+                localStorage.setItem(dm.modKey, JSON.stringify(diff));
+                totalChanges += Object.keys(diff).length;
+            } else {
+                localStorage.removeItem(dm.modKey);
+            }
         }
-        if (Object.keys(diff).length === 0) {
+        if (totalChanges === 0) {
             saveBtn.textContent = 'No changes';
         } else {
-            saveConfigMod(diff);
             saveBtn.textContent = 'Saved!';
         }
         setTimeout(() => { saveBtn.textContent = 'Save as Mod'; }, 1500);

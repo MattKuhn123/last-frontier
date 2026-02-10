@@ -1,4 +1,10 @@
 {
+    "size": 12,
+    "speed": 1.0,
+    "turnSpeed": 0.04,
+    "fireInterval": 90,
+    "bulletSpeed": 4,
     "normal":  { "color": "#f44" },
-    "corrupt": { "color": "#88f" }
+    "corrupt": { "color": "#88f" },
+    "shape": [[0,-1],[-0.8,0.3],[-0.4,0.7],[0,0.4],[0.4,0.7],[0.8,0.3]]
 }

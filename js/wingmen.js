@@ -1,11 +1,9 @@
 // --- Wingman Power-ups ---
-import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle } from './utils.js';
+import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle, strokeShape } from './utils.js';
 import { ship } from './ship.js';
 import { enemies } from './enemies.js';
 import { asteroids } from './asteroids.js';
 import { addBullet } from './bullets.js';
-import { config } from './config.js';
-import { shapes, strokeShape } from './shapes.js';
 const PICKUP_RADIUS = 15;
 const PICKUP_PULSE_SPEED = 0.05;
 
@@ -62,7 +60,7 @@ function activateWingman(type) {
         radius: 12,
         angle: 0,
         dx: 0, dy: 0,
-        timer: config.WINGMAN_DURATION,
+        timer: def.duration,
         fireCooldown: 0,
         ...def
     };
@@ -145,9 +143,9 @@ export function updateWingmen() {
 
     // Clamp speed
     const speed = Math.hypot(activeWingman.dx, activeWingman.dy);
-    if (speed > config.WINGMAN_SPEED) {
-        activeWingman.dx = (activeWingman.dx / speed) * config.WINGMAN_SPEED;
-        activeWingman.dy = (activeWingman.dy / speed) * config.WINGMAN_SPEED;
+    if (speed > activeWingman.speed) {
+        activeWingman.dx = (activeWingman.dx / speed) * activeWingman.speed;
+        activeWingman.dy = (activeWingman.dy / speed) * activeWingman.speed;
     }
     activeWingman.dx *= 0.98;
     activeWingman.dy *= 0.98;
@@ -177,7 +175,7 @@ export function drawWingmen() {
         ctx.globalAlpha = 0.8 + glow * 0.2;
         ctx.strokeStyle = def.color;
         ctx.lineWidth = 1.5;
-        strokeShape(ctx, shapes.wingman, 8);
+        strokeShape(ctx, def.shape, 8);
 
         ctx.restore();
     }
@@ -192,14 +190,14 @@ export function drawWingmen() {
         // Ship shape
         ctx.strokeStyle = w.color;
         ctx.lineWidth = 1.5;
-        strokeShape(ctx, shapes.wingman, 12);
+        strokeShape(ctx, w.shape, 12);
 
         // Timer indicator (fading glow)
         if (w.timer < 180) {
             ctx.globalAlpha = 0.3 + 0.3 * Math.sin(w.timer * 0.2);
             ctx.strokeStyle = w.color;
             ctx.beginPath();
-            ctx.arc(0, 0, 16, 0, Math.PI * 2 * (w.timer / config.WINGMAN_DURATION));
+            ctx.arc(0, 0, 16, 0, Math.PI * 2 * (w.timer / w.duration));
             ctx.stroke();
         }
 

@@ -2,7 +2,6 @@
 import { canvas, ctx, rand, wrap, dist } from './utils.js';
 import { ship } from './ship.js';
 import { spawnParticles } from './particles.js';
-import { config } from './config.js';
 
 export const asteroidDefs = {};
 Object.assign(asteroidDefs, await fetch('data/asteroids.json').then(r => r.json()));
@@ -16,11 +15,11 @@ export function resetAsteroids() {
 export function createAsteroid(x, y, size) {
     const r = asteroidDefs.sizeRadius[size];
     const angle = rand(0, Math.PI * 2);
-    const speed = config.ASTEROID_SPEED * (4 - size) * rand(0.5, 1.2);
+    const speed = asteroidDefs.speed * (4 - size) * rand(0.5, 1.2);
 
     const offsets = [];
     for (let i = 0; i < asteroidDefs.vertices; i++) {
-        offsets.push(1 + rand(-config.ASTEROID_JAGGEDNESS, config.ASTEROID_JAGGEDNESS));
+        offsets.push(1 + rand(-asteroidDefs.jaggedness, asteroidDefs.jaggedness));
     }
 
     return {

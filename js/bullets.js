@@ -1,8 +1,10 @@
 // --- Bullet System ---
 import { ctx, wrap } from './utils.js';
 import { keys } from './input.js';
-import { ship } from './ship.js';
-import { config } from './config.js';
+import { ship, shipDefs } from './ship.js';
+
+export const bulletDefs = {};
+Object.assign(bulletDefs, await fetch('data/bullets.json').then(r => r.json()));
 
 export let bullets = [];
 let shootCooldown = 0;
@@ -13,17 +15,17 @@ export function resetBullets() {
 }
 
 function shootBullet() {
-    if (bullets.length >= config.MAX_BULLETS || shootCooldown > 0 || !ship) return;
+    if (bullets.length >= bulletDefs.maxBullets || shootCooldown > 0 || !ship) return;
     bullets.push({
-        x: ship.x + Math.cos(ship.angle) * config.SHIP_SIZE,
-        y: ship.y + Math.sin(ship.angle) * config.SHIP_SIZE,
-        dx: Math.cos(ship.angle) * config.BULLET_SPEED + ship.dx,
-        dy: Math.sin(ship.angle) * config.BULLET_SPEED + ship.dy,
+        x: ship.x + Math.cos(ship.angle) * shipDefs.size,
+        y: ship.y + Math.sin(ship.angle) * shipDefs.size,
+        dx: Math.cos(ship.angle) * bulletDefs.speed + ship.dx,
+        dy: Math.sin(ship.angle) * bulletDefs.speed + ship.dy,
         radius: 2,
-        life: config.BULLET_LIFETIME,
+        life: bulletDefs.lifetime,
         friendly: true
     });
-    shootCooldown = 8;
+    shootCooldown = bulletDefs.shootCooldown;
 }
 
 export function updateBullets() {
@@ -56,7 +58,7 @@ export function addBullet(x, y, angle, speed, friendly) {
         dx: Math.cos(angle) * speed,
         dy: Math.sin(angle) * speed,
         radius: 2,
-        life: config.BULLET_LIFETIME,
+        life: bulletDefs.lifetime,
         friendly
     });
 }

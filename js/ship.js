@@ -1,8 +1,9 @@
 // --- Player Ship ---
-import { canvas, ctx, wrap } from './utils.js';
+import { canvas, ctx, wrap, strokeShape } from './utils.js';
 import { keys } from './input.js';
-import { config } from './config.js';
-import { shapes, strokeShape } from './shapes.js';
+
+export const shipDefs = {};
+Object.assign(shipDefs, await fetch('data/ship.json').then(r => r.json()));
 
 export let ship = null;
 export let invincibleTimer = 0;
@@ -11,7 +12,7 @@ export function createShip() {
     ship = {
         x: canvas.width / 2,
         y: canvas.height / 2,
-        radius: config.SHIP_SIZE,
+        radius: shipDefs.size,
         angle: -Math.PI / 2,
         dx: 0,
         dy: 0,
@@ -27,7 +28,7 @@ export function resetShip() {
     ship.dy = 0;
     ship.angle = -Math.PI / 2;
     ship.thrusting = false;
-    invincibleTimer = config.INVINCIBLE_DURATION;
+    invincibleTimer = shipDefs.invincibleDuration;
 }
 
 export function setInvincible(frames) {
@@ -35,17 +36,17 @@ export function setInvincible(frames) {
 }
 
 export function updateShip() {
-    if (keys['ArrowLeft'] || keys['KeyA']) ship.angle -= config.TURN_SPEED;
-    if (keys['ArrowRight'] || keys['KeyD']) ship.angle += config.TURN_SPEED;
+    if (keys['ArrowLeft'] || keys['KeyA']) ship.angle -= shipDefs.turnSpeed;
+    if (keys['ArrowRight'] || keys['KeyD']) ship.angle += shipDefs.turnSpeed;
 
     ship.thrusting = keys['ArrowUp'] || keys['KeyW'];
     if (ship.thrusting) {
-        ship.dx += Math.cos(ship.angle) * config.THRUST_POWER;
-        ship.dy += Math.sin(ship.angle) * config.THRUST_POWER;
+        ship.dx += Math.cos(ship.angle) * shipDefs.thrustPower;
+        ship.dy += Math.sin(ship.angle) * shipDefs.thrustPower;
     }
 
-    ship.dx *= config.FRICTION;
-    ship.dy *= config.FRICTION;
+    ship.dx *= shipDefs.friction;
+    ship.dy *= shipDefs.friction;
     ship.x += ship.dx;
     ship.y += ship.dy;
     wrap(ship);
@@ -64,14 +65,14 @@ export function drawShip() {
 
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1.5;
-    strokeShape(ctx, shapes.player, config.SHIP_SIZE);
+    strokeShape(ctx, shipDefs.shape, shipDefs.size);
 
     if (ship.thrusting && Math.random() > 0.3) {
         ctx.strokeStyle = '#f80';
         ctx.beginPath();
-        ctx.moveTo(-config.SHIP_SIZE * 0.35, config.SHIP_SIZE * 0.6);
-        ctx.lineTo(0, config.SHIP_SIZE * (0.9 + Math.random() * 0.6));
-        ctx.lineTo(config.SHIP_SIZE * 0.35, config.SHIP_SIZE * 0.6);
+        ctx.moveTo(-shipDefs.size * 0.35, shipDefs.size * 0.6);
+        ctx.lineTo(0, shipDefs.size * (0.9 + Math.random() * 0.6));
+        ctx.lineTo(shipDefs.size * 0.35, shipDefs.size * 0.6);
         ctx.stroke();
     }
 

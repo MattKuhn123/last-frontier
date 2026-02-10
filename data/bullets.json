@@ -1,0 +1,6 @@
+{
+    "speed": 6,
+    "lifetime": 60,
+    "maxBullets": 8,
+    "shootCooldown": 8
+}

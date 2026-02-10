@@ -187,6 +187,8 @@
 let DEFAULTS = {};
 let narrative = {};
 let MUSIC_TRACKS = [];
+let speakersDefaults = {};
+let speakersData = {};
 
 // ============================================================
 // LINE LIST BUILDER (reusable for crawl + ending lines)
@@ -408,6 +410,52 @@ function render() {
         musicSection.appendChild(row);
     }
     editor.appendChild(musicSection);
+
+    // --- Speakers ---
+    const speakersSection = makeSection('Speakers');
+    const speakerList = document.createElement('div');
+
+    function renderSpeakers() {
+        speakerList.innerHTML = '';
+        for (const key of Object.keys(speakersData)) {
+            const speaker = speakersData[key];
+            const row = document.createElement('div');
+            row.className = 'field-row';
+
+            const lbl = document.createElement('label');
+            lbl.textContent = key;
+            row.appendChild(lbl);
+
+            row.appendChild(colorInput(speaker.color, v => { speaker.color = v; }));
+
+            const del = document.createElement('span');
+            del.style.cssText = 'color:#444;cursor:pointer;font-size:14px;padding:0 4px;';
+            del.textContent = '\u00d7';
+            del.onmouseover = () => { del.style.color = '#f44'; };
+            del.onmouseout = () => { del.style.color = '#444'; };
+            del.onclick = () => { delete speakersData[key]; renderSpeakers(); };
+            row.appendChild(del);
+
+            speakerList.appendChild(row);
+        }
+
+        // Add button
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-line-btn';
+        addBtn.textContent = '+ Add Speaker';
+        addBtn.onclick = () => {
+            let name = 'NEW';
+            let n = 1;
+            while (speakersData[name]) { name = 'NEW' + (n++); }
+            speakersData[name] = { color: '#fff' };
+            renderSpeakers();
+        };
+        speakerList.appendChild(addBtn);
+    }
+
+    renderSpeakers();
+    speakersSection.appendChild(speakerList);
+    editor.appendChild(speakersSection);
 }
 
 // ============================================================
@@ -416,9 +464,15 @@ function render() {
 const presetSystem = setupPresets({
     container: 'presets',
     storageKey: 'narrative-presets',
-    getData: () => JSON.parse(JSON.stringify(narrative)),
+    getData: () => ({ narrative: JSON.parse(JSON.stringify(narrative)), speakers: JSON.parse(JSON.stringify(speakersData)) }),
     setData: (data) => {
-        narrative = JSON.parse(JSON.stringify(data));
+        // Support legacy presets (narrative only) and new format (narrative + speakers)
+        if (data.narrative) {
+            narrative = JSON.parse(JSON.stringify(data.narrative));
+            speakersData = JSON.parse(JSON.stringify(data.speakers || speakersDefaults));
+        } else {
+            narrative = JSON.parse(JSON.stringify(data));
+        }
         render();
     },
     saveInput: 'preset-name',
@@ -428,6 +482,7 @@ const renderPresets = presetSystem.render;
 
 document.getElementById('reset-all-btn').onclick = () => {
     narrative = JSON.parse(JSON.stringify(DEFAULTS));
+    speakersData = JSON.parse(JSON.stringify(speakersDefaults));
     render();
 };
 
@@ -436,25 +491,38 @@ document.getElementById('reset-all-btn').onclick = () => {
 // ============================================================
 document.getElementById('apply-btn').onclick = () => {
     localStorage.setItem('lf-mod-narrative', JSON.stringify(narrative));
+
+    // Speakers diff
+    if (JSON.stringify(speakersData) !== JSON.stringify(speakersDefaults)) {
+        localStorage.setItem('lf-mod-speakers', JSON.stringify(speakersData));
+    } else {
+        localStorage.removeItem('lf-mod-speakers');
+    }
+
     flashButton('apply-btn', 'Applied!');
 };
 
 // ============================================================
 // SAVE AS DEFAULT (dev server only)
 // ============================================================
-setupSaveDefault('default-btn', () => saveJSON('/api/save-narrative', narrative));
+setupSaveDefault('default-btn', () => Promise.all([
+    saveJSON('/api/save-narrative', narrative),
+    saveJSON('/api/save-speakers', speakersData)
+]));
 
 // ============================================================
 // INIT
 // ============================================================
 async function init() {
     try {
-        const [narrativeRes, musicRes] = await Promise.all([
+        const [narrativeRes, musicRes, speakersRes] = await Promise.all([
             fetch('../data/narrative.json'),
-            fetch('../data/music.json')
+            fetch('../data/music.json'),
+            fetch('../data/speakers.json')
         ]);
         DEFAULTS = await narrativeRes.json();
         MUSIC_TRACKS = await musicRes.json();
+        speakersDefaults = await speakersRes.json();
     } catch (e) {
         console.error('Failed to load data files:', e);
         DEFAULTS = {};
@@ -466,6 +534,14 @@ async function init() {
         const existing = JSON.parse(localStorage.getItem('lf-mod-narrative'));
         if (existing && typeof existing === 'object' && existing.title) {
             narrative = existing;
+        }
+    } catch {}
+
+    speakersData = JSON.parse(JSON.stringify(speakersDefaults));
+    try {
+        const existing = JSON.parse(localStorage.getItem('lf-mod-speakers'));
+        if (existing && typeof existing === 'object') {
+            speakersData = existing;
         }
     } catch {}
 

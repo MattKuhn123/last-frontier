@@ -118,6 +118,129 @@ function setupSaveDefault(btnId, saveFn) {
     };
 }
 
+// --- Color input (picker + hex text) ---
+
+function colorInput(value, onChange) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'color-pair';
+
+    const picker = document.createElement('input');
+    picker.type = 'color';
+    picker.value = toHex6(value);
+
+    const text = document.createElement('input');
+    text.type = 'text';
+    text.value = value;
+
+    picker.oninput = () => { text.value = picker.value; onChange(picker.value); };
+    text.oninput = () => {
+        if (/^#[0-9a-fA-F]{3,6}$/.test(text.value)) {
+            picker.value = text.value.length === 4
+                ? '#' + text.value[1]+text.value[1] + text.value[2]+text.value[2] + text.value[3]+text.value[3]
+                : text.value;
+            onChange(text.value);
+        }
+    };
+
+    wrapper.append(picker, text);
+    return wrapper;
+}
+
+// --- Hex color helpers ---
+
+function toHex6(hex) {
+    if (hex && hex.length === 4) {
+        return '#' + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
+    }
+    return hex;
+}
+
+// --- Deep copy / deep assign ---
+
+function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function deepAssign(dst, src) {
+    for (const key of Object.keys(src)) {
+        if (src[key] && typeof src[key] === 'object' && !Array.isArray(src[key])) {
+            if (!dst[key]) dst[key] = {};
+            deepAssign(dst[key], src[key]);
+        } else {
+            dst[key] = src[key];
+        }
+    }
+}
+
+// --- Slider row builder ---
+
+function sliderRow(containerId, label, value, min, max, step, onChange, defaultValue) {
+    const container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
+    const row = document.createElement('div');
+    row.className = 'config-row';
+
+    const lbl = document.createElement('label');
+    lbl.textContent = label;
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = min; slider.max = max; slider.step = step;
+    slider.value = value;
+
+    const val = document.createElement('span');
+    val.className = 'val';
+    val.textContent = formatSliderVal(value, step);
+
+    const rst = document.createElement('span');
+    rst.className = 'rst';
+    rst.textContent = '\u21ba';
+    rst.title = 'Reset to ' + defaultValue;
+    rst.onclick = () => {
+        slider.value = defaultValue;
+        val.textContent = formatSliderVal(defaultValue, step);
+        onChange(defaultValue);
+    };
+
+    slider.addEventListener('input', () => {
+        const v = parseFloat(slider.value);
+        val.textContent = formatSliderVal(v, step);
+        onChange(v);
+    });
+
+    row.append(lbl, slider, val, rst);
+    container.appendChild(row);
+    return { slider, val };
+}
+
+function formatSliderVal(v, step) {
+    if (step >= 1) return v.toString();
+    return Number(v).toFixed(Math.max(0, -Math.floor(Math.log10(step))));
+}
+
+// --- Nested path helpers ---
+
+function getByPath(obj, path) {
+    return path.split('.').reduce((o, k) => o && o[k], obj);
+}
+
+function setByPath(obj, path, val) {
+    const keys = path.split('.');
+    let o = obj;
+    for (let i = 0; i < keys.length - 1; i++) {
+        if (!o[keys[i]]) o[keys[i]] = {};
+        o = o[keys[i]];
+    }
+    o[keys[keys.length - 1]] = val;
+}
+
+// --- Static text display ---
+
+function staticText(value) {
+    const span = document.createElement('span');
+    span.style.color = '#888';
+    span.style.fontSize = '12px';
+    span.textContent = value;
+    return span;
+}
+
 // --- Save helper ---
 
 function saveJSON(endpoint, data) {

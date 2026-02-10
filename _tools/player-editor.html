@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Player Editor — Last Frontier</title>
+    <link rel="stylesheet" href="tools.css">
+    <style>
+        body { max-width: 900px; margin: 0 auto; }
+        .control-row label { width: 70px; }
+        .control-row .value { width: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Player Editor</h1>
+
+    <div class="toolbar">
+        <h2>Presets</h2>
+        <div class="preset-row" id="presets"></div>
+        <div class="action-row">
+            <input type="text" id="preset-name" placeholder="my-player">
+            <button class="btn btn-save" id="save-btn">Save</button>
+            <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+            <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
+        </div>
+    </div>
+
+    <h2>Shape</h2>
+    <div class="canvas-row">
+        <div class="edit-area">
+            <canvas id="edit-canvas" width="400" height="400"></canvas>
+            <div class="edit-hint">Click to add &middot; Drag to move &middot; Right-click to delete</div>
+        </div>
+        <div class="preview-area">
+            <canvas id="preview-canvas" width="180" height="180"></canvas>
+            <div class="controls">
+                <div class="control-row">
+                    <label>Color</label>
+                    <input type="color" id="ship-color" value="#ffffff">
+                </div>
+                <div class="control-row">
+                    <label>Line</label>
+                    <input type="range" id="line-width" min="0.5" max="4" step="0.5" value="1.5">
+                    <span class="value" id="line-width-val">1.5</span>
+                </div>
+                <div class="control-row">
+                    <label>Preview</label>
+                    <input type="range" id="preview-size" min="10" max="60" step="1" value="20">
+                    <span class="value" id="preview-size-val">20</span>
+                </div>
+            </div>
+            <div style="margin-top: 12px;">
+                <h2>Vertices</h2>
+                <div class="vertex-list" id="vertex-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-danger" id="clear-btn">Clear</button>
+        <button class="btn btn-action" id="reset-shape-btn">Reset Shape</button>
+        <label><input type="checkbox" id="snap-toggle" checked> Snap (0.05)</label>
+        <label><input type="checkbox" id="symmetry-toggle"> Symmetry</label>
+    </div>
+
+    <h2>Vertex JSON</h2>
+    <textarea class="json-output" id="json-output" readonly></textarea>
+
+    <div class="viz-section">
+        <h2>Ship Properties</h2>
+        <div class="slider-group" id="sliders-ship"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Bullet Properties</h2>
+        <div class="slider-group" id="sliders-bullets"></div>
+    </div>
+
+<script src="tools.js"></script>
+<script src="shape-editor.js"></script>
+<script>
+// ============================================================
+// DATA
+// ============================================================
+let shipDefaults = {};
+let bulletDefaults = {};
+let shipData = {};
+let bulletData = {};
+
+// ============================================================
+// SHAPE EDITOR
+// ============================================================
+const shapeEditor = createShapeEditor({
+    editCanvas:      document.getElementById('edit-canvas'),
+    previewCanvas:   document.getElementById('preview-canvas'),
+    vertexListEl:    document.getElementById('vertex-list'),
+    jsonOutputEl:    document.getElementById('json-output'),
+    snapToggleEl:    document.getElementById('snap-toggle'),
+    symmetryToggleEl:document.getElementById('symmetry-toggle'),
+    getVertices:     () => shipData.shape,
+    setVertices:     (v) => { shipData.shape = v; },
+    previewColor:    () => document.getElementById('ship-color').value,
+    previewSize:     () => parseFloat(document.getElementById('preview-size').value),
+    previewLineWidth:() => parseFloat(document.getElementById('line-width').value),
+    previewLabel:    () => 'PLAYER'
+});
+
+// Preview control listeners
+document.getElementById('line-width').addEventListener('input', (e) => {
+    document.getElementById('line-width-val').textContent = e.target.value;
+});
+document.getElementById('preview-size').addEventListener('input', (e) => {
+    document.getElementById('preview-size-val').textContent = e.target.value;
+});
+
+document.getElementById('clear-btn').onclick = () => shapeEditor.clear();
+document.getElementById('reset-shape-btn').onclick = () => shapeEditor.reset(shipDefaults.shape);
+
+// ============================================================
+// PROPERTY SLIDERS
+// ============================================================
+function buildSliders() {
+    document.getElementById('sliders-ship').innerHTML = '';
+    document.getElementById('sliders-bullets').innerHTML = '';
+
+    // Ship sliders
+    sliderRow('sliders-ship', 'Size',         shipData.size,               5,   40,  1,   v => { shipData.size = v; },               shipDefaults.size);
+    sliderRow('sliders-ship', 'Turn Speed',   shipData.turnSpeed,          0.01, 0.1, 0.005, v => { shipData.turnSpeed = v; },        shipDefaults.turnSpeed);
+    sliderRow('sliders-ship', 'Thrust',       shipData.thrustPower,        0.01, 0.2, 0.005, v => { shipData.thrustPower = v; },      shipDefaults.thrustPower);
+    sliderRow('sliders-ship', 'Friction',     shipData.friction,           0.9,  1.0, 0.005, v => { shipData.friction = v; },         shipDefaults.friction);
+    sliderRow('sliders-ship', 'Invincible',   shipData.invincibleDuration, 30,   600, 10,  v => { shipData.invincibleDuration = v; }, shipDefaults.invincibleDuration);
+
+    // Bullet sliders
+    sliderRow('sliders-bullets', 'Speed',     bulletData.speed,        1,   20,  0.5, v => { bulletData.speed = v; },        bulletDefaults.speed);
+    sliderRow('sliders-bullets', 'Lifetime',  bulletData.lifetime,     10,  200, 5,   v => { bulletData.lifetime = v; },     bulletDefaults.lifetime);
+    sliderRow('sliders-bullets', 'Max Bullets',bulletData.maxBullets,  1,   30,  1,   v => { bulletData.maxBullets = v; },   bulletDefaults.maxBullets);
+    sliderRow('sliders-bullets', 'Cooldown',  bulletData.shootCooldown,1,   30,  1,   v => { bulletData.shootCooldown = v; },bulletDefaults.shootCooldown);
+}
+
+// ============================================================
+// PRESETS
+// ============================================================
+const presets = setupPresets({
+    container: 'presets',
+    storageKey: 'player-presets',
+    getData: () => ({ ship: deepCopy(shipData), bullets: deepCopy(bulletData) }),
+    setData: (data) => {
+        shipData = deepCopy(data.ship);
+        bulletData = deepCopy(data.bullets);
+        buildSliders();
+        shapeEditor.refresh();
+    },
+    saveInput: 'preset-name',
+    saveBtn: 'save-btn'
+});
+const renderPresets = presets.render;
+
+document.getElementById('reset-all-btn').onclick = () => {
+    shipData = deepCopy(shipDefaults);
+    bulletData = deepCopy(bulletDefaults);
+    buildSliders();
+    shapeEditor.refresh();
+};
+
+// ============================================================
+// APPLY TO GAME
+// ============================================================
+function roundV(v) { return [Math.round(v[0] * 100) / 100, Math.round(v[1] * 100) / 100]; }
+
+document.getElementById('apply-btn').onclick = () => {
+    // Ship diff
+    const shipDiff = {};
+    for (const key of Object.keys(shipDefaults)) {
+        if (key === 'shape') {
+            const cur = shipData.shape;
+            const def = shipDefaults.shape;
+            const changed = cur.length !== def.length ||
+                cur.some((v, i) => v[0] !== def[i][0] || v[1] !== def[i][1]);
+            if (changed) shipDiff.shape = cur.map(roundV);
+        } else if (shipData[key] !== shipDefaults[key]) {
+            shipDiff[key] = shipData[key];
+        }
+    }
+
+    if (Object.keys(shipDiff).length === 0) {
+        localStorage.removeItem('lf-mod-ship');
+    } else {
+        localStorage.setItem('lf-mod-ship', JSON.stringify(shipDiff));
+    }
+
+    // Bullet diff
+    const bulletDiff = {};
+    for (const key of Object.keys(bulletDefaults)) {
+        if (bulletData[key] !== bulletDefaults[key]) {
+            bulletDiff[key] = bulletData[key];
+        }
+    }
+
+    if (Object.keys(bulletDiff).length === 0) {
+        localStorage.removeItem('lf-mod-bullets');
+    } else {
+        localStorage.setItem('lf-mod-bullets', JSON.stringify(bulletDiff));
+    }
+
+    const total = Object.keys(shipDiff).length + Object.keys(bulletDiff).length;
+    flashButton('apply-btn', total > 0 ? 'Applied!' : 'Cleared!');
+};
+
+// ============================================================
+// SAVE AS DEFAULT
+// ============================================================
+setupSaveDefault('default-btn', () => Promise.all([
+    saveJSON('/api/save-ship', deepCopy(shipData)),
+    saveJSON('/api/save-bullets', deepCopy(bulletData))
+]));
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+    try {
+        const [shipRes, bulletRes] = await Promise.all([
+            fetch('../data/ship.json').then(r => r.json()),
+            fetch('../data/bullets.json').then(r => r.json())
+        ]);
+        shipDefaults = shipRes;
+        bulletDefaults = bulletRes;
+    } catch (e) {
+        console.error('Failed to load data:', e);
+    }
+
+    shipData = deepCopy(shipDefaults);
+    bulletData = deepCopy(bulletDefaults);
+
+    // Apply existing mods
+    try {
+        const mod = JSON.parse(localStorage.getItem('lf-mod-ship'));
+        if (mod && typeof mod === 'object') deepAssign(shipData, mod);
+    } catch {}
+    try {
+        const mod = JSON.parse(localStorage.getItem('lf-mod-bullets'));
+        if (mod && typeof mod === 'object') deepAssign(bulletData, mod);
+    } catch {}
+
+    buildSliders();
+    renderPresets();
+    shapeEditor.refresh();
+    shapeEditor.startPreview();
+}
+
+init();
+</script>
+</body>
+</html>

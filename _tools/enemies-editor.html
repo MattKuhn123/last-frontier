@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enemies Editor — Last Frontier</title>
+    <link rel="stylesheet" href="tools.css">
+    <style>
+        body { max-width: 900px; margin: 0 auto; }
+        .control-row label { width: 70px; }
+        .control-row .value { width: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Enemies Editor</h1>
+
+    <div class="toolbar">
+        <h2>Presets</h2>
+        <div class="preset-row" id="presets"></div>
+        <div class="action-row">
+            <input type="text" id="preset-name" placeholder="my-enemies">
+            <button class="btn btn-save" id="save-btn">Save</button>
+            <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+            <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
+        </div>
+    </div>
+
+    <h2>Shape</h2>
+    <div class="canvas-row">
+        <div class="edit-area">
+            <canvas id="edit-canvas" width="400" height="400"></canvas>
+            <div class="edit-hint">Click to add &middot; Drag to move &middot; Right-click to delete</div>
+        </div>
+        <div class="preview-area">
+            <canvas id="preview-canvas" width="180" height="180"></canvas>
+            <div class="controls">
+                <div class="control-row">
+                    <label>Color</label>
+                    <input type="color" id="preview-color" value="#ff4444">
+                </div>
+                <div class="control-row">
+                    <label>Line</label>
+                    <input type="range" id="line-width" min="0.5" max="4" step="0.5" value="1.5">
+                    <span class="value" id="line-width-val">1.5</span>
+                </div>
+                <div class="control-row">
+                    <label>Preview</label>
+                    <input type="range" id="preview-size" min="10" max="60" step="1" value="20">
+                    <span class="value" id="preview-size-val">20</span>
+                </div>
+            </div>
+            <div style="margin-top: 12px;">
+                <h2>Vertices</h2>
+                <div class="vertex-list" id="vertex-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-danger" id="clear-btn">Clear</button>
+        <button class="btn btn-action" id="reset-shape-btn">Reset Shape</button>
+        <label><input type="checkbox" id="snap-toggle" checked> Snap (0.05)</label>
+        <label><input type="checkbox" id="symmetry-toggle"> Symmetry</label>
+    </div>
+
+    <h2>Vertex JSON</h2>
+    <textarea class="json-output" id="json-output" readonly></textarea>
+
+    <div class="viz-section">
+        <h2>Properties</h2>
+        <div class="slider-group" id="sliders-props"></div>
+    </div>
+
+    <div class="viz-section">
+        <h2>Colors</h2>
+        <div class="slider-group" id="sliders-colors"></div>
+    </div>
+
+<script src="tools.js"></script>
+<script src="shape-editor.js"></script>
+<script>
+// ============================================================
+// DATA
+// ============================================================
+let enemiesDefaults = {};
+let enemiesData = {};
+
+// ============================================================
+// SHAPE EDITOR
+// ============================================================
+const shapeEditor = createShapeEditor({
+    editCanvas:       document.getElementById('edit-canvas'),
+    previewCanvas:    document.getElementById('preview-canvas'),
+    vertexListEl:     document.getElementById('vertex-list'),
+    jsonOutputEl:     document.getElementById('json-output'),
+    snapToggleEl:     document.getElementById('snap-toggle'),
+    symmetryToggleEl: document.getElementById('symmetry-toggle'),
+    getVertices:      () => enemiesData.shape,
+    setVertices:      (v) => { enemiesData.shape = v; },
+    previewColor:     () => document.getElementById('preview-color').value,
+    previewSize:      () => parseFloat(document.getElementById('preview-size').value),
+    previewLineWidth: () => parseFloat(document.getElementById('line-width').value),
+    previewLabel:     () => 'ENEMY'
+});
+
+document.getElementById('line-width').addEventListener('input', (e) => {
+    document.getElementById('line-width-val').textContent = e.target.value;
+});
+document.getElementById('preview-size').addEventListener('input', (e) => {
+    document.getElementById('preview-size-val').textContent = e.target.value;
+});
+
+document.getElementById('clear-btn').onclick = () => shapeEditor.clear();
+document.getElementById('reset-shape-btn').onclick = () => shapeEditor.reset(enemiesDefaults.shape);
+
+// ============================================================
+// PROPERTY SLIDERS & COLORS
+// ============================================================
+function buildSliders() {
+    document.getElementById('sliders-props').innerHTML = '';
+    document.getElementById('sliders-colors').innerHTML = '';
+
+    sliderRow('sliders-props', 'Size',          enemiesData.size,         5,   40,  1,    v => { enemiesData.size = v; },         enemiesDefaults.size);
+    sliderRow('sliders-props', 'Speed',         enemiesData.speed,        0.1, 5,   0.1,  v => { enemiesData.speed = v; },        enemiesDefaults.speed);
+    sliderRow('sliders-props', 'Turn Speed',    enemiesData.turnSpeed,    0.01,0.1, 0.005,v => { enemiesData.turnSpeed = v; },    enemiesDefaults.turnSpeed);
+    sliderRow('sliders-props', 'Fire Interval', enemiesData.fireInterval, 10,  300, 5,    v => { enemiesData.fireInterval = v; }, enemiesDefaults.fireInterval);
+    sliderRow('sliders-props', 'Bullet Speed',  enemiesData.bulletSpeed,  1,   15,  0.5,  v => { enemiesData.bulletSpeed = v; },  enemiesDefaults.bulletSpeed);
+
+    // Normal color
+    const colorsEl = document.getElementById('sliders-colors');
+    const normalRow = document.createElement('div');
+    normalRow.className = 'config-row';
+    const normalLabel = document.createElement('label');
+    normalLabel.textContent = 'Normal';
+    normalRow.appendChild(normalLabel);
+    normalRow.appendChild(colorInput(enemiesData.normal.color, v => { enemiesData.normal.color = v; }));
+    colorsEl.appendChild(normalRow);
+
+    // Corrupt color
+    const corruptRow = document.createElement('div');
+    corruptRow.className = 'config-row';
+    const corruptLabel = document.createElement('label');
+    corruptLabel.textContent = 'Corrupt';
+    corruptRow.appendChild(corruptLabel);
+    corruptRow.appendChild(colorInput(enemiesData.corrupt.color, v => { enemiesData.corrupt.color = v; }));
+    colorsEl.appendChild(corruptRow);
+}
+
+// ============================================================
+// PRESETS
+// ============================================================
+const presets = setupPresets({
+    container: 'presets',
+    storageKey: 'enemies-presets',
+    getData: () => deepCopy(enemiesData),
+    setData: (data) => {
+        enemiesData = deepCopy(data);
+        buildSliders();
+        shapeEditor.refresh();
+    },
+    saveInput: 'preset-name',
+    saveBtn: 'save-btn'
+});
+const renderPresets = presets.render;
+
+document.getElementById('reset-all-btn').onclick = () => {
+    enemiesData = deepCopy(enemiesDefaults);
+    buildSliders();
+    shapeEditor.refresh();
+};
+
+// ============================================================
+// APPLY TO GAME
+// ============================================================
+function roundV(v) { return [Math.round(v[0] * 100) / 100, Math.round(v[1] * 100) / 100]; }
+
+document.getElementById('apply-btn').onclick = () => {
+    const diff = {};
+    for (const key of Object.keys(enemiesDefaults)) {
+        if (key === 'shape') {
+            const cur = enemiesData.shape;
+            const def = enemiesDefaults.shape;
+            const changed = cur.length !== def.length ||
+                cur.some((v, i) => v[0] !== def[i][0] || v[1] !== def[i][1]);
+            if (changed) diff.shape = cur.map(roundV);
+        } else if (key === 'normal' || key === 'corrupt') {
+            if (JSON.stringify(enemiesData[key]) !== JSON.stringify(enemiesDefaults[key])) {
+                diff[key] = deepCopy(enemiesData[key]);
+            }
+        } else if (enemiesData[key] !== enemiesDefaults[key]) {
+            diff[key] = enemiesData[key];
+        }
+    }
+
+    if (Object.keys(diff).length === 0) {
+        localStorage.removeItem('lf-mod-enemies');
+        flashButton('apply-btn', 'Cleared!');
+    } else {
+        localStorage.setItem('lf-mod-enemies', JSON.stringify(diff));
+        flashButton('apply-btn', 'Applied!');
+    }
+};
+
+// ============================================================
+// SAVE AS DEFAULT
+// ============================================================
+setupSaveDefault('default-btn', () => saveJSON('/api/save-enemies', deepCopy(enemiesData)));
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+    try {
+        const res = await fetch('../data/enemies.json');
+        enemiesDefaults = await res.json();
+    } catch (e) {
+        console.error('Failed to load enemies data:', e);
+    }
+
+    enemiesData = deepCopy(enemiesDefaults);
+
+    try {
+        const mod = JSON.parse(localStorage.getItem('lf-mod-enemies'));
+        if (mod && typeof mod === 'object') deepAssign(enemiesData, mod);
+    } catch {}
+
+    buildSliders();
+    renderPresets();
+    shapeEditor.refresh();
+    shapeEditor.startPreview();
+}
+
+init();
+</script>
+</body>
+</html>

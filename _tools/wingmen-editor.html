@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wingmen Editor — Last Frontier</title>
+    <link rel="stylesheet" href="tools.css">
+    <style>
+        body { padding: 20px; }
+        h1 { margin-bottom: 16px; }
+        h2 { margin-bottom: 8px; margin-top: 0; }
+        .btn { font-size: 12px; padding: 6px 16px; }
+        .action-row input[type="text"] { width: 120px; font-size: 12px; padding: 5px 8px; }
+        .control-row label { width: 70px; }
+        .control-row .value { width: 40px; }
+
+        .shape-section { margin-bottom: 16px; }
+        .shape-section canvas { display: block; }
+        #edit-canvas { border: 1px solid #222; cursor: crosshair; }
+        #preview-canvas { border: 1px solid #222; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Wingmen Editor</h1>
+
+    <div class="toolbar">
+        <h2>Presets</h2>
+        <div class="preset-row" id="presets"></div>
+        <div class="action-row">
+            <input type="text" id="preset-name" placeholder="my-wingmen">
+            <button class="btn btn-save" id="save-btn">Save</button>
+            <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
+            <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
+        </div>
+    </div>
+
+    <div class="editor-layout">
+        <div class="unit-list-panel">
+            <h2 id="list-heading">Wingmen</h2>
+            <div class="unit-list" id="unit-list"></div>
+            <button class="add-unit-btn" id="add-unit-btn">+ Add Type</button>
+        </div>
+        <div class="detail-panel" id="detail-panel">
+            <div class="no-selection">Select a wingman type to edit</div>
+        </div>
+    </div>
+
+    <!-- Hidden shape editor elements (shown inside detail panel when a wingman is selected) -->
+    <template id="detail-template">
+        <div class="shape-section">
+            <h2>Shape</h2>
+            <div class="canvas-row">
+                <div class="edit-area">
+                    <canvas id="edit-canvas" width="300" height="300"></canvas>
+                    <div class="edit-hint">Click to add &middot; Drag to move &middot; Right-click to delete</div>
+                </div>
+                <div class="preview-area">
+                    <canvas id="preview-canvas" width="120" height="120"></canvas>
+                    <div style="margin-top: 8px;">
+                        <div class="vertex-list" id="vertex-list"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-danger" id="clear-btn">Clear</button>
+                <button class="btn btn-action" id="reset-shape-btn">Reset Shape</button>
+                <label><input type="checkbox" id="snap-toggle" checked> Snap</label>
+                <label><input type="checkbox" id="symmetry-toggle"> Symmetry</label>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Properties</h2>
+            <div id="props-container"></div>
+        </div>
+    </template>
+
+<script src="tools.js"></script>
+<script src="shape-editor.js"></script>
+<script>
+// ============================================================
+// DATA
+// ============================================================
+let wingmenDefaults = {};
+let wingmenData = {};
+let selectedKey = null;
+let currentShapeEditor = null;
+
+// ============================================================
+// UNIT LIST
+// ============================================================
+const listEl = document.getElementById('unit-list');
+const detailEl = document.getElementById('detail-panel');
+
+function renderList() {
+    listEl.innerHTML = '';
+    const keys = Object.keys(wingmenData);
+
+    for (const key of keys) {
+        const unit = wingmenData[key];
+        const item = document.createElement('div');
+        item.className = 'unit-item' + (key === selectedKey ? ' selected' : '');
+
+        const swatch = document.createElement('span');
+        swatch.className = 'swatch';
+        swatch.style.background = unit.color;
+
+        const name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = unit.name || key;
+
+        const del = document.createElement('span');
+        del.className = 'delete-unit';
+        del.textContent = '\u00d7';
+        del.onclick = (e) => {
+            e.stopPropagation();
+            delete wingmenData[key];
+            if (selectedKey === key) selectedKey = null;
+            renderList();
+            renderDetail();
+        };
+
+        item.append(swatch, name, del);
+        item.onclick = () => { selectedKey = key; renderList(); renderDetail(); };
+        listEl.appendChild(item);
+    }
+}
+
+// ============================================================
+// DETAIL PANEL
+// ============================================================
+function renderDetail() {
+    // Stop previous shape editor preview
+    if (currentShapeEditor) {
+        currentShapeEditor.stopPreview();
+        currentShapeEditor = null;
+    }
+
+    detailEl.innerHTML = '';
+
+    if (!selectedKey || !wingmenData[selectedKey]) {
+        detailEl.innerHTML = '<div class="no-selection">Select a wingman type to edit</div>';
+        return;
+    }
+
+    const unit = wingmenData[selectedKey];
+
+    // Ensure shape array exists
+    if (!unit.shape) {
+        const defUnit = wingmenDefaults[selectedKey];
+        unit.shape = defUnit ? defUnit.shape.map(v => [...v]) : [[0,-1],[-0.67,0.67],[0,0.33],[0.67,0.67]];
+    }
+
+    // Clone template content
+    const template = document.getElementById('detail-template');
+    const content = template.content.cloneNode(true);
+    detailEl.appendChild(content);
+
+    // Wire up shape editor
+    const editCanvas = detailEl.querySelector('#edit-canvas');
+    const previewCanvas = detailEl.querySelector('#preview-canvas');
+
+    currentShapeEditor = createShapeEditor({
+        editCanvas,
+        previewCanvas,
+        vertexListEl:     detailEl.querySelector('#vertex-list'),
+        snapToggleEl:     detailEl.querySelector('#snap-toggle'),
+        symmetryToggleEl: detailEl.querySelector('#symmetry-toggle'),
+        getVertices:      () => unit.shape,
+        setVertices:      (v) => { unit.shape = v; },
+        previewColor:     () => unit.color,
+        previewSize:      () => 20,
+        previewLineWidth: () => 1.5,
+        previewLabel:     () => unit.name || selectedKey.toUpperCase()
+    });
+
+    detailEl.querySelector('#clear-btn').onclick = () => currentShapeEditor.clear();
+    detailEl.querySelector('#reset-shape-btn').onclick = () => {
+        const defUnit = wingmenDefaults[selectedKey];
+        const defShape = defUnit ? defUnit.shape : [[0,-1],[-0.67,0.67],[0,0.33],[0.67,0.67]];
+        currentShapeEditor.reset(defShape);
+    };
+
+    // Properties
+    const propsEl = detailEl.querySelector('#props-container');
+
+    // Name
+    propsEl.appendChild(fieldRow('Name', textInput(unit.name || '', v => { unit.name = v; renderList(); })));
+
+    // Color
+    propsEl.appendChild(fieldRow('Color', colorInput(unit.color, v => { unit.color = v; renderList(); })));
+
+    // Fire Rate
+    const frRow = document.createElement('div');
+    frRow.className = 'config-row';
+    const frLabel = document.createElement('label');
+    frLabel.textContent = 'Fire Rate';
+    frRow.appendChild(frLabel);
+    frRow.appendChild(document.createTextNode(''));
+    propsEl.appendChild(frRow);
+    sliderRow(propsEl, 'Fire Rate', unit.fireRate || 20, 1, 120, 1,
+        v => { unit.fireRate = v; },
+        (wingmenDefaults[selectedKey] || {}).fireRate || 20);
+    frRow.remove(); // sliderRow appends its own row
+
+    // Duration
+    sliderRow(propsEl, 'Duration', unit.duration || 600, 60, 3600, 30,
+        v => { unit.duration = v; },
+        (wingmenDefaults[selectedKey] || {}).duration || 600);
+
+    // Speed
+    sliderRow(propsEl, 'Speed', unit.speed || 2, 0.5, 8, 0.5,
+        v => { unit.speed = v; },
+        (wingmenDefaults[selectedKey] || {}).speed || 2);
+
+    // Target Priority
+    propsEl.appendChild(fieldRow('Target Priority',
+        selectInput(unit.targetPriority || 'nearest', ['nearest', 'enemies'],
+            v => { unit.targetPriority = v; })));
+
+    currentShapeEditor.refresh();
+    currentShapeEditor.startPreview();
+}
+
+// ============================================================
+// ADD UNIT
+// ============================================================
+document.getElementById('add-unit-btn').onclick = () => {
+    let key = 'new-type';
+    let n = 1;
+    while (wingmenData[key]) { key = 'new-type-' + (n++); }
+    wingmenData[key] = {
+        name: key.toUpperCase(),
+        color: '#fff',
+        fireRate: 20,
+        targetPriority: 'nearest',
+        duration: 600,
+        speed: 2,
+        shape: [[0,-1],[-0.67,0.67],[0,0.33],[0.67,0.67]]
+    };
+    selectedKey = key;
+    renderList();
+    renderDetail();
+};
+
+// ============================================================
+// PRESETS
+// ============================================================
+const presets = setupPresets({
+    container: 'presets',
+    storageKey: 'wingmen-presets',
+    getData: () => deepCopy(wingmenData),
+    setData: (data) => {
+        wingmenData = deepCopy(data);
+        selectedKey = null;
+        renderList();
+        renderDetail();
+    },
+    saveInput: 'preset-name',
+    saveBtn: 'save-btn'
+});
+const renderPresets = presets.render;
+
+document.getElementById('reset-all-btn').onclick = () => {
+    wingmenData = deepCopy(wingmenDefaults);
+    selectedKey = null;
+    renderList();
+    renderDetail();
+};
+
+// ============================================================
+// APPLY TO GAME
+// ============================================================
+document.getElementById('apply-btn').onclick = () => {
+    // Diff each wingman type
+    const diff = {};
+    for (const key of Object.keys(wingmenData)) {
+        const cur = wingmenData[key];
+        const def = wingmenDefaults[key];
+        if (!def) {
+            // New type — include entirely
+            diff[key] = deepCopy(cur);
+            continue;
+        }
+        const typeDiff = {};
+        for (const prop of Object.keys(cur)) {
+            if (prop === 'shape') {
+                const changed = cur.shape.length !== def.shape.length ||
+                    cur.shape.some((v, i) => v[0] !== def.shape[i][0] || v[1] !== def.shape[i][1]);
+                if (changed) typeDiff.shape = cur.shape.map(v => [Math.round(v[0]*100)/100, Math.round(v[1]*100)/100]);
+            } else if (JSON.stringify(cur[prop]) !== JSON.stringify(def[prop])) {
+                typeDiff[prop] = cur[prop];
+            }
+        }
+        if (Object.keys(typeDiff).length > 0) diff[key] = typeDiff;
+    }
+    // Check for deleted types
+    for (const key of Object.keys(wingmenDefaults)) {
+        if (!wingmenData[key]) {
+            diff[key] = null; // signal deletion
+        }
+    }
+
+    if (Object.keys(diff).length === 0) {
+        localStorage.removeItem('lf-mod-wingmen');
+        flashButton('apply-btn', 'Cleared!');
+    } else {
+        localStorage.setItem('lf-mod-wingmen', JSON.stringify(diff));
+        flashButton('apply-btn', 'Applied!');
+    }
+};
+
+// ============================================================
+// SAVE AS DEFAULT
+// ============================================================
+setupSaveDefault('default-btn', () => saveJSON('/api/save-wingmen', deepCopy(wingmenData)));
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+    try {
+        const res = await fetch('../data/wingmen.json');
+        wingmenDefaults = await res.json();
+    } catch (e) {
+        console.error('Failed to load wingmen data:', e);
+    }
+
+    wingmenData = deepCopy(wingmenDefaults);
+
+    try {
+        const mod = JSON.parse(localStorage.getItem('lf-mod-wingmen'));
+        if (mod && typeof mod === 'object') {
+            for (const key of Object.keys(mod)) {
+                if (mod[key] === null) {
+                    delete wingmenData[key];
+                } else if (wingmenData[key]) {
+                    deepAssign(wingmenData[key], mod[key]);
+                } else {
+                    wingmenData[key] = deepCopy(mod[key]);
+                }
+            }
+        }
+    } catch {}
+
+    renderList();
+    renderDetail();
+    renderPresets();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -78,6 +78,27 @@
     </div>
 
     <div class="viz-section">
+        <h2>Shape</h2>
+        <div class="canvas-row">
+            <div class="edit-area">
+                <canvas id="edit-canvas" width="400" height="400"></canvas>
+                <div class="edit-hint">Click to add &middot; Drag to move &middot; Right-click to delete</div>
+            </div>
+            <div class="preview-area">
+                <div style="margin-top: 0;">
+                    <div class="vertex-list" id="vertex-list"></div>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="btn btn-danger" id="clear-shape-btn">Clear</button>
+            <button class="btn btn-action" id="reset-shape-btn">Reset Shape</button>
+            <label><input type="checkbox" id="snap-toggle" checked> Snap (0.05)</label>
+            <label><input type="checkbox" id="symmetry-toggle"> Symmetry</label>
+        </div>
+    </div>
+
+    <div class="viz-section">
         <h2>Entry</h2>
         <div class="slider-group" id="sliders-entry"></div>
     </div>
@@ -108,14 +129,12 @@
     </div>
 
 <script src="tools.js"></script>
+<script src="shape-editor.js"></script>
 <script>
 // --- Defaults (loaded from data/boss.json) ---
 const DATA_URL = '../data/boss.json';
 let DEFAULTS = {};
 const boss = {};
-
-// Boss shape (same as in shapes.json / config-sandbox)
-const bossShape = [[0,-1],[-0.6,-0.3],[-1,0.4],[-0.5,0.8],[0,0.5],[0.5,0.8],[1,0.4],[0.6,-0.3]];
 
 function strokeShape(c, verts, size) {
     c.beginPath();
@@ -126,35 +145,21 @@ function strokeShape(c, verts, size) {
     c.closePath(); c.stroke();
 }
 
-// --- Nested path helpers ---
-function getByPath(obj, path) {
-    return path.split('.').reduce((o, k) => o && o[k], obj);
-}
+// ============================================================
+// SHAPE EDITOR
+// ============================================================
+const shapeEditor = createShapeEditor({
+    editCanvas:       document.getElementById('edit-canvas'),
+    vertexListEl:     document.getElementById('vertex-list'),
+    snapToggleEl:     document.getElementById('snap-toggle'),
+    symmetryToggleEl: document.getElementById('symmetry-toggle'),
+    getVertices:      () => boss.shape,
+    setVertices:      (v) => { boss.shape = v; },
+    previewLabel:     () => 'BOSS'
+});
 
-function setByPath(obj, path, val) {
-    const keys = path.split('.');
-    let o = obj;
-    for (let i = 0; i < keys.length - 1; i++) {
-        if (!o[keys[i]]) o[keys[i]] = {};
-        o = o[keys[i]];
-    }
-    o[keys[keys.length - 1]] = val;
-}
-
-// Deep copy helper
-function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
-
-// Deep assign (merges src into dst recursively)
-function deepAssign(dst, src) {
-    for (const key of Object.keys(src)) {
-        if (src[key] && typeof src[key] === 'object' && !Array.isArray(src[key])) {
-            if (!dst[key]) dst[key] = {};
-            deepAssign(dst[key], src[key]);
-        } else {
-            dst[key] = src[key];
-        }
-    }
-}
+document.getElementById('clear-shape-btn').onclick = () => shapeEditor.clear();
+document.getElementById('reset-shape-btn').onclick = () => shapeEditor.reset(DEFAULTS.shape);
 
 // Slider definitions: [containerId, label, path, min, max, step]
 const SLIDER_DEFS = [
@@ -323,7 +328,7 @@ function drawBossViz() {
 
     c.strokeStyle = flashTimer > 0 ? getByPath(boss, 'colors.flash') : getByPath(boss, 'colors.normal');
     c.lineWidth = getByPath(boss, 'lineWidth');
-    strokeShape(c, bossShape, bossSize);
+    strokeShape(c, boss.shape, bossSize);
 
     // Detail circle
     c.strokeStyle = flashTimer > 0 ? getByPath(boss, 'colors.detailFlash') : getByPath(boss, 'colors.detailNormal');
@@ -504,6 +509,7 @@ const presets = setupPresets({
         deepAssign(boss, deepCopy(DEFAULTS));
         deepAssign(boss, data);
         syncSliders();
+        shapeEditor.refresh();
         resetViz();
     },
     saveInput: 'preset-name',
@@ -516,6 +522,7 @@ document.getElementById('reset-all-btn').onclick = () => {
     for (const key of Object.keys(boss)) delete boss[key];
     deepAssign(boss, deepCopy(DEFAULTS));
     syncSliders();
+    shapeEditor.refresh();
     resetViz();
 };
 
@@ -531,7 +538,7 @@ document.getElementById('download-btn').onclick = () => {
 // --- Apply to Game (writes diff to localStorage) ---
 document.getElementById('apply-btn').onclick = () => {
     const diff = {};
-    const topKeys = ['entry', 'movement', 'attacks', 'colors', 'flashDuration', 'lineWidth', 'detailLineWidth', 'detailRadius'];
+    const topKeys = ['shape', 'entry', 'movement', 'attacks', 'colors', 'flashDuration', 'lineWidth', 'detailLineWidth', 'detailRadius'];
     for (const key of topKeys) {
         if (JSON.stringify(boss[key]) !== JSON.stringify(DEFAULTS[key])) {
             diff[key] = deepCopy(boss[key]);
@@ -577,6 +584,7 @@ async function init() {
     deepAssign(boss, deepCopy(DEFAULTS));
     buildSliders();
     renderPresets();
+    shapeEditor.refresh();
     resetViz();
     requestAnimationFrame(loop);
 }

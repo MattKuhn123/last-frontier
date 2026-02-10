@@ -1,9 +1,8 @@
 // --- Main Entry Point ---
 import { canvas, ctx } from './utils.js';
 import { keys, setTitleStartCallback } from './input.js';
-import { ship, createShip, resetShip, updateShip, drawShip, setInvincible } from './ship.js';
-import { config } from './config.js';
-import { buildDebugPanel } from './debug.js';
+import { ship, shipDefs, createShip, resetShip, updateShip, drawShip, setInvincible } from './ship.js';
+import { buildDebugPanel, infiniteLives } from './debug.js';
 import { bullets, resetBullets, updateBullets, drawBullets } from './bullets.js';
 import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from './asteroids.js';
 import { particles, resetParticles, spawnParticles, updateParticles, drawParticles } from './particles.js';
@@ -234,7 +233,7 @@ function startMission() {
     playTrack(mission.music);
 
     createShip();
-    setInvincible(config.INVINCIBLE_DURATION);
+    setInvincible(shipDefs.invincibleDuration);
     resetBullets();
     resetAsteroids();
     resetParticles();
@@ -351,7 +350,7 @@ function handlePlayerDeath() {
     triggerScreenShake();
     playExplosionSFX();
     triggerHitFlash();
-    if (config.infiniteLives) {
+    if (infiniteLives()) {
         resetShip();
         return;
     }

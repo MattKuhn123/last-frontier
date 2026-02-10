@@ -1,10 +1,8 @@
 // --- Syndicate Enemy Ships ---
-import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle } from './utils.js';
+import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle, strokeShape } from './utils.js';
 import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnParticles } from './particles.js';
-import { config } from './config.js';
-import { shapes, strokeShape } from './shapes.js';
 
 // Enemy type definitions — loaded from data/enemies.json
 export const enemyTypes = {};
@@ -31,11 +29,11 @@ export function spawnEnemy(type) {
     const def = enemyTypes[type] || enemyTypes.normal;
     enemies.push({
         x, y,
-        radius: config.ENEMY_SIZE,
+        radius: enemyTypes.size,
         angle: ship ? angleTo({ x, y }, ship) : rand(0, Math.PI * 2),
         dx: 0,
         dy: 0,
-        fireCooldown: rand(30, config.ENEMY_FIRE_INTERVAL),
+        fireCooldown: rand(30, enemyTypes.fireInterval),
         color: def.color
     });
 }
@@ -48,8 +46,8 @@ export function updateEnemies() {
         // Rotate toward player
         const targetAngle = angleTo(e, ship);
         const diff = normalizeAngle(targetAngle - e.angle);
-        if (Math.abs(diff) > config.ENEMY_TURN_SPEED) {
-            e.angle += diff > 0 ? config.ENEMY_TURN_SPEED : -config.ENEMY_TURN_SPEED;
+        if (Math.abs(diff) > enemyTypes.turnSpeed) {
+            e.angle += diff > 0 ? enemyTypes.turnSpeed : -enemyTypes.turnSpeed;
         } else {
             e.angle = targetAngle;
         }
@@ -66,9 +64,9 @@ export function updateEnemies() {
 
         // Clamp speed
         const speed = Math.hypot(e.dx, e.dy);
-        if (speed > config.ENEMY_SPEED) {
-            e.dx = (e.dx / speed) * config.ENEMY_SPEED;
-            e.dy = (e.dy / speed) * config.ENEMY_SPEED;
+        if (speed > enemyTypes.speed) {
+            e.dx = (e.dx / speed) * enemyTypes.speed;
+            e.dy = (e.dy / speed) * enemyTypes.speed;
         }
 
         e.x += e.dx;
@@ -79,11 +77,11 @@ export function updateEnemies() {
         e.fireCooldown--;
         if (e.fireCooldown <= 0) {
             addBullet(
-                e.x + Math.cos(e.angle) * config.ENEMY_SIZE,
-                e.y + Math.sin(e.angle) * config.ENEMY_SIZE,
-                e.angle, config.ENEMY_BULLET_SPEED, false
+                e.x + Math.cos(e.angle) * enemyTypes.size,
+                e.y + Math.sin(e.angle) * enemyTypes.size,
+                e.angle, enemyTypes.bulletSpeed, false
             );
-            e.fireCooldown = config.ENEMY_FIRE_INTERVAL + rand(-20, 20);
+            e.fireCooldown = enemyTypes.fireInterval + rand(-20, 20);
         }
     }
 }
@@ -103,7 +101,7 @@ export function drawEnemies() {
 
         ctx.strokeStyle = e.color;
         ctx.lineWidth = 1.5;
-        strokeShape(ctx, shapes.enemy, config.ENEMY_SIZE);
+        strokeShape(ctx, enemyTypes.shape, enemyTypes.size);
 
         ctx.restore();
     }

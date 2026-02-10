@@ -2,7 +2,7 @@
 import { canvas, ctx } from './utils.js';
 import { keys, setTitleStartCallback } from './input.js';
 import { ship, shipDefs, createShip, resetShip, updateShip, drawShip, setInvincible } from './ship.js';
-import { buildDebugPanel, infiniteLives } from './debug.js';
+import { infiniteLives } from './debug.js';
 import { bullets, resetBullets, updateBullets, drawBullets } from './bullets.js';
 import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from './asteroids.js';
 import { particles, resetParticles, spawnParticles, updateParticles, drawParticles } from './particles.js';
@@ -626,7 +626,6 @@ function gameLoop(timestamp) {
 }
 
 // --- Start ---
-buildDebugPanel();
 
 // Resume AudioContext on first user interaction (browser autoplay policy)
 function onFirstInteraction() {

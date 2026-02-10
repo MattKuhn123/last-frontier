@@ -120,6 +120,13 @@ function setupSaveDefault(btnId, saveFn) {
 
 // --- Color input (picker + hex text) ---
 
+const COLOR_PALETTE = [
+    '#fff', '#aaa', '#555',
+    '#f44', '#f90', '#ff0',
+    '#4f4', '#0ff', '#48f',
+    '#88f', '#aaf', '#f4f',
+];
+
 function colorInput(value, onChange) {
     const wrapper = document.createElement('div');
     wrapper.className = 'color-pair';
@@ -132,6 +139,12 @@ function colorInput(value, onChange) {
     text.type = 'text';
     text.value = value;
 
+    function set(v) {
+        picker.value = toHex6(v);
+        text.value = v;
+        onChange(v);
+    }
+
     picker.oninput = () => { text.value = picker.value; onChange(picker.value); };
     text.oninput = () => {
         if (/^#[0-9a-fA-F]{3,6}$/.test(text.value)) {
@@ -142,7 +155,17 @@ function colorInput(value, onChange) {
         }
     };
 
-    wrapper.append(picker, text);
+    const swatches = document.createElement('div');
+    swatches.className = 'color-swatches';
+    for (const c of COLOR_PALETTE) {
+        const s = document.createElement('span');
+        s.style.background = c;
+        s.title = c;
+        s.onclick = () => set(c);
+        swatches.appendChild(s);
+    }
+
+    wrapper.append(picker, text, swatches);
     return wrapper;
 }
 

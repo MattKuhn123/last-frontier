@@ -205,6 +205,24 @@ h2 {
     align-items: center;
     gap: 8px;
     flex: 1;
+    flex-wrap: wrap;
+}
+.color-swatches {
+    display: flex;
+    gap: 3px;
+    flex-basis: 100%;
+    margin-top: 2px;
+}
+.color-swatches span {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    border: 1px solid #555;
+    cursor: pointer;
+}
+.color-swatches span:hover {
+    border-color: #fff;
+    transform: scale(1.15);
 }
 .color-pair input[type="text"] {
     width: 80px;

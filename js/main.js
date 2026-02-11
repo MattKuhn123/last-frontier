@@ -1,7 +1,8 @@
 // --- Main Entry Point ---
 import { canvas, ctx } from './utils.js';
 import { keys, setTitleStartCallback } from './input.js';
-import { ship, shipDefs, createShip, resetShip, updateShip, drawShip, setInvincible } from './ship.js';
+import { ship, createShip, resetShip, updateShip, drawShip, setInvincible } from './ship.js';
+import { shipDefs } from './data.js';
 import { infiniteLives } from './debug.js';
 import { bullets, resetBullets, updateBullets, drawBullets } from './bullets.js';
 import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from './asteroids.js';
@@ -12,10 +13,9 @@ import { boss, resetBoss, spawnBoss, updateBoss, drawBoss, hideBossHealthBar } f
 import { checkCollisions } from './collisions.js';
 import { updateScore, updateLives, showMissionTitle, resetHud, showHud, hideHud } from './hud.js';
 import { startDialogue, hideDialogue } from './dialogue.js';
-import { missions } from './missions.js';
+import { missions, narrative } from './data.js';
 import { playTrack, stopTrack, fadeOut } from './music.js';
 import { initAudioContext, playExplosionSFX } from './sounds.js';
-import { narrative } from './narrative.js';
 
 // --- Screen Shake ---
 const SHAKE_DURATION = 80;

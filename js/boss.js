@@ -4,9 +4,7 @@ import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnEnemy } from './enemies.js';
 import { spawnParticles } from './particles.js';
-
-export const bossDefs = {};
-Object.assign(bossDefs, await fetch('data/boss.json').then(r => r.json()));
+import { bossDefs } from './data.js';
 
 export let boss = null;
 

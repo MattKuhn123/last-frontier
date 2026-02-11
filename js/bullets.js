@@ -1,10 +1,8 @@
 // --- Bullet System ---
 import { ctx, wrap } from './utils.js';
 import { keys } from './input.js';
-import { ship, shipDefs } from './ship.js';
-
-export const bulletDefs = {};
-Object.assign(bulletDefs, await fetch('data/bullets.json').then(r => r.json()));
+import { ship } from './ship.js';
+import { shipDefs, bulletDefs } from './data.js';
 
 export let bullets = [];
 let shootCooldown = 0;

@@ -1,8 +1,6 @@
 // --- Music System (BeepBox Synth) ---
+import { trackList } from './data.js';
 
-// Load track data at import time (top-level await)
-const res = await fetch('data/music.json');
-const trackList = await res.json();
 const trackMap = new Map(trackList.map(t => [t.name, t.url]));
 
 let currentSynth = null;

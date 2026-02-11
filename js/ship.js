@@ -1,9 +1,7 @@
 // --- Player Ship ---
 import { canvas, ctx, wrap, strokeShape } from './utils.js';
 import { keys } from './input.js';
-
-export const shipDefs = {};
-Object.assign(shipDefs, await fetch('data/ship.json').then(r => r.json()));
+import { shipDefs } from './data.js';
 
 export let ship = null;
 export let invincibleTimer = 0;

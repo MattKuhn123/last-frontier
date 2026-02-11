@@ -2,9 +2,7 @@
 import { canvas, ctx, rand, wrap, dist } from './utils.js';
 import { ship } from './ship.js';
 import { spawnParticles } from './particles.js';
-
-export const asteroidDefs = {};
-Object.assign(asteroidDefs, await fetch('data/asteroids.json').then(r => r.json()));
+import { asteroidDefs } from './data.js';
 
 export let asteroids = [];
 

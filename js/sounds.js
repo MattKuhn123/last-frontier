@@ -1,12 +1,6 @@
 // --- Sound Effects ---
-// Data lives in data/sounds.json; this module fetches it at import time.
-
 import { synthesize, SAMPLE_RATE } from './synth.js';
-
-export const sounds = {};
-
-const res = await fetch('data/sounds.json');
-Object.assign(sounds, await res.json());
+import { sounds } from './data.js';
 
 let audioCtx = null;
 const synthBufferCache = new Map();

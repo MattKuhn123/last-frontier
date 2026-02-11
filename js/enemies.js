@@ -3,11 +3,7 @@ import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle, strokeShape } f
 import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnParticles } from './particles.js';
-
-// Enemy type definitions — loaded from data/enemies.json
-export const enemyTypes = {};
-const res = await fetch('data/enemies.json');
-Object.assign(enemyTypes, await res.json());
+import { enemyTypes } from './data.js';
 
 export let enemies = [];
 

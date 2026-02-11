@@ -1,13 +1,8 @@
 // --- Radio-Comm Dialogue System ---
 import { setDialogueAdvanceCallback } from './input.js';
-import { wingmanTypes } from './wingmen.js';
+import { wingmanTypes, speakerColors } from './data.js';
 
 const TYPEWRITER_SPEED = 30; // ms per character
-
-// NPC speakers loaded from data; wingman speakers derived automatically
-export const speakerColors = {};
-const res = await fetch('data/speakers.json');
-Object.assign(speakerColors, await res.json());
 
 function getSpeakerColor(name) {
     // Check NPC speakers first

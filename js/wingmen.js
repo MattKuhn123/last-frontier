@@ -4,13 +4,9 @@ import { ship } from './ship.js';
 import { enemies } from './enemies.js';
 import { asteroids } from './asteroids.js';
 import { addBullet } from './bullets.js';
+import { wingmanTypes } from './data.js';
 const PICKUP_RADIUS = 15;
 const PICKUP_PULSE_SPEED = 0.05;
-
-// Wingman definitions — loaded from data/wingmen.json
-export const wingmanTypes = {};
-const res = await fetch('data/wingmen.json');
-Object.assign(wingmanTypes, await res.json());
 
 export let pickup = null;
 export let activeWingman = null;

@@ -207,7 +207,7 @@
 </head>
 <body>
     <nav class="tool-nav">
-        <a href="mod-home.html">Home</a>
+        <a href="tool-home.html">Home</a>
         <a href="player-editor.html">Player</a>
         <a href="enemies-editor.html">Enemies</a>
         <a href="wingmen-editor.html">Wingmen</a>
@@ -225,7 +225,6 @@
             <input type="text" id="preset-name" placeholder="my-missions">
             <button class="btn btn-save" id="save-btn">Save</button>
             <button class="btn btn-action" id="reset-all-btn">Reset All</button>
-            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
             <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
         </div>
     </div>
@@ -583,15 +582,6 @@ document.getElementById('reset-all-btn').onclick = () => {
 };
 
 // ============================================================
-// APPLY TO GAME
-// ============================================================
-document.getElementById('apply-btn').onclick = () => {
-    const output = missions.map((m, i) => ({ ...m, id: i + 1 }));
-    localStorage.setItem('lf-mod-missions', JSON.stringify(output));
-    flashButton('apply-btn', 'Applied!');
-};
-
-// ============================================================
 // SAVE AS DEFAULT (dev server only — writes JSON to data/missions.json)
 // ============================================================
 setupSaveDefault('default-btn', () => {
@@ -621,14 +611,7 @@ async function init() {
         DEFAULTS = [];
     }
 
-    // Start from defaults, then override with any existing mod
     missions = JSON.parse(JSON.stringify(DEFAULTS));
-    try {
-        const existing = JSON.parse(localStorage.getItem('lf-mod-missions'));
-        if (Array.isArray(existing) && existing.length > 0) {
-            missions = existing;
-        }
-    } catch {}
 
     selectedIndex = missions.length > 0 ? 0 : -1;
     renderList();

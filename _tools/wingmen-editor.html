@@ -21,7 +21,7 @@
 </head>
 <body>
     <nav class="tool-nav">
-        <a href="mod-home.html">Home</a>
+        <a href="tool-home.html">Home</a>
         <a href="player-editor.html">Player</a>
         <a href="enemies-editor.html">Enemies</a>
         <a href="wingmen-editor.html" class="active">Wingmen</a>
@@ -39,7 +39,6 @@
             <input type="text" id="preset-name" placeholder="my-wingmen">
             <button class="btn btn-save" id="save-btn">Save</button>
             <button class="btn btn-action" id="reset-all-btn">Reset All</button>
-            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
             <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
         </div>
     </div>
@@ -278,48 +277,6 @@ document.getElementById('reset-all-btn').onclick = () => {
 };
 
 // ============================================================
-// APPLY TO GAME
-// ============================================================
-document.getElementById('apply-btn').onclick = () => {
-    // Diff each wingman type
-    const diff = {};
-    for (const key of Object.keys(wingmenData)) {
-        const cur = wingmenData[key];
-        const def = wingmenDefaults[key];
-        if (!def) {
-            // New type — include entirely
-            diff[key] = deepCopy(cur);
-            continue;
-        }
-        const typeDiff = {};
-        for (const prop of Object.keys(cur)) {
-            if (prop === 'shape') {
-                const changed = cur.shape.length !== def.shape.length ||
-                    cur.shape.some((v, i) => v[0] !== def.shape[i][0] || v[1] !== def.shape[i][1]);
-                if (changed) typeDiff.shape = cur.shape.map(v => [Math.round(v[0]*100)/100, Math.round(v[1]*100)/100]);
-            } else if (JSON.stringify(cur[prop]) !== JSON.stringify(def[prop])) {
-                typeDiff[prop] = cur[prop];
-            }
-        }
-        if (Object.keys(typeDiff).length > 0) diff[key] = typeDiff;
-    }
-    // Check for deleted types
-    for (const key of Object.keys(wingmenDefaults)) {
-        if (!wingmenData[key]) {
-            diff[key] = null; // signal deletion
-        }
-    }
-
-    if (Object.keys(diff).length === 0) {
-        localStorage.removeItem('lf-mod-wingmen');
-        flashButton('apply-btn', 'Cleared!');
-    } else {
-        localStorage.setItem('lf-mod-wingmen', JSON.stringify(diff));
-        flashButton('apply-btn', 'Applied!');
-    }
-};
-
-// ============================================================
 // SAVE AS DEFAULT
 // ============================================================
 setupSaveDefault('default-btn', () => saveJSON('/api/save-wingmen', deepCopy(wingmenData)));
@@ -336,21 +293,6 @@ async function init() {
     }
 
     wingmenData = deepCopy(wingmenDefaults);
-
-    try {
-        const mod = JSON.parse(localStorage.getItem('lf-mod-wingmen'));
-        if (mod && typeof mod === 'object') {
-            for (const key of Object.keys(mod)) {
-                if (mod[key] === null) {
-                    delete wingmenData[key];
-                } else if (wingmenData[key]) {
-                    deepAssign(wingmenData[key], mod[key]);
-                } else {
-                    wingmenData[key] = deepCopy(mod[key]);
-                }
-            }
-        }
-    } catch {}
 
     renderList();
     renderDetail();

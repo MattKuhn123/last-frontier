@@ -35,7 +35,7 @@
 </head>
 <body>
     <nav class="tool-nav">
-        <a href="mod-home.html">Home</a>
+        <a href="tool-home.html">Home</a>
         <a href="player-editor.html">Player</a>
         <a href="enemies-editor.html">Enemies</a>
         <a href="wingmen-editor.html">Wingmen</a>
@@ -130,9 +130,7 @@
     </div>
 
     <div class="file-row">
-        <button class="btn btn-play" id="apply-btn">Apply to Game</button>
         <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
-        <span class="apply-hint" style="color:#555;font-size:11px;">Saves current sound as the in-game explosion</span>
     </div>
 
 <script src="tools.js"></script>
@@ -399,17 +397,6 @@ document.querySelectorAll('.wave-btn').forEach(btn => {
         if (document.getElementById('auto-play').checked) play();
     };
 });
-
-// --- Apply to Game (writes to lf-mod-sfx) ---
-document.getElementById('apply-btn').onclick = () => {
-    const params = readParams();
-    const soundName = document.getElementById('filename').value.trim() || 'explosion';
-    let mods = {};
-    try { mods = JSON.parse(localStorage.getItem('lf-mod-sfx') || '{}'); } catch {}
-    mods[soundName] = params;
-    localStorage.setItem('lf-mod-sfx', JSON.stringify(mods));
-    flashButton('apply-btn', 'Applied!');
-};
 
 // --- Save as Default (dev server only, writes JSON to data/sounds.json) ---
 setupSaveDefault('default-btn', () => {

@@ -12,7 +12,7 @@
 </head>
 <body>
     <nav class="tool-nav">
-        <a href="mod-home.html">Home</a>
+        <a href="tool-home.html">Home</a>
         <a href="player-editor.html" class="active">Player</a>
         <a href="enemies-editor.html">Enemies</a>
         <a href="wingmen-editor.html">Wingmen</a>
@@ -30,7 +30,6 @@
             <input type="text" id="preset-name" placeholder="my-player">
             <button class="btn btn-save" id="save-btn">Save</button>
             <button class="btn btn-action" id="reset-all-btn">Reset All</button>
-            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
             <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
         </div>
     </div>
@@ -173,50 +172,6 @@ document.getElementById('reset-all-btn').onclick = () => {
 };
 
 // ============================================================
-// APPLY TO GAME
-// ============================================================
-function roundV(v) { return [Math.round(v[0] * 100) / 100, Math.round(v[1] * 100) / 100]; }
-
-document.getElementById('apply-btn').onclick = () => {
-    // Ship diff
-    const shipDiff = {};
-    for (const key of Object.keys(shipDefaults)) {
-        if (key === 'shape') {
-            const cur = shipData.shape;
-            const def = shipDefaults.shape;
-            const changed = cur.length !== def.length ||
-                cur.some((v, i) => v[0] !== def[i][0] || v[1] !== def[i][1]);
-            if (changed) shipDiff.shape = cur.map(roundV);
-        } else if (shipData[key] !== shipDefaults[key]) {
-            shipDiff[key] = shipData[key];
-        }
-    }
-
-    if (Object.keys(shipDiff).length === 0) {
-        localStorage.removeItem('lf-mod-ship');
-    } else {
-        localStorage.setItem('lf-mod-ship', JSON.stringify(shipDiff));
-    }
-
-    // Bullet diff
-    const bulletDiff = {};
-    for (const key of Object.keys(bulletDefaults)) {
-        if (bulletData[key] !== bulletDefaults[key]) {
-            bulletDiff[key] = bulletData[key];
-        }
-    }
-
-    if (Object.keys(bulletDiff).length === 0) {
-        localStorage.removeItem('lf-mod-bullets');
-    } else {
-        localStorage.setItem('lf-mod-bullets', JSON.stringify(bulletDiff));
-    }
-
-    const total = Object.keys(shipDiff).length + Object.keys(bulletDiff).length;
-    flashButton('apply-btn', total > 0 ? 'Applied!' : 'Cleared!');
-};
-
-// ============================================================
 // SAVE AS DEFAULT
 // ============================================================
 setupSaveDefault('default-btn', () => Promise.all([
@@ -241,16 +196,6 @@ async function init() {
 
     shipData = deepCopy(shipDefaults);
     bulletData = deepCopy(bulletDefaults);
-
-    // Apply existing mods
-    try {
-        const mod = JSON.parse(localStorage.getItem('lf-mod-ship'));
-        if (mod && typeof mod === 'object') deepAssign(shipData, mod);
-    } catch {}
-    try {
-        const mod = JSON.parse(localStorage.getItem('lf-mod-bullets'));
-        if (mod && typeof mod === 'object') deepAssign(bulletData, mod);
-    } catch {}
 
     buildSliders();
     renderPresets();

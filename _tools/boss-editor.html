@@ -58,7 +58,7 @@
 </head>
 <body>
     <nav class="tool-nav">
-        <a href="mod-home.html">Home</a>
+        <a href="tool-home.html">Home</a>
         <a href="player-editor.html">Player</a>
         <a href="enemies-editor.html">Enemies</a>
         <a href="wingmen-editor.html">Wingmen</a>
@@ -76,7 +76,6 @@
             <input type="text" id="preset-name" placeholder="my-boss">
             <button class="btn btn-save" id="save-btn">Save</button>
 <button class="btn btn-action" id="reset-all-btn">Reset All</button>
-            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
             <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
         </div>
     </div>
@@ -538,24 +537,6 @@ document.getElementById('reset-all-btn').onclick = () => {
     syncSliders();
     shapeEditor.refresh();
     resetViz();
-};
-
-// --- Apply to Game (writes diff to localStorage) ---
-document.getElementById('apply-btn').onclick = () => {
-    const diff = {};
-    const topKeys = ['shape', 'entry', 'movement', 'attacks', 'colors', 'flashDuration', 'lineWidth', 'detailLineWidth', 'detailRadius'];
-    for (const key of topKeys) {
-        if (JSON.stringify(boss[key]) !== JSON.stringify(DEFAULTS[key])) {
-            diff[key] = deepCopy(boss[key]);
-        }
-    }
-    if (Object.keys(diff).length === 0) {
-        localStorage.removeItem('lf-mod-boss');
-        flashButton('apply-btn', 'Cleared!');
-    } else {
-        localStorage.setItem('lf-mod-boss', JSON.stringify(diff));
-        flashButton('apply-btn', 'Applied!');
-    }
 };
 
 // --- Save as Default (dev server only) ---

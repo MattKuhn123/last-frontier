@@ -164,7 +164,7 @@
 </head>
 <body>
     <nav class="tool-nav">
-        <a href="mod-home.html">Home</a>
+        <a href="tool-home.html">Home</a>
         <a href="player-editor.html">Player</a>
         <a href="enemies-editor.html">Enemies</a>
         <a href="wingmen-editor.html">Wingmen</a>
@@ -182,7 +182,6 @@
             <input type="text" id="preset-name" placeholder="my-narrative">
             <button class="btn btn-save" id="save-btn">Save</button>
             <button class="btn btn-action" id="reset-all-btn">Reset All</button>
-            <button class="btn btn-play" id="apply-btn">Apply to Game</button>
             <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
         </div>
     </div>
@@ -497,22 +496,6 @@ document.getElementById('reset-all-btn').onclick = () => {
 };
 
 // ============================================================
-// APPLY TO GAME
-// ============================================================
-document.getElementById('apply-btn').onclick = () => {
-    localStorage.setItem('lf-mod-narrative', JSON.stringify(narrative));
-
-    // Speakers diff
-    if (JSON.stringify(speakersData) !== JSON.stringify(speakersDefaults)) {
-        localStorage.setItem('lf-mod-speakers', JSON.stringify(speakersData));
-    } else {
-        localStorage.removeItem('lf-mod-speakers');
-    }
-
-    flashButton('apply-btn', 'Applied!');
-};
-
-// ============================================================
 // SAVE AS DEFAULT (dev server only)
 // ============================================================
 setupSaveDefault('default-btn', () => Promise.all([
@@ -538,22 +521,8 @@ async function init() {
         DEFAULTS = {};
     }
 
-    // Start from defaults, then override with any existing mod
     narrative = JSON.parse(JSON.stringify(DEFAULTS));
-    try {
-        const existing = JSON.parse(localStorage.getItem('lf-mod-narrative'));
-        if (existing && typeof existing === 'object' && existing.title) {
-            narrative = existing;
-        }
-    } catch {}
-
     speakersData = JSON.parse(JSON.stringify(speakersDefaults));
-    try {
-        const existing = JSON.parse(localStorage.getItem('lf-mod-speakers'));
-        if (existing && typeof existing === 'object') {
-            speakersData = existing;
-        }
-    } catch {}
 
     render();
     renderPresets();

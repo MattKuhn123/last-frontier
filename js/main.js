@@ -15,7 +15,6 @@ import { startDialogue, hideDialogue } from './dialogue.js';
 import { missions } from './missions.js';
 import { playTrack, stopTrack, fadeOut } from './music.js';
 import { initAudioContext, playExplosionSFX } from './sounds.js';
-import { hasActiveMods, resetAllMods } from './mods.js';
 import { narrative } from './narrative.js';
 
 // --- Screen Shake ---
@@ -154,26 +153,6 @@ function drawCrawl() {
     ctx.fillText('[ENTER] Skip', canvas.width / 2, canvas.height - 30);
 }
 
-// --- Mod Indicator ---
-const modIndicator = document.getElementById('mod-indicator');
-
-function showModIndicator() {
-    if (hasActiveMods()) {
-        modIndicator.classList.remove('hidden');
-    } else {
-        modIndicator.classList.add('hidden');
-    }
-}
-
-function hideModIndicator() {
-    modIndicator.classList.add('hidden');
-}
-
-document.getElementById('reset-mods-btn').addEventListener('click', () => {
-    resetAllMods();
-    modIndicator.classList.add('hidden');
-});
-
 // --- Splash Screen ---
 function drawSplashScreen() {
     ctx.fillStyle = '#000';
@@ -192,11 +171,9 @@ function showTitle() {
     hideHud();
     hideDialogue();
     hideBossHealthBar();
-    showModIndicator();
     setTitleStartCallback(() => {
         if (state === State.TITLE) {
             setTitleStartCallback(null);
-            hideModIndicator();
             transitionTo(startCrawl);
         }
     });

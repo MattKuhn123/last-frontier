@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mod Tools — Last Frontier</title>
+    <title>Dev Tools — Last Frontier</title>
     <link rel="stylesheet" href="tools.css">
     <style>
         body { max-width: 700px; margin: 0 auto; }
@@ -46,34 +46,11 @@
             color: #666;
         }
 
-        .mod-status {
-            border: 1px solid #222;
-            padding: 16px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .mod-status .label {
-            color: #888;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .mod-status .active {
-            color: #fa4;
-        }
-
-        .mod-status .none {
-            color: #444;
-        }
     </style>
 </head>
 <body>
     <nav class="tool-nav">
-        <a href="mod-home.html" class="active">Home</a>
+        <a href="tool-home.html" class="active">Home</a>
         <a href="player-editor.html">Player</a>
         <a href="enemies-editor.html">Enemies</a>
         <a href="wingmen-editor.html">Wingmen</a>
@@ -82,12 +59,7 @@
         <a href="mission-editor.html">Missions</a>
         <a href="narrative-editor.html">Narrative</a>
     </nav>
-    <h1>Mod Tools</h1>
-
-    <div class="mod-status">
-        <span class="label" id="mod-status-text">Checking mods...</span>
-        <button class="btn btn-danger" id="reset-all-btn" style="display:none">Reset All Mods</button>
-    </div>
+    <h1>Dev Tools</h1>
 
     <h2>Editors</h2>
     <div class="tool-grid">
@@ -121,36 +93,5 @@
         </a>
     </div>
 
-<script>
-const MOD_KEYS = [
-    'lf-mod-ship', 'lf-mod-bullets', 'lf-mod-sfx', 'lf-mod-missions',
-    'lf-mod-wingmen', 'lf-mod-enemies', 'lf-mod-speakers', 'lf-mod-narrative',
-    'lf-mod-asteroids', 'lf-mod-boss'
-];
-
-function getActiveMods() {
-    return MOD_KEYS.filter(k => localStorage.getItem(k));
-}
-
-function updateStatus() {
-    const active = getActiveMods();
-    const el = document.getElementById('mod-status-text');
-    const btn = document.getElementById('reset-all-btn');
-    if (active.length > 0) {
-        el.innerHTML = '<span class="active">MODS ACTIVE</span> — ' + active.length + ' domain' + (active.length > 1 ? 's' : '') + ' modified';
-        btn.style.display = '';
-    } else {
-        el.innerHTML = '<span class="none">No active mods</span>';
-        btn.style.display = 'none';
-    }
-}
-
-document.getElementById('reset-all-btn').onclick = () => {
-    MOD_KEYS.forEach(k => localStorage.removeItem(k));
-    updateStatus();
-};
-
-updateStatus();
-</script>
 </body>
 </html>

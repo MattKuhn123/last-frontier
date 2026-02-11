@@ -1,156 +1,66 @@
-// --- Music System (Web Audio API) ---
+// --- Music System (BeepBox Synth) ---
 
-import { synthesize, SAMPLE_RATE } from './synth.js';
-import { sounds } from './sounds.js';
+// Load track data at import time (top-level await)
+const res = await fetch('data/music.json');
+const trackList = await res.json();
+const trackMap = new Map(trackList.map(t => [t.name, t.url]));
 
-let audioCtx = null;
-let gainNode = null;
-let currentTrack = null; // base name of currently playing track
-let playId = 0;          // cancellation counter
-let currentSources = []; // active AudioBufferSourceNodes
-const bufferCache = new Map();
+let currentSynth = null;
+let currentTrack = null;
+let fadeInterval = null;
 
-export function initAudioContext() {
-    if (!audioCtx) {
-        audioCtx = new AudioContext();
-        gainNode = audioCtx.createGain();
-        gainNode.connect(audioCtx.destination);
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+function clearFade() {
+    if (fadeInterval !== null) {
+        clearInterval(fadeInterval);
+        fadeInterval = null;
     }
 }
 
-function resetGain() {
-    if (!gainNode || !audioCtx) return;
-    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-}
+export function playTrack(baseName) {
+    if (baseName === null) return;
+    if (baseName === currentTrack) return;
 
-async function loadBuffer(url) {
-    if (bufferCache.has(url)) return bufferCache.get(url);
-    try {
-        const res = await fetch(url);
-        if (!res.ok) {
-            bufferCache.set(url, null);
-            return null;
-        }
-        const arrayBuf = await res.arrayBuffer();
-        const audioBuf = await audioCtx.decodeAudioData(arrayBuf);
-        bufferCache.set(url, audioBuf);
-        return audioBuf;
-    } catch {
-        bufferCache.set(url, null);
-        return null;
+    clearFade();
+
+    if (currentSynth) {
+        currentSynth.pause();
+        currentSynth.deactivateAudio();
+        currentSynth = null;
     }
-}
 
-function stopSources() {
-    currentSources.forEach(s => {
-        try { s.stop(); } catch {}
-    });
-    currentSources = [];
-}
-
-export async function playTrack(baseName) {
-    if (baseName === null) return;          // null = keep current
-    if (baseName === currentTrack) return;  // same track = no-op
-    if (!audioCtx) return;
-
-    resetGain();
-
-    const myId = ++playId;
-    const oldTrack = currentTrack;
     currentTrack = baseName;
 
-    // Stop current sources
-    stopSources();
+    const url = trackMap.get(baseName);
+    if (!url) return;
 
-    // Play old track's outro if it exists
-    if (oldTrack) {
-        const outroBuf = await loadBuffer(`music/${oldTrack}-outro.wav`);
-        if (myId !== playId) return;
-        if (outroBuf) {
-            const outroSrc = audioCtx.createBufferSource();
-            outroSrc.buffer = outroBuf;
-            outroSrc.connect(gainNode);
-            outroSrc.start();
-            currentSources.push(outroSrc);
-            // Wait for outro to finish
-            await new Promise(resolve => { outroSrc.onended = resolve; });
-            if (myId !== playId) return;
-        }
-    }
-
-    // Load new track's intro and loop
-    const [introBuf, loopBuf] = await Promise.all([
-        loadBuffer(`music/${baseName}-intro.wav`),
-        loadBuffer(`music/${baseName}-loop.wav`)
-    ]);
-    if (myId !== playId) return;
-
-    stopSources(); // clear any leftover outro source
-
-    if (!loopBuf) return; // no loop = nothing to play
-
-    const now = audioCtx.currentTime;
-    let loopStartTime = now;
-
-    // Play intro if it exists
-    if (introBuf) {
-        const introSrc = audioCtx.createBufferSource();
-        introSrc.buffer = introBuf;
-        introSrc.connect(gainNode);
-        introSrc.start(now);
-        currentSources.push(introSrc);
-        loopStartTime = now + introBuf.duration;
-    }
-
-    // Schedule loop (gapless after intro)
-    const loopSrc = audioCtx.createBufferSource();
-    loopSrc.buffer = loopBuf;
-    loopSrc.loop = true;
-    loopSrc.connect(gainNode);
-    loopSrc.start(loopStartTime);
-    currentSources.push(loopSrc);
+    currentSynth = new beepbox.Synth(url);
+    currentSynth.volume = 1;
+    currentSynth.play();
 }
 
 export function stopTrack() {
-    playId++;
-    currentTrack = null;
-    stopSources();
-    resetGain();
-}
-
-// Cached synth buffers keyed by param snapshot
-const synthBufferCache = new Map();
-
-function synthToBuffer(params) {
-    const samples = synthesize(params);
-    const buf = audioCtx.createBuffer(1, samples.length, SAMPLE_RATE);
-    buf.getChannelData(0).set(samples);
-    return buf;
-}
-
-export function playExplosionSFX() {
-    if (!audioCtx) return;
-
-    const params = sounds.explosion;
-    const cacheKey = JSON.stringify(params);
-    let buf = synthBufferCache.get(cacheKey);
-    if (!buf) {
-        buf = synthToBuffer(params);
-        synthBufferCache.set(cacheKey, buf);
+    clearFade();
+    if (currentSynth) {
+        currentSynth.pause();
+        currentSynth.deactivateAudio();
+        currentSynth = null;
     }
-    const src = audioCtx.createBufferSource();
-    src.buffer = buf;
-    src.connect(audioCtx.destination);
-    src.start();
+    currentTrack = null;
 }
 
 export function fadeOut(durationSecs) {
-    if (!audioCtx || !gainNode) return;
-    const now = audioCtx.currentTime;
-    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
-    gainNode.gain.linearRampToValueAtTime(0, now + durationSecs);
+    if (!currentSynth) return;
+    clearFade();
+
+    const steps = 20;
+    const stepTime = (durationSecs * 1000) / steps;
+    const volumeStep = currentSynth.volume / steps;
+    const synth = currentSynth;
+
+    fadeInterval = setInterval(() => {
+        synth.volume = Math.max(0, synth.volume - volumeStep);
+        if (synth.volume <= 0) {
+            clearFade();
+        }
+    }, stepTime);
 }

@@ -63,7 +63,7 @@
         "CRAWL": "strategy",
         "BRIEFING": "strategy",
         "PLAYING": null,
-        "MISSION_COMPLETE": "easy",
+        "MISSION_COMPLETE": "victory",
         "BOSS_CHOICE": null,
         "ENDING": "victory",
         "GAME_OVER": "you-lost"

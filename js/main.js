@@ -13,7 +13,8 @@ import { checkCollisions } from './collisions.js';
 import { updateScore, updateLives, showMissionTitle, resetHud, showHud, hideHud } from './hud.js';
 import { startDialogue, hideDialogue } from './dialogue.js';
 import { missions } from './missions.js';
-import { playTrack, stopTrack, fadeOut, initAudioContext, playExplosionSFX } from './music.js';
+import { playTrack, stopTrack, fadeOut } from './music.js';
+import { initAudioContext, playExplosionSFX } from './sounds.js';
 import { hasActiveMods, resetAllMods } from './mods.js';
 import { narrative } from './narrative.js';
 

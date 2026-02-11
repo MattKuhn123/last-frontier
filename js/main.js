@@ -39,6 +39,7 @@ function triggerHitFlash() {
 
 // --- Game States ---
 const State = {
+    SPLASH: 'SPLASH',
     TITLE: 'TITLE',
     CRAWL: 'CRAWL',
     BRIEFING: 'BRIEFING',
@@ -50,7 +51,7 @@ const State = {
     TRANSITION: 'TRANSITION'
 };
 
-let state = State.TITLE;
+let state = State.SPLASH;
 let score = 0;
 let lives = 3;
 let currentMissionIndex = 0;
@@ -174,6 +175,17 @@ document.getElementById('reset-mods-btn').addEventListener('click', () => {
     resetAllMods();
     modIndicator.classList.add('hidden');
 });
+
+// --- Splash Screen ---
+function drawSplashScreen() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#888';
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Press any key to start', canvas.width / 2, canvas.height / 2);
+}
 
 // --- Title Screen ---
 function showTitle() {
@@ -509,6 +521,10 @@ function gameLoop(timestamp) {
     lastFrameTime = timestamp - (elapsed % FRAME_DURATION);
 
     switch (state) {
+        case State.SPLASH:
+            drawSplashScreen();
+            break;
+
         case State.TITLE:
             drawTitleScreen();
             break;
@@ -628,15 +644,14 @@ function gameLoop(timestamp) {
 
 // --- Start ---
 
-// Resume AudioContext on first user interaction (browser autoplay policy)
-function onFirstInteraction() {
+// Splash screen waits for first user interaction to unlock audio
+function onSplashInteraction() {
+    document.removeEventListener('keydown', onSplashInteraction);
+    document.removeEventListener('click', onSplashInteraction);
     initAudioContext();
-    document.removeEventListener('keydown', onFirstInteraction);
-    document.removeEventListener('click', onFirstInteraction);
-    playTrack(narrative.stateMusic[state]);
+    showTitle();
 }
-document.addEventListener('keydown', onFirstInteraction);
-document.addEventListener('click', onFirstInteraction);
+document.addEventListener('keydown', onSplashInteraction);
+document.addEventListener('click', onSplashInteraction);
 
-showTitle();
 gameLoop();

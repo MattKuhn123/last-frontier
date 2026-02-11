@@ -602,7 +602,7 @@ async function init() {
             fetch('../data/wingmen.json')
         ]);
         DEFAULTS = await missionsRes.json();
-        MUSIC_TRACKS = await musicRes.json();
+        MUSIC_TRACKS = (await musicRes.json()).map(t => t.name);
         OBJECTIVES = await objectivesRes.json();
         ENEMY_TYPES = Object.keys(await enemiesRes.json());
         WINGMAN_TYPES = Object.keys(await wingmenRes.json());

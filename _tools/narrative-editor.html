@@ -521,7 +521,7 @@ async function init() {
             fetch('../data/speakers.json')
         ]);
         DEFAULTS = await narrativeRes.json();
-        MUSIC_TRACKS = await musicRes.json();
+        MUSIC_TRACKS = (await musicRes.json()).map(t => t.name);
         speakersDefaults = await speakersRes.json();
     } catch (e) {
         console.error('Failed to load data files:', e);

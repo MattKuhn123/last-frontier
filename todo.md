@@ -2,34 +2,9 @@
 
 Remaining hardcoded game data that should be moved to `data/` JSON files, following the project's data-driven architecture.
 
-## High Impact
-
-### MIDI Music Playback
-- Replace WAV-based music with MIDI file playback using Web Audio oscillators
-- New `js/midi.js` parser: fetch `.mid` files, parse binary format into event lists
-- New `data/instruments.json`: channel-to-instrument mapping (waveform, ADSR envelope)
-- Update `music.js`: swap `loadBuffer`/`AudioBufferSourceNode` for MIDI parsing + oscillator scheduling
-- Each note-on creates an OscillatorNode + GainNode with ADSR envelope
-- Keep intro/loop/outro structure (separate `.mid` files)
-- Instrument definitions are JSON, so they slot into the mod system naturally
-- Benefits: tiny file sizes, moddable instruments, consistent synth aesthetic
 
 ## Medium Impact
 
-### Enemy Destruction Particles
-- `destroyEnemy()` always uses `rgba(255, 80, 80, 1)` regardless of enemy type color (enemies.js line 93)
-- Should derive particle color from `enemyTypes[type].color`
-
-### Bullet Colors
-- Friendly: `#fff`, enemy: `#f44` (bullets.js line 45)
-- Could live in config or a colors file
-
-### Crawl Timing
-- Fade in: 40 frames, hold: 320 frames, fade out: 30 frames, gap: 10 frames (main.js lines 121-124)
-- Transition fade: 60 frames, hold: 30 frames (main.js lines 75-76)
-
-### Screen Shake
-- Duration: 80 frames, intensity: 75 (main.js lines 21-23)
 
 ## Lower Impact
 
@@ -45,9 +20,3 @@ Remaining hardcoded game data that should be moved to `data/` JSON files, follow
 - Approach distance: 120, retreat distance: 80 (enemies.js lines 59, 62)
 - Acceleration values: 0.06 toward, 0.03 away (enemies.js lines 60-64)
 - Destruction score: 200 points (enemies.js line 95)
-
-### Other
-- Default lives: 3 (main.js line 234, hud.js line 63)
-- Typewriter speed: 30ms per character (dialogue.js line 5)
-- Ship thrust flame color: `#f80` (ship.js line 70)
-- Default speaker fallback color: `#aaa` (dialogue.js line 19)

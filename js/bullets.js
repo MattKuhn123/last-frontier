@@ -23,7 +23,8 @@ function shootBullet() {
         dy: Math.sin(ship.angle) * bulletDefs.speed + ship.dy,
         radius: 2,
         life: bulletDefs.lifetime,
-        friendly: true
+        friendly: true,
+        color: '#fff'
     });
     shootCooldown = bulletDefs.shootCooldown;
 }
@@ -44,7 +45,7 @@ export function updateBullets() {
 
 export function drawBullets() {
     for (const b of bullets) {
-        ctx.fillStyle = b.friendly ? '#fff' : '#f44';
+        ctx.fillStyle = b.color;
         ctx.beginPath();
         ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
         ctx.fill();
@@ -52,13 +53,14 @@ export function drawBullets() {
 }
 
 // Add a bullet from an arbitrary source (enemies, wingmen)
-export function addBullet(x, y, angle, speed, friendly) {
+export function addBullet(x, y, angle, speed, friendly, color) {
     bullets.push({
         x, y,
         dx: Math.cos(angle) * speed,
         dy: Math.sin(angle) * speed,
         radius: 2,
         life: bulletDefs.lifetime,
-        friendly
+        friendly,
+        color: color || (friendly ? '#fff' : '#f44')
     });
 }

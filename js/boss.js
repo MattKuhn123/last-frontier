@@ -109,7 +109,7 @@ export function updateBoss() {
         addBullet(
             boss.x + Math.cos(boss.angle) * bossDefs.size,
             boss.y + Math.sin(boss.angle) * bossDefs.size,
-            boss.angle, bossDefs.attacks.singleShot.speed, false
+            boss.angle, bossDefs.attacks.singleShot.speed, false, bossDefs.colors.normal
         );
         boss.fireCooldown = bossDefs.attacks.singleShot.cooldown + rand(-bossDefs.attacks.singleShot.cooldownVariance, bossDefs.attacks.singleShot.cooldownVariance);
     }
@@ -121,7 +121,7 @@ export function updateBoss() {
             addBullet(
                 boss.x + Math.cos(boss.angle) * bossDefs.size,
                 boss.y + Math.sin(boss.angle) * bossDefs.size,
-                boss.angle + i * bossDefs.attacks.spread.angleSpacing, bossDefs.attacks.spread.speed, false
+                boss.angle + i * bossDefs.attacks.spread.angleSpacing, bossDefs.attacks.spread.speed, false, bossDefs.colors.normal
             );
         }
         boss.spreadCooldown = bossDefs.attacks.spread.cooldown + rand(-bossDefs.attacks.spread.cooldownVariance, bossDefs.attacks.spread.cooldownVariance);

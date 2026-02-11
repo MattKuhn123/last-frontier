@@ -124,7 +124,7 @@ export function updateWingmen() {
             addBullet(
                 activeWingman.x + Math.cos(activeWingman.angle) * 14,
                 activeWingman.y + Math.sin(activeWingman.angle) * 14,
-                activeWingman.angle, 6, true
+                activeWingman.angle, 6, true, activeWingman.color
             );
             activeWingman.fireCooldown = activeWingman.fireRate;
         }

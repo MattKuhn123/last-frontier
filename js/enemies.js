@@ -82,7 +82,7 @@ export function updateEnemies() {
             addBullet(
                 e.x + Math.cos(e.angle) * def.size,
                 e.y + Math.sin(e.angle) * def.size,
-                e.angle, def.bulletSpeed, false
+                e.angle, def.bulletSpeed, false, e.color
             );
             e.fireCooldown = def.fireInterval + rand(-20, 20);
         }

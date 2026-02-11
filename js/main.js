@@ -154,12 +154,10 @@ function drawCrawl() {
     ctx.fillText('[ENTER] Skip', canvas.width / 2, canvas.height - 30);
 }
 
-// --- Title Toolbar (tool links + mod indicator) ---
-const titleToolbar = document.getElementById('title-toolbar');
+// --- Mod Indicator ---
 const modIndicator = document.getElementById('mod-indicator');
 
-function showTitleToolbar() {
-    titleToolbar.classList.remove('hidden');
+function showModIndicator() {
     if (hasActiveMods()) {
         modIndicator.classList.remove('hidden');
     } else {
@@ -167,8 +165,8 @@ function showTitleToolbar() {
     }
 }
 
-function hideTitleToolbar() {
-    titleToolbar.classList.add('hidden');
+function hideModIndicator() {
+    modIndicator.classList.add('hidden');
 }
 
 document.getElementById('reset-mods-btn').addEventListener('click', () => {
@@ -194,11 +192,11 @@ function showTitle() {
     hideHud();
     hideDialogue();
     hideBossHealthBar();
-    showTitleToolbar();
+    showModIndicator();
     setTitleStartCallback(() => {
         if (state === State.TITLE) {
             setTitleStartCallback(null);
-            hideTitleToolbar();
+            hideModIndicator();
             transitionTo(startCrawl);
         }
     });

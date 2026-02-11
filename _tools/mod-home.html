@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mod Tools — Last Frontier</title>
+    <link rel="stylesheet" href="tools.css">
+    <style>
+        body { max-width: 700px; margin: 0 auto; }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .tool-card {
+            border: 1px solid #333;
+            padding: 20px 16px;
+            text-decoration: none;
+            color: #ccc;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .tool-card:hover {
+            border-color: #4f4;
+            color: #fff;
+        }
+
+        .tool-card .tool-name {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        .tool-card:hover .tool-name {
+            color: #4f4;
+        }
+
+        .tool-card .tool-desc {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .mod-status {
+            border: 1px solid #222;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mod-status .label {
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .mod-status .active {
+            color: #fa4;
+        }
+
+        .mod-status .none {
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <nav class="tool-nav">
+        <a href="mod-home.html" class="active">Home</a>
+        <a href="player-editor.html">Player</a>
+        <a href="enemies-editor.html">Enemies</a>
+        <a href="wingmen-editor.html">Wingmen</a>
+        <a href="boss-editor.html">Boss</a>
+        <a href="sound-designer.html">Sounds</a>
+        <a href="mission-editor.html">Missions</a>
+        <a href="narrative-editor.html">Narrative</a>
+    </nav>
+    <h1>Mod Tools</h1>
+
+    <div class="mod-status">
+        <span class="label" id="mod-status-text">Checking mods...</span>
+        <button class="btn btn-danger" id="reset-all-btn" style="display:none">Reset All Mods</button>
+    </div>
+
+    <h2>Editors</h2>
+    <div class="tool-grid">
+        <a class="tool-card" href="player-editor.html">
+            <span class="tool-name">Player</span>
+            <span class="tool-desc">Ship shape, physics, bullets</span>
+        </a>
+        <a class="tool-card" href="enemies-editor.html">
+            <span class="tool-name">Enemies</span>
+            <span class="tool-desc">Enemy types, shapes, behavior</span>
+        </a>
+        <a class="tool-card" href="wingmen-editor.html">
+            <span class="tool-name">Wingmen</span>
+            <span class="tool-desc">Wingman types, shapes, stats</span>
+        </a>
+        <a class="tool-card" href="boss-editor.html">
+            <span class="tool-name">Boss</span>
+            <span class="tool-desc">Boss shape, attacks, movement</span>
+        </a>
+        <a class="tool-card" href="sound-designer.html">
+            <span class="tool-name">Sounds</span>
+            <span class="tool-desc">SFX synthesis and design</span>
+        </a>
+        <a class="tool-card" href="mission-editor.html">
+            <span class="tool-name">Missions</span>
+            <span class="tool-desc">Mission sequence and rules</span>
+        </a>
+        <a class="tool-card" href="narrative-editor.html">
+            <span class="tool-name">Narrative</span>
+            <span class="tool-desc">Dialogue, speakers, story</span>
+        </a>
+    </div>
+
+<script>
+const MOD_KEYS = [
+    'lf-mod-ship', 'lf-mod-bullets', 'lf-mod-sfx', 'lf-mod-missions',
+    'lf-mod-wingmen', 'lf-mod-enemies', 'lf-mod-speakers', 'lf-mod-narrative',
+    'lf-mod-asteroids', 'lf-mod-boss'
+];
+
+function getActiveMods() {
+    return MOD_KEYS.filter(k => localStorage.getItem(k));
+}
+
+function updateStatus() {
+    const active = getActiveMods();
+    const el = document.getElementById('mod-status-text');
+    const btn = document.getElementById('reset-all-btn');
+    if (active.length > 0) {
+        el.innerHTML = '<span class="active">MODS ACTIVE</span> — ' + active.length + ' domain' + (active.length > 1 ? 's' : '') + ' modified';
+        btn.style.display = '';
+    } else {
+        el.innerHTML = '<span class="none">No active mods</span>';
+        btn.style.display = 'none';
+    }
+}
+
+document.getElementById('reset-all-btn').onclick = () => {
+    MOD_KEYS.forEach(k => localStorage.removeItem(k));
+    updateStatus();
+};
+
+updateStatus();
+</script>
+</body>
+</html>

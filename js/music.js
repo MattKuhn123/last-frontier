@@ -1,5 +1,5 @@
 // --- Music System (BeepBox Synth) ---
-import { trackList } from './data.js';
+import { trackList } from './repository.js';
 
 const trackMap = new Map(trackList.map(t => [t.name, t.url]));
 
@@ -31,6 +31,7 @@ export function playTrack(baseName) {
     const url = trackMap.get(baseName);
     if (!url) return;
 
+    // @ts-ignore - beepbox loaded via external script
     currentSynth = new beepbox.Synth(url);
     currentSynth.volume = 1;
     currentSynth.play();

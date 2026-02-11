@@ -3,7 +3,7 @@ import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle, strokeShape } f
 import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnParticles } from './particles.js';
-import { enemyTypes } from './data.js';
+import { enemyTypes } from './repository.js';
 
 export let enemies = [];
 

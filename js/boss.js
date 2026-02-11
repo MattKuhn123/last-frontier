@@ -4,7 +4,7 @@ import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnEnemy } from './enemies.js';
 import { spawnParticles } from './particles.js';
-import { bossDefs } from './data.js';
+import { bossDefs } from './repository.js';
 
 export let boss = null;
 

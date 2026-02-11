@@ -1,9 +1,14 @@
 // --- Shared Helpers ---
-export const canvas = document.getElementById('game');
+export const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('game'));
 export const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 600;
 
+/**
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
 export function rand(min, max) {
     return Math.random() * (max - min) + min;
 }
@@ -29,6 +34,11 @@ export function normalizeAngle(a) {
     return a;
 }
 
+/**
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number[][]} vertices
+ * @param {number} size
+ */
 export function strokeShape(ctx, vertices, size) {
     ctx.beginPath();
     for (let i = 0; i < vertices.length; i++) {

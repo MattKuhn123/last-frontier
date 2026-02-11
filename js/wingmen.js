@@ -4,7 +4,7 @@ import { ship } from './ship.js';
 import { enemies } from './enemies.js';
 import { asteroids } from './asteroids.js';
 import { addBullet } from './bullets.js';
-import { wingmanTypes } from './data.js';
+import { wingmanTypes } from './repository.js';
 const PICKUP_RADIUS = 15;
 const PICKUP_PULSE_SPEED = 0.05;
 

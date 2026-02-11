@@ -1,6 +1,6 @@
 // --- Radio-Comm Dialogue System ---
 import { setDialogueAdvanceCallback } from './input.js';
-import { wingmanTypes, speakerColors } from './data.js';
+import { wingmanTypes, speakerColors } from './repository.js';
 
 const TYPEWRITER_SPEED = 30; // ms per character
 

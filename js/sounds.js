@@ -1,6 +1,6 @@
 // --- Sound Effects ---
 import { synthesize, SAMPLE_RATE } from './synth.js';
-import { sounds } from './data.js';
+import { sounds } from './repository.js';
 
 let audioCtx = null;
 const synthBufferCache = new Map();

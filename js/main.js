@@ -2,7 +2,7 @@
 import { canvas, ctx } from './utils.js';
 import { keys, setTitleStartCallback } from './input.js';
 import { ship, createShip, resetShip, updateShip, drawShip, setInvincible } from './ship.js';
-import { shipDefs } from './data.js';
+import { shipDefs } from './repository.js';
 import { infiniteLives } from './debug.js';
 import { bullets, resetBullets, updateBullets, drawBullets } from './bullets.js';
 import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from './asteroids.js';
@@ -13,7 +13,7 @@ import { boss, resetBoss, spawnBoss, updateBoss, drawBoss, hideBossHealthBar } f
 import { checkCollisions } from './collisions.js';
 import { updateScore, updateLives, showMissionTitle, resetHud, showHud, hideHud } from './hud.js';
 import { startDialogue, hideDialogue } from './dialogue.js';
-import { missions, narrative } from './data.js';
+import { missions, narrative } from './repository.js';
 import { playTrack, stopTrack, fadeOut } from './music.js';
 import { initAudioContext, playExplosionSFX } from './sounds.js';
 

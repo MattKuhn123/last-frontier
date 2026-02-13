@@ -5,5 +5,5 @@
     "moduleResolution": "bundler",
     "checkJs": true
   },
-  "include": ["js/*.js", "_tools/**/*.js"]
+  "include": ["js/**/*.js", "_tools/**/*.js"]
 }

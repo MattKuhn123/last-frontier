@@ -15,7 +15,7 @@ import { updateScore, updateLives, showMissionTitle, resetHud, showHud, hideHud 
 import { startDialogue, hideDialogue } from './dialogue.js';
 import { missions, narrative } from './repository.js';
 import { playTrack, stopTrack, fadeOut } from './music.js';
-import { initAudioContext, playExplosionSFX } from './sounds.js';
+import { initAudioContext, playSFX } from './sounds.js';
 
 // --- Screen Shake ---
 const SHAKE_DURATION = 80;
@@ -336,7 +336,7 @@ function triggerGameOver() {
 function handlePlayerDeath() {
     spawnParticles(ship.x, ship.y, 15);
     triggerScreenShake();
-    playExplosionSFX();
+    playSFX('explosion');
     triggerHitFlash();
     if (infiniteLives()) {
         resetShip();

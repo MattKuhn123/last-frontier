@@ -21,10 +21,11 @@ function synthToBuffer(params) {
     return buf;
 }
 
-export function playExplosionSFX() {
+/** @param {'explosion'|'laser'|'hit'|'powerup'|'thud'} name */
+export function playSFX(name) {
     if (!audioCtx) return;
 
-    const params = sounds.explosion;
+    const params = sounds[name];
     const cacheKey = JSON.stringify(params);
     let buf = synthBufferCache.get(cacheKey);
     if (!buf) {

@@ -1,13 +1,13 @@
 // --- Briefing State ---
 import { canvas, ctx } from '../utils.js';
 import { State, game } from '../game.js';
-import { createShip } from '../ship.js';
-import { resetBullets } from '../bullets.js';
-import { resetAsteroids, drawAsteroids } from '../asteroids.js';
-import { resetParticles, updateParticles, drawParticles } from '../particles.js';
-import { resetEnemies } from '../enemies.js';
-import { resetWingmen } from '../wingmen.js';
-import { resetBoss, hideBossHealthBar } from '../boss.js';
+import { createShip } from '../gameObjects/ship.js';
+import { resetBullets } from '../gameObjects/bullets.js';
+import { resetAsteroids, drawAsteroids } from '../gameObjects/asteroids.js';
+import { resetParticles, updateParticles, drawParticles } from '../gameObjects/particles.js';
+import { resetEnemies } from '../gameObjects/enemies.js';
+import { resetWingmen } from '../gameObjects/wingmen.js';
+import { resetBoss, hideBossHealthBar } from '../gameObjects/boss.js';
 import { updateScore, updateLives, showHud } from '../hud.js';
 import { startDialogue } from '../dialogue.js';
 import { playTrack } from '../music.js';

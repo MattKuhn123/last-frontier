@@ -1,8 +1,8 @@
 // --- Asteroid System ---
-import { canvas, ctx, rand, wrap, dist } from './utils.js';
+import { canvas, ctx, rand, wrap, dist } from '../utils.js';
 import { ship } from './ship.js';
 import { spawnParticles } from './particles.js';
-import { asteroidDefs } from './repository.js';
+import { asteroidDefs } from '../repository.js';
 
 export let asteroids = [];
 

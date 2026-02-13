@@ -1,10 +1,10 @@
 // --- Boss Fight ---
-import { canvas, ctx, rand, dist, angleTo, normalizeAngle, strokeShape } from './utils.js';
+import { canvas, ctx, rand, dist, angleTo, normalizeAngle, strokeShape } from '../utils.js';
 import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnEnemy } from './enemies.js';
 import { spawnParticles } from './particles.js';
-import { bossDefs } from './repository.js';
+import { bossDefs } from '../repository.js';
 
 export let boss = null;
 

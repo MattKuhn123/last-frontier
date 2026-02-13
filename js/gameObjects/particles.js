@@ -1,5 +1,5 @@
 // --- Particle / Debris Effects ---
-import { ctx, rand } from './utils.js';
+import { ctx, rand } from '../utils.js';
 
 export let particles = [];
 

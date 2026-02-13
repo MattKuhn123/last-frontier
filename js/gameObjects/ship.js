@@ -1,7 +1,7 @@
 // --- Player Ship ---
-import { canvas, ctx, wrap, strokeShape } from './utils.js';
-import { keys } from './input.js';
-import { shipDefs } from './repository.js';
+import { canvas, ctx, wrap, strokeShape } from '../utils.js';
+import { keys } from '../input.js';
+import { shipDefs } from '../repository.js';
 
 export let ship = null;
 export let invincibleTimer = 0;

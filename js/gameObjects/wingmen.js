@@ -1,10 +1,10 @@
 // --- Wingman Power-ups ---
-import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle, strokeShape } from './utils.js';
+import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle, strokeShape } from '../utils.js';
 import { ship } from './ship.js';
 import { enemies } from './enemies.js';
 import { asteroids } from './asteroids.js';
 import { addBullet } from './bullets.js';
-import { wingmanTypes } from './repository.js';
+import { wingmanTypes } from '../repository.js';
 const PICKUP_RADIUS = 15;
 const PICKUP_PULSE_SPEED = 0.05;
 

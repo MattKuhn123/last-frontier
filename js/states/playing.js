@@ -1,15 +1,15 @@
 // --- Playing State ---
 import { canvas, ctx } from '../utils.js';
 import { State, game, shake, triggerScreenShake, triggerHitFlash } from '../game.js';
-import { ship, createShip, resetShip, updateShip, drawShip, setInvincible } from '../ship.js';
+import { ship, createShip, resetShip, updateShip, drawShip, setInvincible } from '../gameObjects/ship.js';
 import { shipDefs, missions } from '../repository.js';
 import { infiniteLives } from '../debug.js';
-import { resetBullets, updateBullets, drawBullets } from '../bullets.js';
-import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from '../asteroids.js';
-import { resetParticles, spawnParticles, updateParticles, drawParticles } from '../particles.js';
-import { enemies, resetEnemies, spawnEnemy, updateEnemies, drawEnemies } from '../enemies.js';
-import { resetWingmen, spawnWingmanPickup, updateWingmen, drawWingmen, activeWingman } from '../wingmen.js';
-import { resetBoss, spawnBoss, updateBoss, drawBoss } from '../boss.js';
+import { resetBullets, updateBullets, drawBullets } from '../gameObjects/bullets.js';
+import { asteroids, resetAsteroids, spawnAsteroids, updateAsteroids, drawAsteroids } from '../gameObjects/asteroids.js';
+import { resetParticles, spawnParticles, updateParticles, drawParticles } from '../gameObjects/particles.js';
+import { enemies, resetEnemies, spawnEnemy, updateEnemies, drawEnemies } from '../gameObjects/enemies.js';
+import { resetWingmen, spawnWingmanPickup, updateWingmen, drawWingmen, activeWingman } from '../gameObjects/wingmen.js';
+import { resetBoss, spawnBoss, updateBoss, drawBoss } from '../gameObjects/boss.js';
 import { checkCollisions } from '../collisions.js';
 import { updateScore, updateLives, showMissionTitle } from '../hud.js';
 import { playTrack } from '../music.js';

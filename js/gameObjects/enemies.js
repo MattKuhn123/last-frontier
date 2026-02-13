@@ -1,9 +1,9 @@
 // --- Syndicate Enemy Ships ---
-import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle, strokeShape } from './utils.js';
+import { canvas, ctx, rand, wrap, dist, angleTo, normalizeAngle, strokeShape } from '../utils.js';
 import { ship } from './ship.js';
 import { addBullet } from './bullets.js';
 import { spawnParticles } from './particles.js';
-import { enemyTypes } from './repository.js';
+import { enemyTypes } from '../repository.js';
 
 export let enemies = [];
 

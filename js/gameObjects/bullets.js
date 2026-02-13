@@ -1,8 +1,8 @@
 // --- Bullet System ---
-import { ctx, wrap } from './utils.js';
-import { keys } from './input.js';
+import { ctx, wrap } from '../utils.js';
+import { keys } from '../input.js';
 import { ship } from './ship.js';
-import { shipDefs, bulletDefs } from './repository.js';
+import { shipDefs, bulletDefs } from '../repository.js';
 
 export let bullets = [];
 let shootCooldown = 0;

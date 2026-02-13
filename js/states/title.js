@@ -4,7 +4,7 @@ import { State, game } from '../game.js';
 import { setTitleStartCallback } from '../input.js';
 import { hideHud } from '../hud.js';
 import { hideDialogue } from '../dialogue.js';
-import { hideBossHealthBar } from '../boss.js';
+import { hideBossHealthBar } from '../gameObjects/boss.js';
 import { playTrack } from '../music.js';
 import { narrative } from '../repository.js';
 import { transitionTo } from './transition.js';

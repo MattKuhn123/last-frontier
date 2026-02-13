@@ -1,11 +1,11 @@
 // --- Collision Detection ---
 import { dist } from './utils.js';
-import { ship, invincibleTimer, resetShip, setInvincible } from './ship.js';
-import { bullets } from './bullets.js';
-import { asteroids, splitAsteroid } from './asteroids.js';
-import { enemies, destroyEnemy } from './enemies.js';
-import { boss, damageBoss } from './boss.js';
-import { pickup, collectPickup } from './wingmen.js';
+import { ship, invincibleTimer, resetShip, setInvincible } from './gameObjects/ship.js';
+import { bullets } from './gameObjects/bullets.js';
+import { asteroids, splitAsteroid } from './gameObjects/asteroids.js';
+import { enemies, destroyEnemy } from './gameObjects/enemies.js';
+import { boss, damageBoss } from './gameObjects/boss.js';
+import { pickup, collectPickup } from './gameObjects/wingmen.js';
 
 
 export function checkCollisions(gameState) {

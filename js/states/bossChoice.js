@@ -1,8 +1,8 @@
 // --- Boss Choice State ---
 import { canvas, ctx } from '../utils.js';
 import { State, game } from '../game.js';
-import { drawAsteroids } from '../asteroids.js';
-import { updateParticles, drawParticles } from '../particles.js';
+import { drawAsteroids } from '../gameObjects/asteroids.js';
+import { updateParticles, drawParticles } from '../gameObjects/particles.js';
 import { playTrack } from '../music.js';
 import { narrative } from '../repository.js';
 import { transitionTo } from './transition.js';

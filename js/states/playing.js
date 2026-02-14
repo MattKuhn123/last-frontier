@@ -65,7 +65,7 @@ export function enter() {
 function handlePlayerDeath() {
     spawnParticles(ship.x, ship.y, 15);
     triggerScreenShake();
-    playSFX('explosion');
+    playSFX(shipDefs.explosionSound || 'explosion');
     triggerHitFlash();
     if (infiniteLives()) {
         resetShip();

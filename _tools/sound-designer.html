@@ -5,9 +5,12 @@
     <title>SFX Designer — Last Frontier</title>
     <link rel="stylesheet" href="tools.css">
     <style>
-        body { max-width: 700px; margin: 0 auto; }
-        .preset-btn.active { border-color: #4f4; color: #4f4; }
-        .file-row input[type="text"] { width: 180px; }
+        body { padding: 50px 20px 20px; }
+        h1 { margin-bottom: 16px; }
+        h2 { margin-bottom: 8px; margin-top: 0; }
+        .btn { font-size: 12px; padding: 6px 16px; }
+        .control-row label { width: 70px; }
+        .control-row .value { width: 40px; }
 
         /* Waveform selectors */
         .wave-btns { display: flex; gap: 4px; flex: 1; }
@@ -46,155 +49,184 @@
     </nav>
     <h1>SFX Designer</h1>
 
-    <h2>Presets</h2>
-    <div class="preset-row" id="built-in-presets"></div>
-    <div class="preset-row" id="custom-presets"></div>
-
-    <div class="section">
-        <h2>Noise Layer</h2>
-        <div class="control-row">
-            <label>Decay</label>
-            <input type="range" id="noiseDecay" min="0.5" max="8" step="0.1" value="3">
-            <span class="value" id="noiseDecay-val"></span>
-        </div>
-        <div class="control-row">
-            <label>Filter Hz</label>
-            <input type="range" id="noiseFilter" min="100" max="8000" step="50" value="600">
-            <span class="value" id="noiseFilter-val"></span>
-        </div>
-        <div class="control-row">
-            <label>Volume</label>
-            <input type="range" id="noiseVolume" min="0" max="1" step="0.01" value="0.6">
-            <span class="value" id="noiseVolume-val"></span>
+    <div class="toolbar">
+        <div class="action-row">
+            <button class="btn btn-action" id="reset-all-btn">Reset All</button>
+            <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
         </div>
     </div>
 
-    <div class="section">
-        <h2>Tone Layer</h2>
-        <div class="control-row">
-            <label>Waveform</label>
-            <div class="wave-btns">
-                <button class="wave-btn active" data-wave="sine">sine</button>
-                <button class="wave-btn" data-wave="square">square</button>
-                <button class="wave-btn" data-wave="sawtooth">saw</button>
-                <button class="wave-btn" data-wave="triangle">tri</button>
-            </div>
+    <div class="editor-layout">
+        <div class="unit-list-panel">
+            <h2>Sounds</h2>
+            <div class="unit-list" id="unit-list"></div>
+            <button class="add-unit-btn" id="add-unit-btn">+ Add Sound</button>
         </div>
-        <div class="control-row">
-            <label>Start Hz</label>
-            <input type="range" id="toneStart" min="20" max="2000" step="1" value="80">
-            <span class="value" id="toneStart-val"></span>
+        <div class="detail-panel" id="detail-panel">
+            <div class="no-selection">Select a sound to edit</div>
         </div>
-        <div class="control-row">
-            <label>End Hz</label>
-            <input type="range" id="toneEnd" min="20" max="2000" step="1" value="30">
-            <span class="value" id="toneEnd-val"></span>
-        </div>
-        <div class="control-row">
-            <label>Decay</label>
-            <input type="range" id="toneDecay" min="0.5" max="8" step="0.1" value="2">
-            <span class="value" id="toneDecay-val"></span>
-        </div>
-        <div class="control-row">
-            <label>Volume</label>
-            <input type="range" id="toneVolume" min="0" max="1" step="0.01" value="0.5">
-            <span class="value" id="toneVolume-val"></span>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>Master</h2>
-        <div class="control-row">
-            <label>Duration</label>
-            <input type="range" id="duration" min="0.05" max="2" step="0.01" value="0.4">
-            <span class="value" id="duration-val"></span>
-        </div>
-    </div>
-
-    <canvas id="waveform"></canvas>
-
-    <div class="actions">
-        <button class="btn btn-play" id="play-btn">Play</button>
-        <label><input type="checkbox" id="auto-play"> Auto-play</label>
-    </div>
-
-    <div class="file-row">
-        <span>Sound name</span>
-        <input type="text" id="filename" value="explosion">
-    </div>
-
-    <div class="file-row">
-        <span>Save as</span>
-        <input type="text" id="preset-name" placeholder="my-sound">
-        <button class="btn btn-save" id="save-btn">Save Preset</button>
-    </div>
-
-    <div class="file-row">
-        <button class="btn btn-save" id="default-btn" style="display:none">Save as Default</button>
     </div>
 
 <script src="tools.js"></script>
 <script>
-// --- Built-in presets ---
-const BUILT_IN = {
-    explosion: {
-        duration: 0.4, noiseDecay: 3, noiseFilter: 600, noiseVolume: 0.6,
-        toneType: 'sine', toneStart: 80, toneEnd: 30, toneDecay: 2, toneVolume: 0.5
-    },
-    laser: {
-        duration: 0.15, noiseDecay: 5, noiseFilter: 3000, noiseVolume: 0.2,
-        toneType: 'square', toneStart: 1200, toneEnd: 200, toneDecay: 1.5, toneVolume: 0.6
-    },
-    hit: {
-        duration: 0.2, noiseDecay: 4, noiseFilter: 800, noiseVolume: 0.7,
-        toneType: 'sine', toneStart: 200, toneEnd: 60, toneDecay: 3, toneVolume: 0.4
-    },
-    powerup: {
-        duration: 0.5, noiseDecay: 2, noiseFilter: 4000, noiseVolume: 0.15,
-        toneType: 'sine', toneStart: 400, toneEnd: 1200, toneDecay: 0.8, toneVolume: 0.6
-    },
-    thud: {
-        duration: 0.25, noiseDecay: 5, noiseFilter: 300, noiseVolume: 0.5,
-        toneType: 'sine', toneStart: 60, toneEnd: 25, toneDecay: 2.5, toneVolume: 0.7
-    }
+// ============================================================
+// DATA
+// ============================================================
+let soundsDefaults = {};
+let soundsData = {};
+let selectedKey = null;
+
+const DEFAULT_SOUND = {
+    duration: 0.4, noiseDecay: 3, noiseFilter: 600, noiseVolume: 0.6,
+    toneType: 'sine', toneStart: 80, toneEnd: 30, toneDecay: 2, toneVolume: 0.5
 };
 
-// --- Param names that map to slider IDs ---
-const SLIDER_PARAMS = ['duration', 'noiseDecay', 'noiseFilter', 'noiseVolume', 'toneStart', 'toneEnd', 'toneDecay', 'toneVolume'];
+// ============================================================
+// UNIT LIST
+// ============================================================
+const listEl = document.getElementById('unit-list');
+const detailEl = document.getElementById('detail-panel');
 
-// --- Read current UI state into a params object ---
-function readParams() {
-    const p = {};
-    for (const id of SLIDER_PARAMS) {
-        p[id] = parseFloat(document.getElementById(id).value);
+function renderList() {
+    listEl.innerHTML = '';
+    for (const key of Object.keys(soundsData)) {
+        const item = document.createElement('div');
+        item.className = 'unit-item' + (key === selectedKey ? ' selected' : '');
+
+        const name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = key;
+
+        const del = document.createElement('span');
+        del.className = 'delete-unit';
+        del.textContent = '\u00d7';
+        del.onclick = (e) => {
+            e.stopPropagation();
+            delete soundsData[key];
+            if (selectedKey === key) { selectedKey = null; renderDetail(); }
+            renderList();
+        };
+
+        item.append(name, del);
+        item.onclick = () => { selectedKey = key; renderList(); renderDetail(); };
+        listEl.appendChild(item);
     }
-    p.toneType = document.querySelector('.wave-btn.active').dataset.wave;
-    return p;
 }
 
-// --- Apply a params object to the UI ---
-function applyParams(p) {
-    for (const id of SLIDER_PARAMS) {
-        const el = document.getElementById(id);
-        el.value = p[id];
-        updateValueDisplay(el);
+// ============================================================
+// DETAIL PANEL
+// ============================================================
+function renderDetail() {
+    detailEl.innerHTML = '';
+
+    if (!selectedKey || !soundsData[selectedKey]) {
+        detailEl.innerHTML = '<div class="no-selection">Select a sound to edit</div>';
+        return;
     }
-    document.querySelectorAll('.wave-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.wave === p.toneType);
-    });
+
+    const sound = soundsData[selectedKey];
+    const defaults = soundsDefaults[selectedKey] || DEFAULT_SOUND;
+
+    // --- Name (renames the key) ---
+    const nameSection = makeSection('Name');
+    detailEl.appendChild(nameSection);
+    nameSection.appendChild(fieldRow('Key', textInput(selectedKey, newKey => {
+        newKey = newKey.trim();
+        if (!newKey || newKey === selectedKey || soundsData[newKey]) return;
+        // Move data to new key, preserving insertion order
+        const rebuilt = {};
+        for (const k of Object.keys(soundsData)) {
+            rebuilt[k === selectedKey ? newKey : k] = soundsData[k];
+        }
+        soundsData = rebuilt;
+        selectedKey = newKey;
+        renderList();
+    })));
+
+    // --- Noise Layer ---
+    const noiseSection = makeSection('Noise Layer');
+    detailEl.appendChild(noiseSection);
+
+    sliderRow(noiseSection, 'Decay', sound.noiseDecay, 0.5, 8, 0.1,
+        v => { sound.noiseDecay = v; autoRedraw(); }, defaults.noiseDecay);
+    sliderRow(noiseSection, 'Filter Hz', sound.noiseFilter, 100, 8000, 50,
+        v => { sound.noiseFilter = v; autoRedraw(); }, defaults.noiseFilter);
+    sliderRow(noiseSection, 'Volume', sound.noiseVolume, 0, 1, 0.01,
+        v => { sound.noiseVolume = v; autoRedraw(); }, defaults.noiseVolume);
+
+    // --- Tone Layer ---
+    const toneSection = makeSection('Tone Layer');
+    detailEl.appendChild(toneSection);
+
+    // Waveform type buttons
+    const waveRow = document.createElement('div');
+    waveRow.className = 'config-row';
+    const waveLbl = document.createElement('label');
+    waveLbl.textContent = 'Waveform';
+    const waveBtns = document.createElement('div');
+    waveBtns.className = 'wave-btns';
+    for (const [type, label] of [['sine','sine'],['square','square'],['sawtooth','saw'],['triangle','tri']]) {
+        const btn = document.createElement('button');
+        btn.className = 'wave-btn' + (sound.toneType === type ? ' active' : '');
+        btn.textContent = label;
+        btn.onclick = () => {
+            sound.toneType = type;
+            waveBtns.querySelectorAll('.wave-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            autoRedraw();
+        };
+        waveBtns.appendChild(btn);
+    }
+    waveRow.append(waveLbl, waveBtns);
+    toneSection.appendChild(waveRow);
+
+    sliderRow(toneSection, 'Start Hz', sound.toneStart, 20, 2000, 1,
+        v => { sound.toneStart = v; autoRedraw(); }, defaults.toneStart);
+    sliderRow(toneSection, 'End Hz', sound.toneEnd, 20, 2000, 1,
+        v => { sound.toneEnd = v; autoRedraw(); }, defaults.toneEnd);
+    sliderRow(toneSection, 'Decay', sound.toneDecay, 0.5, 8, 0.1,
+        v => { sound.toneDecay = v; autoRedraw(); }, defaults.toneDecay);
+    sliderRow(toneSection, 'Volume', sound.toneVolume, 0, 1, 0.01,
+        v => { sound.toneVolume = v; autoRedraw(); }, defaults.toneVolume);
+
+    // --- Master ---
+    const masterSection = makeSection('Master');
+    detailEl.appendChild(masterSection);
+
+    sliderRow(masterSection, 'Duration', sound.duration, 0.05, 2, 0.01,
+        v => { sound.duration = v; autoRedraw(); }, defaults.duration);
+
+    // --- Waveform canvas ---
+    const canvas = document.createElement('canvas');
+    canvas.id = 'waveform';
+    detailEl.appendChild(canvas);
+
+    // --- Play / Auto-play ---
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const playBtn = document.createElement('button');
+    playBtn.className = 'btn btn-play';
+    playBtn.textContent = 'Play';
+    playBtn.onclick = play;
+    const autoLabel = document.createElement('label');
+    const autoCheck = document.createElement('input');
+    autoCheck.type = 'checkbox';
+    autoCheck.id = 'auto-play';
+    autoLabel.append(autoCheck, ' Auto-play');
+    actions.append(playBtn, autoLabel);
+    detailEl.appendChild(actions);
+
     drawWaveform();
 }
 
-// --- Update the value readout next to a slider ---
-function updateValueDisplay(el) {
-    const display = document.getElementById(el.id + '-val');
-    const val = parseFloat(el.value);
-    if (el.id === 'duration') display.textContent = val.toFixed(2) + 's';
-    else if (el.id.includes('Filter') || el.id.includes('Start') || el.id.includes('End')) display.textContent = val + ' Hz';
-    else display.textContent = val.toFixed(el.step < 1 ? (el.id.includes('Decay') ? 1 : 2) : 0);
+function autoRedraw() {
+    drawWaveform();
+    if (document.getElementById('auto-play')?.checked) play();
 }
 
-// --- Synthesis ---
+// ============================================================
+// SYNTHESIS
+// ============================================================
 const SAMPLE_RATE = 44100;
 
 function synthesize(params) {
@@ -208,7 +240,7 @@ function synthesize(params) {
         noise[i] = (Math.random() * 2 - 1) * Math.pow(1 - progress, params.noiseDecay);
     }
 
-    // Low-pass filter the noise (single-pole IIR)
+    // Low-pass filter (single-pole IIR)
     const alpha = Math.min(1, (2 * Math.PI * params.noiseFilter) / SAMPLE_RATE);
     let prev = 0;
     for (let i = 0; i < numSamples; i++) {
@@ -255,12 +287,15 @@ function synthesize(params) {
     return samples;
 }
 
-// --- Playback ---
+// ============================================================
+// PLAYBACK
+// ============================================================
 let audioCtx = null;
 
 function play() {
+    if (!selectedKey || !soundsData[selectedKey]) return;
     if (!audioCtx) audioCtx = new AudioContext();
-    const params = readParams();
+    const params = soundsData[selectedKey];
     const samples = synthesize(params);
 
     const buffer = audioCtx.createBuffer(1, samples.length, SAMPLE_RATE);
@@ -272,14 +307,17 @@ function play() {
     src.start();
 }
 
-// --- Waveform display ---
+// ============================================================
+// WAVEFORM DISPLAY
+// ============================================================
 function drawWaveform() {
     const canvas = document.getElementById('waveform');
+    if (!canvas || !selectedKey || !soundsData[selectedKey]) return;
     const ctx = canvas.getContext('2d');
     canvas.width = canvas.offsetWidth * 2;
     canvas.height = canvas.offsetHeight * 2;
 
-    const params = readParams();
+    const params = soundsData[selectedKey];
     const samples = synthesize(params);
 
     ctx.fillStyle = '#111';
@@ -296,7 +334,6 @@ function drawWaveform() {
     ctx.strokeStyle = '#4f4';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    const step = Math.max(1, Math.floor(samples.length / canvas.width));
     for (let x = 0; x < canvas.width; x++) {
         const i = Math.floor((x / canvas.width) * samples.length);
         const y = (1 - samples[i]) * canvas.height / 2;
@@ -306,111 +343,52 @@ function drawWaveform() {
     ctx.stroke();
 }
 
-// --- Preset management ---
-function loadCustomPresets() {
-    try {
-        return JSON.parse(localStorage.getItem('sfx-presets') || '{}');
-    } catch { return {}; }
-}
-
-function saveCustomPresets(presets) {
-    localStorage.setItem('sfx-presets', JSON.stringify(presets));
-}
-
-function renderPresets() {
-    // Built-in
-    const builtInRow = document.getElementById('built-in-presets');
-    builtInRow.innerHTML = '';
-    for (const name of Object.keys(BUILT_IN)) {
-        const btn = document.createElement('button');
-        btn.className = 'preset-btn';
-        btn.textContent = name;
-        btn.onclick = () => {
-            applyParams(BUILT_IN[name]);
-            document.getElementById('filename').value = name;
-            highlightPreset(btn);
-            if (document.getElementById('auto-play').checked) play();
-        };
-        builtInRow.appendChild(btn);
-    }
-
-    // Custom
-    const customRow = document.getElementById('custom-presets');
-    customRow.innerHTML = '';
-    const custom = loadCustomPresets();
-    for (const name of Object.keys(custom)) {
-        const btn = document.createElement('button');
-        btn.className = 'preset-btn';
-        btn.innerHTML = name + '<span class="delete">\u00d7</span>';
-        btn.querySelector('.delete').onclick = (e) => {
-            e.stopPropagation();
-            const presets = loadCustomPresets();
-            delete presets[name];
-            saveCustomPresets(presets);
-            renderPresets();
-        };
-        btn.onclick = () => {
-            applyParams(custom[name]);
-            document.getElementById('filename').value = name;
-            highlightPreset(btn);
-            if (document.getElementById('auto-play').checked) play();
-        };
-        customRow.appendChild(btn);
-    }
-}
-
-function highlightPreset(activeBtn) {
-    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-    activeBtn.classList.add('active');
-}
-
-// --- Wire up events ---
-document.getElementById('play-btn').onclick = play;
-
-document.getElementById('save-btn').onclick = () => {
-    const name = document.getElementById('preset-name').value.trim();
-    if (!name) return;
-    const presets = loadCustomPresets();
-    presets[name] = readParams();
-    saveCustomPresets(presets);
-    document.getElementById('preset-name').value = '';
-    renderPresets();
+// ============================================================
+// ADD SOUND
+// ============================================================
+document.getElementById('add-unit-btn').onclick = () => {
+    let key = 'new-sound';
+    let n = 1;
+    while (soundsData[key]) { key = 'new-sound-' + (n++); }
+    soundsData[key] = deepCopy(DEFAULT_SOUND);
+    selectedKey = key;
+    renderList();
+    renderDetail();
 };
 
-// Sliders: update display + auto-play + redraw waveform
-for (const id of SLIDER_PARAMS) {
-    const el = document.getElementById(id);
-    updateValueDisplay(el);
-    el.addEventListener('input', () => {
-        updateValueDisplay(el);
-        drawWaveform();
-        if (document.getElementById('auto-play').checked) play();
-    });
+// ============================================================
+// RESET ALL
+// ============================================================
+document.getElementById('reset-all-btn').onclick = () => {
+    soundsData = deepCopy(soundsDefaults);
+    selectedKey = null;
+    renderList();
+    renderDetail();
+};
+
+// ============================================================
+// SAVE AS DEFAULT
+// ============================================================
+setupSaveDefault('default-btn', () => saveJSON('/api/save-sounds', deepCopy(soundsData)));
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+    try {
+        const res = await fetch('../data/sounds.json');
+        soundsDefaults = await res.json();
+    } catch (e) {
+        console.error('Failed to load sounds data:', e);
+    }
+
+    soundsData = deepCopy(soundsDefaults);
+
+    renderList();
+    renderDetail();
 }
 
-// Waveform type buttons
-document.querySelectorAll('.wave-btn').forEach(btn => {
-    btn.onclick = () => {
-        document.querySelectorAll('.wave-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        drawWaveform();
-        if (document.getElementById('auto-play').checked) play();
-    };
-});
-
-// --- Save as Default (dev server only, writes JSON to data/sounds.json) ---
-setupSaveDefault('default-btn', () => {
-    const params = readParams();
-    const name = document.getElementById('filename').value.trim() || 'explosion';
-    const snapshot = {};
-    for (const key of Object.keys(BUILT_IN)) snapshot[key] = BUILT_IN[key];
-    snapshot[name] = params;
-    return saveJSON('/api/save-sounds', snapshot);
-});
-
-// --- Init ---
-renderPresets();
-drawWaveform();
+init();
 </script>
 </body>
 </html>

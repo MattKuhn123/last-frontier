@@ -53,5 +53,16 @@
         "toneEnd": 25,
         "toneDecay": 2.5,
         "toneVolume": 0.7
+    },
+    "new-sound-x": {
+        "duration": 0.05,
+        "noiseDecay": 3,
+        "noiseFilter": 600,
+        "noiseVolume": 0.6,
+        "toneType": "sine",
+        "toneStart": 80,
+        "toneEnd": 30,
+        "toneDecay": 2,
+        "toneVolume": 0.5
     }
 }

@@ -21,7 +21,6 @@ function synthToBuffer(params) {
     return buf;
 }
 
-/** @param {'explosion'|'laser'|'hit'|'powerup'|'thud'} name */
 export function playSFX(name) {
     if (!audioCtx) return;
 
